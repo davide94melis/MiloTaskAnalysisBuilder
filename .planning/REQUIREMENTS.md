@@ -127,58 +127,58 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase TBD | Pending |
-| AUTH-02 | Phase TBD | Pending |
-| AUTH-03 | Phase TBD | Pending |
-| LIBR-01 | Phase TBD | Pending |
-| LIBR-02 | Phase TBD | Pending |
-| LIBR-03 | Phase TBD | Pending |
-| LIBR-04 | Phase TBD | Pending |
-| LIBR-05 | Phase TBD | Pending |
-| LIBR-06 | Phase TBD | Pending |
-| META-01 | Phase TBD | Pending |
-| META-02 | Phase TBD | Pending |
-| META-03 | Phase TBD | Pending |
-| META-04 | Phase TBD | Pending |
-| STEP-01 | Phase TBD | Pending |
-| STEP-02 | Phase TBD | Pending |
-| STEP-03 | Phase TBD | Pending |
-| STEP-04 | Phase TBD | Pending |
-| STEP-05 | Phase TBD | Pending |
-| STEP-06 | Phase TBD | Pending |
-| STEP-07 | Phase TBD | Pending |
-| STEP-08 | Phase TBD | Pending |
-| SUPP-01 | Phase TBD | Pending |
-| SUPP-02 | Phase TBD | Pending |
-| SUPP-03 | Phase TBD | Pending |
-| PRES-01 | Phase TBD | Pending |
-| PRES-02 | Phase TBD | Pending |
-| PRES-03 | Phase TBD | Pending |
-| PRES-04 | Phase TBD | Pending |
-| PRES-05 | Phase TBD | Pending |
-| PRES-06 | Phase TBD | Pending |
-| SHAR-01 | Phase TBD | Pending |
-| SHAR-02 | Phase TBD | Pending |
-| SHAR-03 | Phase TBD | Pending |
-| SHAR-04 | Phase TBD | Pending |
-| SHAR-05 | Phase TBD | Pending |
-| MEDI-01 | Phase TBD | Pending |
-| MEDI-02 | Phase TBD | Pending |
-| MEDI-03 | Phase TBD | Pending |
-| SESS-01 | Phase TBD | Pending |
-| SESS-02 | Phase TBD | Pending |
-| SESS-03 | Phase TBD | Pending |
-| EXPT-01 | Phase TBD | Pending |
-| EXPT-02 | Phase TBD | Pending |
-| EXPT-03 | Phase TBD | Pending |
-| UX-01 | Phase TBD | Pending |
-| UX-02 | Phase TBD | Pending |
-| UX-03 | Phase TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| LIBR-01 | Phase 2 | Pending |
+| LIBR-02 | Phase 2 | Pending |
+| LIBR-03 | Phase 2 | Pending |
+| LIBR-04 | Phase 2 | Pending |
+| LIBR-05 | Phase 2 | Pending |
+| LIBR-06 | Phase 2 | Pending |
+| META-01 | Phase 3 | Pending |
+| META-02 | Phase 3 | Pending |
+| META-03 | Phase 3 | Pending |
+| META-04 | Phase 3 | Pending |
+| STEP-01 | Phase 4 | Pending |
+| STEP-02 | Phase 4 | Pending |
+| STEP-03 | Phase 5 | Pending |
+| STEP-04 | Phase 5 | Pending |
+| STEP-05 | Phase 4 | Pending |
+| STEP-06 | Phase 4 | Pending |
+| STEP-07 | Phase 4 | Pending |
+| STEP-08 | Phase 3 | Pending |
+| SUPP-01 | Phase 6 | Pending |
+| SUPP-02 | Phase 6 | Pending |
+| SUPP-03 | Phase 6 | Pending |
+| PRES-01 | Phase 7 | Pending |
+| PRES-02 | Phase 7 | Pending |
+| PRES-03 | Phase 7 | Pending |
+| PRES-04 | Phase 7 | Pending |
+| PRES-05 | Phase 7 | Pending |
+| PRES-06 | Phase 7 | Pending |
+| SHAR-01 | Phase 8 | Pending |
+| SHAR-02 | Phase 8 | Pending |
+| SHAR-03 | Phase 8 | Pending |
+| SHAR-04 | Phase 8 | Pending |
+| SHAR-05 | Phase 8 | Pending |
+| MEDI-01 | Phase 5 | Pending |
+| MEDI-02 | Phase 5 | Pending |
+| MEDI-03 | Phase 8 | Pending |
+| SESS-01 | Phase 9 | Pending |
+| SESS-02 | Phase 9 | Pending |
+| SESS-03 | Phase 9 | Pending |
+| EXPT-01 | Phase 10 | Pending |
+| EXPT-02 | Phase 10 | Pending |
+| EXPT-03 | Phase 10 | Pending |
+| UX-01 | Phase 10 | Pending |
+| UX-02 | Phase 2 | Pending |
+| UX-03 | Phase 10 | Pending |
 
 **Coverage:**
 - v1 requirements: 47 total
-- Mapped to phases: 0
-- Unmapped: 47 warning
+- Mapped to phases: 47
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-13*
