@@ -12,7 +12,7 @@
 | 2 | Complete | 2026-03-13 |
 | 3 | Complete | 2026-03-13 |
 | 4 | Complete | 2026-03-13 |
-| 5 | In Progress | 1/3 plans complete |
+| 5 | In Progress | 2/3 plans complete |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -173,5 +173,5 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/04-core-step-a
 
 ## Phase 5 Next
 
-Plan `05-01` completed on 2026-03-13 in `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md`.
-Next up: continue Phase 5 execution with plans `05-02` and `05-03`.
+Plans `05-01` and `05-02` completed on 2026-03-13 in `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md` and `.planning/phases/05-media-support-pipeline/05-02-SUMMARY.md`.
+Next up: continue Phase 5 execution with plan `05-03`.

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-13T23:14:41.272Z"
+last_updated: "2026-03-13T23:39:56.222Z"
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 5 - Media Support Pipeline (Plan 05-01 complete, Plan 05-02 next)
+**Current focus:** Phase 5 - Media Support Pipeline (Plans 05-01 and 05-02 complete, Plan 05-03 next)
 
 ## Status
 
@@ -32,6 +32,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 3 executed and verified
 - Phase 4 executed and verified
 - Phase 5 Plan 05-01 executed and verified
+- Phase 5 Plan 05-02 executed and verified
 
 ## Active Milestone
 
@@ -45,6 +46,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 - Phase 5 media uploads are task-scoped and authenticated, with saved step composition still owned by `GET/PUT /api/tasks/{id}`.
 - Saved media descriptors persist stable metadata and storage keys while authenticated media URLs are resolved at read time.
+- Frontend step drafts keep upload progress and pending-persistence state locally while explicit task save remains the only persistence boundary.
+- Step authoring uses a nested `visualSupport` object so symbol, text, and image combinations round-trip through the backend contract unchanged.
 
 ## Constraints To Preserve
 
