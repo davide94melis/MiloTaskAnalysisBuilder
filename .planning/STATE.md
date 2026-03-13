@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-13T23:41:00+01:00"
+last_updated: "2026-03-13T23:14:41.272Z"
 progress:
   total_phases: 10
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 15
+  completed_plans: 13
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 5 - Media Support Pipeline
+**Current focus:** Phase 5 - Media Support Pipeline (Plan 05-01 complete, Plan 05-02 next)
 
 ## Status
 
@@ -31,6 +31,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 2 executed and verified
 - Phase 3 executed and verified
 - Phase 4 executed and verified
+- Phase 5 Plan 05-01 executed and verified
 
 ## Active Milestone
 
@@ -38,7 +39,12 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-plan-phase 5`
+- `$gsd-execute-phase 5`
+
+## Recent Decisions
+
+- Phase 5 media uploads are task-scoped and authenticated, with saved step composition still owned by `GET/PUT /api/tasks/{id}`.
+- Saved media descriptors persist stable metadata and storage keys while authenticated media URLs are resolved at read time.
 
 ## Constraints To Preserve
 
