@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -17,23 +19,29 @@ public class TaskDetailService {
 
     private final TaskShellRepository taskShellRepository;
     private final TaskAnalysisStepRepository taskAnalysisStepRepository;
+    private final TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository;
     private final TaskDetailMapper taskDetailMapper;
+    private final TaskMediaStorageService taskMediaStorageService;
 
     public TaskDetailService(
             TaskShellRepository taskShellRepository,
             TaskAnalysisStepRepository taskAnalysisStepRepository,
-            TaskDetailMapper taskDetailMapper
+            TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository,
+            TaskDetailMapper taskDetailMapper,
+            TaskMediaStorageService taskMediaStorageService
     ) {
         this.taskShellRepository = taskShellRepository;
         this.taskAnalysisStepRepository = taskAnalysisStepRepository;
+        this.taskAnalysisStepMediaRepository = taskAnalysisStepMediaRepository;
         this.taskDetailMapper = taskDetailMapper;
+        this.taskMediaStorageService = taskMediaStorageService;
     }
 
     @Transactional(readOnly = true)
     public TaskDetailResponse getTaskDetail(UUID taskId, UUID ownerId) {
         TaskShellEntity task = findOwnedTask(taskId, ownerId);
         List<TaskAnalysisStepEntity> steps = taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId);
-        return taskDetailMapper.toResponse(task, steps);
+        return taskDetailMapper.toResponse(task, steps, mediaByStepId(taskId), taskMediaStorageService::buildAccessUrl);
     }
 
     @Transactional
@@ -45,7 +53,12 @@ public class TaskDetailService {
         task.setStepCount(persistedSteps.size());
 
         TaskShellEntity savedTask = taskShellRepository.save(task);
-        return taskDetailMapper.toResponse(savedTask, persistedSteps);
+        return taskDetailMapper.toResponse(
+                savedTask,
+                persistedSteps,
+                mediaByStepId(taskId),
+                taskMediaStorageService::buildAccessUrl
+        );
     }
 
     private TaskShellEntity findOwnedTask(UUID taskId, UUID ownerId) {
@@ -90,11 +103,75 @@ public class TaskDetailService {
             step.setSupportGuidance(normalize(requestedStep.supportGuidance()));
             step.setReinforcementNotes(normalize(requestedStep.reinforcementNotes()));
             step.setEstimatedMinutes(validEstimatedMinutes(requestedStep.estimatedMinutes()));
+            applyVisualSupport(step, requestedStep.visualSupport());
             stepsToSave.add(step);
         }
 
         taskAnalysisStepRepository.saveAll(stepsToSave);
-        return taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId);
+        List<TaskAnalysisStepEntity> persistedSteps =
+                taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId);
+        attachStepMedia(taskId, requestedSteps, persistedSteps);
+        return persistedSteps;
+    }
+
+    private void applyVisualSupport(
+            TaskAnalysisStepEntity step,
+            UpdateTaskRequest.VisualSupportRequest visualSupport
+    ) {
+        String visualText = normalize(visualSupport == null ? null : visualSupport.text());
+        UpdateTaskRequest.StepSymbolRequest symbol = visualSupport == null ? null : visualSupport.symbol();
+        UpdateTaskRequest.StepImageRequest image = visualSupport == null ? null : visualSupport.image();
+
+        String symbolLibrary = normalize(symbol == null ? null : symbol.library());
+        String symbolKey = normalize(symbol == null ? null : symbol.key());
+        String symbolLabel = normalize(symbol == null ? null : symbol.label());
+        boolean hasPartialSymbol = symbolLibrary != null || symbolKey != null || symbolLabel != null;
+        boolean hasSymbol = symbolLibrary != null && symbolKey != null;
+        boolean hasImage = image != null && image.mediaId() != null;
+
+        if (hasPartialSymbol && !hasSymbol) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "symbol library and key are required together");
+        }
+        if (visualText == null && !hasSymbol && !hasImage) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Each step must include at least one visual support");
+        }
+
+        step.setVisualText(visualText);
+        step.setSymbolLibrary(symbolLibrary);
+        step.setSymbolKey(symbolKey);
+        step.setSymbolLabel(symbolLabel);
+    }
+
+    private void attachStepMedia(
+            UUID taskId,
+            List<UpdateTaskRequest.UpdateTaskStepRequest> requestedSteps,
+            List<TaskAnalysisStepEntity> persistedSteps
+    ) {
+        for (int index = 0; index < persistedSteps.size(); index++) {
+            UpdateTaskRequest.VisualSupportRequest visualSupport = requestedSteps.get(index).visualSupport();
+            UpdateTaskRequest.StepImageRequest image = visualSupport == null ? null : visualSupport.image();
+            if (image == null || image.mediaId() == null) {
+                continue;
+            }
+
+            TaskAnalysisStepMediaEntity media = taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(image.mediaId(), taskId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown media reference for task"));
+            media.setTaskAnalysisStepId(persistedSteps.get(index).getId());
+            media.setAltText(normalize(image.altText()));
+            taskAnalysisStepMediaRepository.save(media);
+        }
+    }
+
+    private Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId(UUID taskId) {
+        Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId = new HashMap<>();
+        for (TaskAnalysisStepMediaEntity media :
+                taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId)) {
+            if (media.getTaskAnalysisStepId() == null) {
+                continue;
+            }
+            mediaByStepId.computeIfAbsent(media.getTaskAnalysisStepId(), ignored -> new ArrayList<>()).add(media);
+        }
+        return mediaByStepId;
     }
 
     private boolean defaultRequired(Boolean required) {

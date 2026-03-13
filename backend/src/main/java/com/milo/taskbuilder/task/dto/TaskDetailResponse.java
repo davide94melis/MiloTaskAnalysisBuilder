@@ -33,7 +33,48 @@ public record TaskDetailResponse(
             boolean required,
             String supportGuidance,
             String reinforcementNotes,
-            Integer estimatedMinutes
+            Integer estimatedMinutes,
+            VisualSupportDetail visualSupport
+    ) {
+
+        public TaskStepDetail(
+                UUID id,
+                int position,
+                String title,
+                String description,
+                boolean required,
+                String supportGuidance,
+                String reinforcementNotes,
+                Integer estimatedMinutes
+        ) {
+            this(id, position, title, description, required, supportGuidance, reinforcementNotes, estimatedMinutes, null);
+        }
+    }
+
+    public record VisualSupportDetail(
+            String text,
+            StepSymbolDetail symbol,
+            StepImageDetail image
+    ) {
+    }
+
+    public record StepSymbolDetail(
+            String library,
+            String key,
+            String label
+    ) {
+    }
+
+    public record StepImageDetail(
+            UUID mediaId,
+            String storageKey,
+            String fileName,
+            String mimeType,
+            long fileSizeBytes,
+            Integer width,
+            Integer height,
+            String altText,
+            String url
     ) {
     }
 }
