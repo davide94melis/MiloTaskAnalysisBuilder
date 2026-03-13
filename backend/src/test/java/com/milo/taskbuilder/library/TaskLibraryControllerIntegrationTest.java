@@ -238,13 +238,21 @@ class TaskLibraryControllerIntegrationTest {
                                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
                                 1,
                                 "Apri il rubinetto",
-                                "Apri l'acqua"
+                                "Apri l'acqua",
+                                true,
+                                "Prompt verbale",
+                                "Lode",
+                                1
                         ),
                         new TaskDetailResponse.TaskStepDetail(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
                                 2,
                                 "Bagna le mani",
-                                "Passa le mani sotto l'acqua"
+                                "Passa le mani sotto l'acqua",
+                                false,
+                                "Prompt visivo",
+                                null,
+                                2
                         )
                 )
         );

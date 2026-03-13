@@ -57,6 +57,23 @@ The editor intentionally supports only:
 
 It does not yet implement full step creation or rich media authoring. That remains Phase 4 scope.
 
+## Phase 4 Frontend Contract
+
+Phase 4 upgrades the task route into a real non-media step editor.
+
+The frontend now supports:
+
+- creating the first step from an empty task
+- editing title and description inline
+- toggling required or optional state
+- editing support guidance and reinforcement notes
+- entering estimated minutes
+- moving steps up and down
+- duplicating and deleting steps
+- explicit task-level save and reload fidelity
+
+The route container still owns load/save orchestration, while the dedicated step editor owns local step editing state.
+
 ## Deployment Checklist
 
 1. Set `API_URL` for the Task Builder backend.
@@ -67,4 +84,4 @@ It does not yet implement full step creation or rich media authoring. That remai
 
 ## Scope Reminder
 
-Phase 3 makes the task route real for metadata persistence, but it is still not the full authoring surface. Rich step editing and present-mode depth remain later-phase work.
+Phase 4 makes the task route a real non-media authoring surface, but media selection, uploads, symbols, and mixed visual-support layouts remain Phase 5 work.

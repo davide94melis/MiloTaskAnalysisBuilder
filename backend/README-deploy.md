@@ -46,6 +46,23 @@ The persisted model now spans:
 
 `environmentLabel` is currently backed by the existing `context_label` field so Phase 4 can extend authoring without another schema rewrite.
 
+## Phase 4 API Contract
+
+Phase 4 expands the step payload on the existing task-detail aggregate instead of introducing separate step endpoints.
+
+- `GET /api/tasks/{taskId}` returns expanded step records with:
+  - `id`
+  - `position`
+  - `title`
+  - `description`
+  - `required`
+  - `supportGuidance`
+  - `reinforcementNotes`
+  - `estimatedMinutes`
+- `PUT /api/tasks/{taskId}` accepts the same nested step shape and persists it using the explicit `1..n` ordering convention
+
+The `taskbuilder.task_analysis_step` table now stores the non-media authoring fields needed for Phase 4. Media-related fields are still deferred.
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -57,4 +74,4 @@ The persisted model now spans:
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 3 adds metadata persistence and step-order save/reload, but not full step authoring operations.
+This backend does not implement local login, registration, or shared Milo entities. Phase 4 adds full non-media step authoring on the existing aggregate, but still does not include symbol/image/media workflows.

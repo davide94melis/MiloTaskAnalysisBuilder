@@ -64,6 +64,8 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(jsonPath("$.description").value(detail.description()))
                 .andExpect(jsonPath("$.environmentLabel").value(detail.environmentLabel()))
                 .andExpect(jsonPath("$.steps[0].title").value("Apri l'acqua"))
+                .andExpect(jsonPath("$.steps[0].required").value(true))
+                .andExpect(jsonPath("$.steps[0].supportGuidance").value("Indicazione verbale breve"))
                 .andExpect(jsonPath("$.steps[1].position").value(2));
     }
 
@@ -87,13 +89,21 @@ class TaskDetailControllerIntegrationTest {
                                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
                                 1,
                                 "Apri l'acqua",
-                                "Aprire il rubinetto"
+                                "Aprire il rubinetto",
+                                true,
+                                "Indicazione verbale breve",
+                                "Lode immediata",
+                                1
                         ),
                         new UpdateTaskRequest.UpdateTaskStepRequest(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
                                 2,
                                 "Insapona le mani",
-                                "Distribuire il sapone"
+                                "Distribuire il sapone",
+                                false,
+                                "Modello visivo",
+                                null,
+                                2
                         )
                 )
         );
@@ -108,6 +118,7 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value(response.title()))
                 .andExpect(jsonPath("$.steps[0].id").value("11111111-1111-1111-1111-111111111111"))
+                .andExpect(jsonPath("$.steps[0].estimatedMinutes").value(1))
                 .andExpect(jsonPath("$.steps[1].id").value("22222222-2222-2222-2222-222222222222"))
                 .andExpect(jsonPath("$.stepCount").value(2));
 
@@ -150,13 +161,21 @@ class TaskDetailControllerIntegrationTest {
                                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
                                 1,
                                 "Apri l'acqua",
-                                "Aprire il rubinetto"
+                                "Aprire il rubinetto",
+                                true,
+                                "Indicazione verbale breve",
+                                "Lode immediata",
+                                1
                         ),
                         new TaskDetailResponse.TaskStepDetail(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
                                 2,
                                 "Insapona le mani",
-                                "Distribuire il sapone"
+                                "Distribuire il sapone",
+                                false,
+                                "Modello visivo",
+                                null,
+                                2
                         )
                 )
         );

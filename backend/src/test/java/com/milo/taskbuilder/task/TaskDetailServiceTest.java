@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,7 +16,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,21 +64,36 @@ class TaskDetailServiceTest {
                                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
                                 1,
                                 "Apri l'acqua",
-                                "Aprire il rubinetto lentamente"
+                                "Aprire il rubinetto lentamente",
+                                true,
+                                "Prompt verbale",
+                                "Bravo subito",
+                                1
                         ),
                         new UpdateTaskRequest.UpdateTaskStepRequest(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
                                 2,
                                 "Insapona le mani",
-                                "Distribuire il sapone su entrambe le mani"
+                                "Distribuire il sapone su entrambe le mani",
+                                null,
+                                "Prompt visivo",
+                                null,
+                                2
                         )
                 )
         );
 
         List<TaskAnalysisStepEntity> persistedSteps = List.of(
-                step(taskId, UUID.fromString("11111111-1111-1111-1111-111111111111"), 0, "Apri l'acqua"),
-                step(taskId, UUID.fromString("22222222-2222-2222-2222-222222222222"), 1, "Insapona le mani")
+                step(taskId, UUID.fromString("11111111-1111-1111-1111-111111111111"), 1, "Apri l'acqua"),
+                step(taskId, UUID.fromString("22222222-2222-2222-2222-222222222222"), 2, "Insapona le mani")
         );
+        persistedSteps.get(0).setRequired(true);
+        persistedSteps.get(0).setSupportGuidance("Prompt verbale");
+        persistedSteps.get(0).setReinforcementNotes("Bravo subito");
+        persistedSteps.get(0).setEstimatedMinutes(1);
+        persistedSteps.get(1).setRequired(true);
+        persistedSteps.get(1).setSupportGuidance("Prompt visivo");
+        persistedSteps.get(1).setEstimatedMinutes(2);
 
         when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
         when(taskShellRepository.save(task)).thenReturn(task);
@@ -88,10 +106,17 @@ class TaskDetailServiceTest {
 
         List<TaskAnalysisStepEntity> savedSteps = stepsCaptor.getValue();
         assertThat(savedSteps).hasSize(2);
-        assertThat(savedSteps.get(0).getPosition()).isEqualTo(0);
+        assertThat(savedSteps.get(0).getPosition()).isEqualTo(1);
         assertThat(savedSteps.get(0).getTitle()).isEqualTo("Apri l'acqua");
-        assertThat(savedSteps.get(1).getPosition()).isEqualTo(1);
+        assertThat(savedSteps.get(0).isRequired()).isTrue();
+        assertThat(savedSteps.get(0).getSupportGuidance()).isEqualTo("Prompt verbale");
+        assertThat(savedSteps.get(0).getReinforcementNotes()).isEqualTo("Bravo subito");
+        assertThat(savedSteps.get(0).getEstimatedMinutes()).isEqualTo(1);
+        assertThat(savedSteps.get(1).getPosition()).isEqualTo(2);
         assertThat(savedSteps.get(1).getTitle()).isEqualTo("Insapona le mani");
+        assertThat(savedSteps.get(1).isRequired()).isTrue();
+        assertThat(savedSteps.get(1).getSupportGuidance()).isEqualTo("Prompt visivo");
+        assertThat(savedSteps.get(1).getEstimatedMinutes()).isEqualTo(2);
 
         assertThat(task.getTitle()).isEqualTo("Lavarsi le mani");
         assertThat(task.getCategory()).isEqualTo("Autonomia personale");
@@ -108,7 +133,9 @@ class TaskDetailServiceTest {
         assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::title)
                 .containsExactly("Apri l'acqua", "Insapona le mani");
         assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::position)
-                .containsExactly(0, 1);
+                .containsExactly(1, 2);
+        assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::required)
+                .containsExactly(true, true);
     }
 
     @Test
@@ -126,9 +153,13 @@ class TaskDetailServiceTest {
         task.setStepCount(2);
 
         List<TaskAnalysisStepEntity> steps = List.of(
-                step(taskId, UUID.fromString("33333333-3333-3333-3333-333333333333"), 0, "Primo passo"),
-                step(taskId, UUID.fromString("44444444-4444-4444-4444-444444444444"), 1, "Secondo passo")
+                step(taskId, UUID.fromString("33333333-3333-3333-3333-333333333333"), 1, "Primo passo"),
+                step(taskId, UUID.fromString("44444444-4444-4444-4444-444444444444"), 2, "Secondo passo")
         );
+        steps.get(0).setRequired(false);
+        steps.get(0).setSupportGuidance("Indicazione gestuale");
+        steps.get(0).setReinforcementNotes("Token");
+        steps.get(0).setEstimatedMinutes(3);
 
         when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(eq(taskId))).thenReturn(steps);
@@ -143,11 +174,96 @@ class TaskDetailServiceTest {
         assertThat(response.environmentLabel()).isEqualTo("Classe");
         assertThat(response.supportLevel()).isEqualTo("Visivo");
         assertThat(response.targetLabel()).isEqualTo("Gruppo");
+        assertThat(response.steps().get(0).required()).isFalse();
+        assertThat(response.steps().get(0).supportGuidance()).isEqualTo("Indicazione gestuale");
+        assertThat(response.steps().get(0).reinforcementNotes()).isEqualTo("Token");
+        assertThat(response.steps().get(0).estimatedMinutes()).isEqualTo(3);
         assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::id)
                 .containsExactly(
                         UUID.fromString("33333333-3333-3333-3333-333333333333"),
                         UUID.fromString("44444444-4444-4444-4444-444444444444")
                 );
+    }
+
+    @Test
+    void rejectsNegativeEstimatedMinutes() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Lavarsi le mani",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                null,
+                                1,
+                                "Step",
+                                "Descrizione",
+                                true,
+                                null,
+                                null,
+                                -1
+                        )
+                )
+        );
+
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+
+        assertThatThrownBy(() -> taskDetailService.updateTask(taskId, ownerId, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("estimatedMinutes must be non-negative");
+    }
+
+    @Test
+    void addsNewStepsAndDefaultsRequiredWhenMissing() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Task",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                null,
+                                1,
+                                "Nuovo step",
+                                "Descrizione",
+                                null,
+                                null,
+                                null,
+                                null
+                        )
+                )
+        );
+
+        TaskAnalysisStepEntity persistedStep = step(taskId, UUID.fromString("55555555-5555-5555-5555-555555555555"), 1, "Nuovo step");
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+        when(taskShellRepository.save(task)).thenReturn(task);
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId)).thenReturn(List.of(persistedStep));
+
+        taskDetailService.updateTask(taskId, ownerId, request);
+
+        ArgumentCaptor<List<TaskAnalysisStepEntity>> stepsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(taskAnalysisStepRepository).saveAll(stepsCaptor.capture());
+        assertThat(stepsCaptor.getValue().get(0).isRequired()).isTrue();
     }
 
     private TaskShellEntity task(UUID taskId, UUID ownerId) {
@@ -169,6 +285,7 @@ class TaskDetailServiceTest {
         step.setPosition(position);
         step.setTitle(title);
         step.setDescription(title + " description");
+        step.setRequired(true);
         return step;
     }
 }

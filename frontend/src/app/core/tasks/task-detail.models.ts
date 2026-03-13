@@ -5,6 +5,10 @@ export interface TaskStepDraftRecord {
   position: number;
   title: string;
   description: string;
+  required: boolean;
+  supportGuidance: string;
+  reinforcementNotes: string;
+  estimatedMinutes: number | null;
 }
 
 export interface TaskDetailRecord extends TaskCardRecord {

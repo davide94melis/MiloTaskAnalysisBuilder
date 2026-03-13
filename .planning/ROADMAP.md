@@ -11,7 +11,8 @@
 | 1 | Complete | 2026-03-13 |
 | 2 | Complete | 2026-03-13 |
 | 3 | Complete | 2026-03-13 |
-| 4 | Next | - |
+| 4 | Complete | 2026-03-13 |
+| 5 | Next | - |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -168,4 +169,8 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/03-task-metada
 
 ## Phase 4 Next
 
-**Phase 4: Core Step Authoring** - Deliver the editable step-by-step authoring experience without rich media complexity yet.
+Completed on 2026-03-13. Verification passed in `.planning/phases/04-core-step-authoring/04-VERIFICATION.md`.
+
+## Phase 5 Next
+
+**Phase 5: Media Support Pipeline** - Add image/photo/symbol support and make media reliable in editing and playback contexts.

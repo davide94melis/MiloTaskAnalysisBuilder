@@ -172,6 +172,10 @@ public class TaskShellService {
                     copiedStep.setPosition(sourceStep.getPosition());
                     copiedStep.setTitle(sourceStep.getTitle());
                     copiedStep.setDescription(sourceStep.getDescription());
+                    copiedStep.setRequired(sourceStep.isRequired());
+                    copiedStep.setSupportGuidance(sourceStep.getSupportGuidance());
+                    copiedStep.setReinforcementNotes(sourceStep.getReinforcementNotes());
+                    copiedStep.setEstimatedMinutes(sourceStep.getEstimatedMinutes());
                     return copiedStep;
                 })
                 .toList();

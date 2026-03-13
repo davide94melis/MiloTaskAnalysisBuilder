@@ -102,3 +102,36 @@ The editor now round-trips:
 ### Boundary with Phase 4
 
 Phase 3 proves save/reload fidelity for metadata and step order only. Rich step authoring actions such as add, duplicate, delete, symbol/image/audio editing, and present-mode behavior still belong to later phases.
+
+## Phase 4 Core Step Authoring Contract
+
+Phase 4 turns `/tasks/:taskId` into a real non-media step authoring workflow.
+
+### Backend and frontend contract added in Phase 4
+
+- `taskbuilder.task_analysis_step` now persists:
+  - `position`
+  - `title`
+  - `description`
+  - `required`
+  - `supportGuidance`
+  - `reinforcementNotes`
+  - `estimatedMinutes`
+- `GET /api/tasks/{taskId}` returns the expanded step payload
+- `PUT /api/tasks/{taskId}` round-trips the full step array using an explicit `1..n` position convention
+
+### Editor behavior added in Phase 4
+
+- add step
+- edit title and description
+- mark a step as required or optional
+- define prompt/support guidance
+- define reinforcement notes
+- define estimated minutes
+- move steps up and down
+- duplicate and delete steps
+- save and reload the whole authored sequence
+
+### Boundary with Phase 5
+
+Phase 4 intentionally stops at text and guidance authoring. Image upload, symbols, photo attachments, and mixed visual-support layouts still belong to Phase 5.

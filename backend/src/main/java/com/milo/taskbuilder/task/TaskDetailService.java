@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -82,14 +83,32 @@ public class TaskDetailService {
             TaskAnalysisStepEntity step = new TaskAnalysisStepEntity();
             step.setId(requestedStep.id());
             step.setTaskAnalysisId(taskId);
-            step.setPosition(index);
+            step.setPosition(index + 1);
             step.setTitle(normalize(requestedStep.title()));
             step.setDescription(normalize(requestedStep.description()));
+            step.setRequired(defaultRequired(requestedStep.required()));
+            step.setSupportGuidance(normalize(requestedStep.supportGuidance()));
+            step.setReinforcementNotes(normalize(requestedStep.reinforcementNotes()));
+            step.setEstimatedMinutes(validEstimatedMinutes(requestedStep.estimatedMinutes()));
             stepsToSave.add(step);
         }
 
         taskAnalysisStepRepository.saveAll(stepsToSave);
         return taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId);
+    }
+
+    private boolean defaultRequired(Boolean required) {
+        return !Objects.equals(required, Boolean.FALSE);
+    }
+
+    private Integer validEstimatedMinutes(Integer estimatedMinutes) {
+        if (estimatedMinutes == null) {
+            return null;
+        }
+        if (estimatedMinutes < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "estimatedMinutes must be non-negative");
+        }
+        return estimatedMinutes;
     }
 
     private TaskShellVisibility parseVisibility(String visibility) {

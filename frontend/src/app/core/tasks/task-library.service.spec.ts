@@ -115,7 +115,11 @@ describe('TaskLibraryService', () => {
           id: 'step-1',
           position: 1,
           title: 'Apri il rubinetto',
-          description: 'Ruota la manopola.'
+          description: 'Ruota la manopola.',
+          required: true,
+          supportGuidance: 'Prompt verbale',
+          reinforcementNotes: 'Bravo',
+          estimatedMinutes: 1
         }
       ]
     });
@@ -139,13 +143,21 @@ describe('TaskLibraryService', () => {
             id: 'step-2',
             position: 1,
             title: 'Prendi il sapone',
-            description: 'Usa il dispenser.'
+            description: 'Usa il dispenser.',
+            required: false,
+            supportGuidance: 'Modello visivo',
+            reinforcementNotes: '',
+            estimatedMinutes: 2
           },
           {
             id: 'step-1',
             position: 2,
             title: 'Apri il rubinetto',
-            description: 'Ruota la manopola.'
+            description: 'Ruota la manopola.',
+            required: true,
+            supportGuidance: 'Prompt verbale',
+            reinforcementNotes: 'Bravo',
+            estimatedMinutes: 1
           }
         ]
       })
@@ -155,6 +167,7 @@ describe('TaskLibraryService', () => {
     expect(request.request.method).toBe('PUT');
     expect(request.request.body.steps.map((step: { id: string }) => step.id)).toEqual(['step-2', 'step-1']);
     expect(request.request.body.environmentLabel).toBe('Bagno di casa');
+    expect(request.request.body.steps[0].supportGuidance).toBe('Modello visivo');
     request.flush({
       id: 'task-1',
       title: 'Lavarsi le mani',
@@ -178,13 +191,21 @@ describe('TaskLibraryService', () => {
           id: 'step-2',
           position: 1,
           title: 'Prendi il sapone',
-          description: 'Usa il dispenser.'
+          description: 'Usa il dispenser.',
+          required: false,
+          supportGuidance: 'Modello visivo',
+          reinforcementNotes: '',
+          estimatedMinutes: 2
         },
         {
           id: 'step-1',
           position: 2,
           title: 'Apri il rubinetto',
-          description: 'Ruota la manopola.'
+          description: 'Ruota la manopola.',
+          required: true,
+          supportGuidance: 'Prompt verbale',
+          reinforcementNotes: 'Bravo',
+          estimatedMinutes: 1
         }
       ]
     });

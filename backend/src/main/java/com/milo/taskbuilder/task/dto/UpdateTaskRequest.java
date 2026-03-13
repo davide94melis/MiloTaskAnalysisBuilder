@@ -21,7 +21,11 @@ public record UpdateTaskRequest(
             UUID id,
             Integer position,
             String title,
-            String description
+            String description,
+            Boolean required,
+            String supportGuidance,
+            String reinforcementNotes,
+            Integer estimatedMinutes
     ) {
     }
 }

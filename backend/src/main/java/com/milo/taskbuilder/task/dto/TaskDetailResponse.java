@@ -29,7 +29,11 @@ public record TaskDetailResponse(
             UUID id,
             int position,
             String title,
-            String description
+            String description,
+            boolean required,
+            String supportGuidance,
+            String reinforcementNotes,
+            Integer estimatedMinutes
     ) {
     }
 }

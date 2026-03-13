@@ -38,7 +38,11 @@ public class TaskDetailMapper {
                 step.getId(),
                 step.getPosition(),
                 step.getTitle(),
-                step.getDescription()
+                step.getDescription(),
+                step.isRequired(),
+                step.getSupportGuidance(),
+                step.getReinforcementNotes(),
+                step.getEstimatedMinutes()
         );
     }
 }

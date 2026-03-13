@@ -30,6 +30,18 @@ public class TaskAnalysisStepEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "required", nullable = false)
+    private boolean required = true;
+
+    @Column(name = "support_guidance")
+    private String supportGuidance;
+
+    @Column(name = "reinforcement_notes")
+    private String reinforcementNotes;
+
+    @Column(name = "estimated_minutes")
+    private Integer estimatedMinutes;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -89,6 +101,38 @@ public class TaskAnalysisStepEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public String getSupportGuidance() {
+        return supportGuidance;
+    }
+
+    public void setSupportGuidance(String supportGuidance) {
+        this.supportGuidance = supportGuidance;
+    }
+
+    public String getReinforcementNotes() {
+        return reinforcementNotes;
+    }
+
+    public void setReinforcementNotes(String reinforcementNotes) {
+        this.reinforcementNotes = reinforcementNotes;
+    }
+
+    public Integer getEstimatedMinutes() {
+        return estimatedMinutes;
+    }
+
+    public void setEstimatedMinutes(Integer estimatedMinutes) {
+        this.estimatedMinutes = estimatedMinutes;
     }
 
     public Instant getCreatedAt() {

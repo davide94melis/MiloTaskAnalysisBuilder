@@ -31,27 +31,41 @@ describe('TaskShellEditorEntryComponent', () => {
         id: 'step-1',
         position: 1,
         title: 'Apri il rubinetto',
-        description: 'Ruota la manopola.'
+        description: 'Ruota la manopola.',
+        required: true,
+        supportGuidance: 'Prompt verbale',
+        reinforcementNotes: 'Bravo',
+        estimatedMinutes: 1
       },
       {
         id: 'step-2',
         position: 2,
         title: 'Prendi il sapone',
-        description: 'Usa il dispenser.'
+        description: 'Usa il dispenser.',
+        required: false,
+        supportGuidance: 'Modello visivo',
+        reinforcementNotes: '',
+        estimatedMinutes: 2
       }
     ]
   };
 
-  it('loads detail data into editable controls and saves reordered steps', async () => {
+  it('loads detail data into editable controls and saves authored steps', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const updateTask = jasmine.createSpy('updateTask').and.callFake(
-      (_taskId: string, request: { steps: Array<{ id: string }> }) =>
+      (_taskId: string, request: { steps: Array<{ id: string; title: string; required: boolean }> }) =>
         of({
           ...baseTask,
           title: 'Lavarsi bene le mani',
           lastUpdatedAt: '2026-03-13T11:30:00Z',
           steps: request.steps.map((step, index) => ({
-            ...baseTask.steps.find((candidate) => candidate.id === step.id)!,
+            ...(baseTask.steps.find((candidate) => candidate.id === step.id) ?? {
+              description: '',
+              supportGuidance: '',
+              reinforcementNotes: '',
+              estimatedMinutes: null
+            }),
+            ...step,
             position: index + 1
           }))
         })
@@ -89,8 +103,15 @@ describe('TaskShellEditorEntryComponent', () => {
     const titleInput = host.querySelector<HTMLInputElement>('input[formcontrolname="title"]');
     expect(titleInput?.value).toBe('Lavarsi le mani');
 
-    const moveDownButton = host.querySelector<HTMLButtonElement>('[aria-label="Sposta Apri il rubinetto in basso"]');
-    moveDownButton?.click();
+    const titleField = host.querySelectorAll<HTMLInputElement>('ol.steps input[type="text"]')[0];
+    titleField.value = 'Apri bene il rubinetto';
+    titleField.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const duplicateButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Duplica'
+    );
+    duplicateButton?.click();
     fixture.detectChanges();
 
     const saveButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(
@@ -103,22 +124,21 @@ describe('TaskShellEditorEntryComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(updateTask).toHaveBeenCalledWith(
-      'task-1',
-      jasmine.objectContaining({
-        title: 'Lavarsi bene le mani',
-        steps: [
-          jasmine.objectContaining({ id: 'step-2', position: 1 }),
-          jasmine.objectContaining({ id: 'step-1', position: 2 })
-        ]
-      })
+    expect(updateTask).toHaveBeenCalled();
+    const submittedRequest = updateTask.calls.mostRecent().args[1];
+    expect(submittedRequest.title).toBe('Lavarsi bene le mani');
+    expect(submittedRequest.steps).toEqual(
+      jasmine.arrayContaining([
+        jasmine.objectContaining({ id: 'step-1', title: 'Apri bene il rubinetto', required: true }),
+        jasmine.objectContaining({ title: 'Apri bene il rubinetto copia' })
+      ])
     );
 
-    const orderedTitles = Array.from(host.querySelectorAll('.steps__content strong')).map((element) =>
+    const orderedTitles = Array.from(host.querySelectorAll('ol.steps strong')).map((element) =>
       element.textContent?.trim()
     );
-    expect(orderedTitles).toEqual(['Prendi il sapone', 'Apri il rubinetto']);
-    expect(host.textContent).toContain('Metadata e ordine step salvati.');
+    expect(orderedTitles).toContain('Apri bene il rubinetto copia');
+    expect(host.textContent).toContain('Metadata e step salvati.');
   });
 
   it('creates a draft and redirects when the route has no task id', async () => {

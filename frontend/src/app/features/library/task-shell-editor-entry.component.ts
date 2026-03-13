@@ -39,8 +39,8 @@ type TaskMetadataFormGroup = FormGroup<{
           <p class="entry__eyebrow">Editor metadata task</p>
           <h2>{{ currentTask.title || 'Nuova task analysis' }}</h2>
           <p class="entry__copy">
-            Completa metadata, target, supporto e ordine degli step gia presenti. La sequenza salvata viene
-            ricaricata nello stesso ordine.
+            Completa metadata e costruisci gli step con prompt, rinforzi e tempo stimato. Il salvataggio mantiene
+            ordine e contenuto della sequenza.
           </p>
         </div>
 
@@ -76,7 +76,7 @@ type TaskMetadataFormGroup = FormGroup<{
             <strong *ngIf="!saving() && saveNotice()">{{ saveNotice() }}</strong>
             <p *ngIf="saveError()" class="entry__error">{{ saveError() }}</p>
             <p *ngIf="!saveError()">
-              Modifica i campi e usa i controlli Su/Giu per verificare l'ordine degli step esistenti.
+              Ogni modifica agli step resta locale finché non salvi la task.
             </p>
           </section>
 
@@ -319,7 +319,7 @@ export class TaskShellEditorEntryComponent {
 
   protected updateSteps(steps: TaskStepDraftRecord[]): void {
     this.steps.set(steps);
-    this.saveNotice.set('Ordine step aggiornato. Salva per renderlo persistente.');
+    this.saveNotice.set('Step aggiornati. Salva per rendere persistenti le modifiche.');
   }
 
   protected async saveTask(): Promise<void> {
@@ -336,7 +336,7 @@ export class TaskShellEditorEntryComponent {
       const saved = await firstValueFrom(this.taskLibrary.updateTask(currentTask.id, this.buildRequest()));
       this.patchEditor(saved);
       this.savedAt.set(saved.lastUpdatedAt);
-      this.saveNotice.set('Metadata e ordine step salvati.');
+      this.saveNotice.set('Metadata e step salvati.');
     } catch {
       this.saveError.set('Salvataggio non riuscito. Riprova tra poco.');
     } finally {
@@ -412,7 +412,11 @@ export class TaskShellEditorEntryComponent {
       .sort((left, right) => left.position - right.position)
       .map((step, index) => ({
         ...step,
-        position: index + 1
+        position: index + 1,
+        required: step.required ?? true,
+        supportGuidance: step.supportGuidance ?? '',
+        reinforcementNotes: step.reinforcementNotes ?? '',
+        estimatedMinutes: step.estimatedMinutes ?? null
       }));
   }
 }

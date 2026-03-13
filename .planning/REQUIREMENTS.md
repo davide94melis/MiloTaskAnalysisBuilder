@@ -29,13 +29,13 @@
 
 ### Step Editor
 
-- [ ] **STEP-01**: User can add, edit, reorder, duplicate, and delete steps within a task analysis.
-- [ ] **STEP-02**: User can define a short title and descriptive text for each step.
+- [x] **STEP-01**: User can add, edit, reorder, duplicate, and delete steps within a task analysis.
+- [x] **STEP-02**: User can define a short title and descriptive text for each step.
 - [ ] **STEP-03**: User can attach at least one visual support to each step, including symbol, image/photo, or text.
 - [ ] **STEP-04**: User can combine visual modalities on a step, including symbol plus text or photo plus text.
-- [ ] **STEP-05**: User can mark a step as required or optional.
-- [ ] **STEP-06**: User can define prompt/support guidance and optional reinforcement notes for a step.
-- [ ] **STEP-07**: User can define estimated time for a step.
+- [x] **STEP-05**: User can mark a step as required or optional.
+- [x] **STEP-06**: User can define prompt/support guidance and optional reinforcement notes for a step.
+- [x] **STEP-07**: User can define estimated time for a step.
 - [x] **STEP-08**: User can save editor changes and preserve step order exactly as configured.
 
 ### Support Variants
@@ -140,13 +140,13 @@
 | META-02 | Phase 3 | Complete |
 | META-03 | Phase 3 | Complete |
 | META-04 | Phase 3 | Complete |
-| STEP-01 | Phase 4 | Pending |
-| STEP-02 | Phase 4 | Pending |
+| STEP-01 | Phase 4 | Complete |
+| STEP-02 | Phase 4 | Complete |
 | STEP-03 | Phase 5 | Pending |
 | STEP-04 | Phase 5 | Pending |
-| STEP-05 | Phase 4 | Pending |
-| STEP-06 | Phase 4 | Pending |
-| STEP-07 | Phase 4 | Pending |
+| STEP-05 | Phase 4 | Complete |
+| STEP-06 | Phase 4 | Complete |
+| STEP-07 | Phase 4 | Complete |
 | STEP-08 | Phase 3 | Complete |
 | SUPP-01 | Phase 6 | Pending |
 | SUPP-02 | Phase 6 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after Phase 3 completion*
+*Last updated: 2026-03-13 after Phase 4 completion*
