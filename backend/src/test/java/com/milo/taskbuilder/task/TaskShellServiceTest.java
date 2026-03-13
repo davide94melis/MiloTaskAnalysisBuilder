@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,15 +27,18 @@ class TaskShellServiceTest {
     @Mock
     private TaskAnalysisStepRepository taskAnalysisStepRepository;
 
+    @Mock
+    private TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository;
+
     private TaskShellService service;
 
     @BeforeEach
     void setUp() {
-        service = new TaskShellService(repository, taskAnalysisStepRepository, new TaskShellMapper());
+        service = new TaskShellService(repository, taskAnalysisStepRepository, taskAnalysisStepMediaRepository, new TaskShellMapper());
     }
 
     @Test
-    void duplicateCopiesExpandedStepFields() {
+    void duplicateCopiesExpandedStepFieldsAndMediaReferences() {
         UUID ownerId = UUID.randomUUID();
         UUID sourceTaskId = UUID.randomUUID();
         TaskShellEntity sourceTask = new TaskShellEntity();
@@ -56,6 +61,25 @@ class TaskShellServiceTest {
         sourceStep.setSupportGuidance("Prompt gestuale");
         sourceStep.setReinforcementNotes("Lode");
         sourceStep.setEstimatedMinutes(2);
+        sourceStep.setVisualText("Apri");
+        sourceStep.setSymbolLibrary("symwriter");
+        sourceStep.setSymbolKey("tap");
+        sourceStep.setSymbolLabel("Rubinetto");
+
+        TaskAnalysisStepMediaEntity sourceMedia = new TaskAnalysisStepMediaEntity();
+        sourceMedia.setId(UUID.fromString("33333333-3333-3333-3333-333333333333"));
+        sourceMedia.setTaskAnalysisId(sourceTaskId);
+        sourceMedia.setTaskAnalysisStepId(sourceStep.getId());
+        sourceMedia.setKind("image");
+        sourceMedia.setStorageProvider("filesystem");
+        sourceMedia.setStorageBucket("task-step-media");
+        sourceMedia.setStorageKey("tasks/source/media-1.png");
+        sourceMedia.setFileName("rubinetto.png");
+        sourceMedia.setMimeType("image/png");
+        sourceMedia.setFileSizeBytes(2048);
+        sourceMedia.setWidth(640);
+        sourceMedia.setHeight(480);
+        sourceMedia.setAltText("Rubinetto");
 
         when(repository.findAccessibleById(sourceTaskId, ownerId)).thenReturn(Optional.of(sourceTask));
         when(repository.save(any(TaskShellEntity.class))).thenAnswer((invocation) -> {
@@ -65,7 +89,22 @@ class TaskShellServiceTest {
         });
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(sourceTaskId))
                 .thenReturn(List.of(sourceStep));
-        when(taskAnalysisStepRepository.saveAll(any())).thenAnswer((invocation) -> invocation.getArgument(0));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(sourceTaskId))
+                .thenReturn(List.of(sourceMedia));
+        when(taskAnalysisStepRepository.saveAll(any())).thenAnswer((invocation) -> {
+            @SuppressWarnings("unchecked")
+            List<TaskAnalysisStepEntity> steps = invocation.getArgument(0);
+            List<TaskAnalysisStepEntity> savedSteps = new ArrayList<>();
+            for (int index = 0; index < steps.size(); index++) {
+                TaskAnalysisStepEntity step = steps.get(index);
+                if (step.getId() == null) {
+                    step.setId(UUID.fromString("44444444-4444-4444-4444-444444444444"));
+                }
+                savedSteps.add(step);
+            }
+            return savedSteps;
+        });
+        when(taskAnalysisStepMediaRepository.saveAll(any())).thenAnswer((invocation) -> invocation.getArgument(0));
 
         TaskCardResponse duplicated = service.duplicate(sourceTaskId, ownerId, "teacher@example.com");
 
@@ -83,5 +122,24 @@ class TaskShellServiceTest {
         assertThat(copiedSteps.get(0).getReinforcementNotes()).isEqualTo("Lode");
         assertThat(copiedSteps.get(0).getEstimatedMinutes()).isEqualTo(2);
         assertThat(copiedSteps.get(0).getPosition()).isEqualTo(1);
+        assertThat(copiedSteps.get(0).getVisualText()).isEqualTo("Apri");
+        assertThat(copiedSteps.get(0).getSymbolLibrary()).isEqualTo("symwriter");
+        assertThat(copiedSteps.get(0).getSymbolKey()).isEqualTo("tap");
+        assertThat(copiedSteps.get(0).getSymbolLabel()).isEqualTo("Rubinetto");
+
+        @SuppressWarnings("unchecked")
+        List<TaskAnalysisStepMediaEntity> copiedMedia = (List<TaskAnalysisStepMediaEntity>) org.mockito.Mockito.mockingDetails(taskAnalysisStepMediaRepository)
+                .getInvocations().stream()
+                .filter(invocation -> invocation.getMethod().getName().equals("saveAll"))
+                .findFirst()
+                .orElseThrow()
+                .getArgument(0);
+        assertThat(copiedMedia).hasSize(1);
+        assertThat(copiedMedia.get(0).getTaskAnalysisId()).isEqualTo(duplicated.id());
+        assertThat(copiedMedia.get(0).getTaskAnalysisStepId()).isEqualTo(copiedSteps.get(0).getId());
+        assertThat(copiedMedia.get(0).getStorageKey()).isEqualTo("tasks/source/media-1.png");
+        assertThat(copiedMedia.get(0).getFileName()).isEqualTo("rubinetto.png");
+        assertThat(copiedMedia.get(0).getAltText()).isEqualTo("Rubinetto");
+        verify(taskAnalysisStepMediaRepository).saveAll(any());
     }
 }

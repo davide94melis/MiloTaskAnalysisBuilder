@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -20,15 +23,18 @@ public class TaskShellService {
 
     private final TaskShellRepository repository;
     private final TaskAnalysisStepRepository taskAnalysisStepRepository;
+    private final TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository;
     private final TaskShellMapper mapper;
 
     public TaskShellService(
             TaskShellRepository repository,
             TaskAnalysisStepRepository taskAnalysisStepRepository,
+            TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository,
             TaskShellMapper mapper
     ) {
         this.repository = repository;
         this.taskAnalysisStepRepository = taskAnalysisStepRepository;
+        this.taskAnalysisStepMediaRepository = taskAnalysisStepMediaRepository;
         this.mapper = mapper;
     }
 
@@ -165,6 +171,7 @@ public class TaskShellService {
             return;
         }
 
+        Map<UUID, List<TaskAnalysisStepMediaEntity>> sourceMediaByStepId = mediaByStepId(sourceTaskId);
         List<TaskAnalysisStepEntity> copiedSteps = sourceSteps.stream()
                 .map(sourceStep -> {
                     TaskAnalysisStepEntity copiedStep = new TaskAnalysisStepEntity();
@@ -176,11 +183,62 @@ public class TaskShellService {
                     copiedStep.setSupportGuidance(sourceStep.getSupportGuidance());
                     copiedStep.setReinforcementNotes(sourceStep.getReinforcementNotes());
                     copiedStep.setEstimatedMinutes(sourceStep.getEstimatedMinutes());
+                    copiedStep.setVisualText(sourceStep.getVisualText());
+                    copiedStep.setSymbolLibrary(sourceStep.getSymbolLibrary());
+                    copiedStep.setSymbolKey(sourceStep.getSymbolKey());
+                    copiedStep.setSymbolLabel(sourceStep.getSymbolLabel());
                     return copiedStep;
                 })
                 .toList();
 
-        taskAnalysisStepRepository.saveAll(copiedSteps);
+        List<TaskAnalysisStepEntity> savedSteps = taskAnalysisStepRepository.saveAll(copiedSteps);
+        copyStepMedia(destinationTaskId, sourceSteps, savedSteps, sourceMediaByStepId);
+    }
+
+    private Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId(UUID taskId) {
+        Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId = new HashMap<>();
+        for (TaskAnalysisStepMediaEntity media :
+                taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId)) {
+            if (media.getTaskAnalysisStepId() == null) {
+                continue;
+            }
+            mediaByStepId.computeIfAbsent(media.getTaskAnalysisStepId(), ignored -> new ArrayList<>()).add(media);
+        }
+        return mediaByStepId;
+    }
+
+    private void copyStepMedia(
+            UUID destinationTaskId,
+            List<TaskAnalysisStepEntity> sourceSteps,
+            List<TaskAnalysisStepEntity> savedSteps,
+            Map<UUID, List<TaskAnalysisStepMediaEntity>> sourceMediaByStepId
+    ) {
+        List<TaskAnalysisStepMediaEntity> copiedMedia = new ArrayList<>();
+        for (int index = 0; index < savedSteps.size(); index++) {
+            TaskAnalysisStepEntity sourceStep = sourceSteps.get(index);
+            TaskAnalysisStepEntity savedStep = savedSteps.get(index);
+            for (TaskAnalysisStepMediaEntity sourceMedia :
+                    sourceMediaByStepId.getOrDefault(sourceStep.getId(), List.of())) {
+                TaskAnalysisStepMediaEntity copied = new TaskAnalysisStepMediaEntity();
+                copied.setTaskAnalysisId(destinationTaskId);
+                copied.setTaskAnalysisStepId(savedStep.getId());
+                copied.setKind(sourceMedia.getKind());
+                copied.setStorageProvider(sourceMedia.getStorageProvider());
+                copied.setStorageBucket(sourceMedia.getStorageBucket());
+                copied.setStorageKey(sourceMedia.getStorageKey());
+                copied.setFileName(sourceMedia.getFileName());
+                copied.setMimeType(sourceMedia.getMimeType());
+                copied.setFileSizeBytes(sourceMedia.getFileSizeBytes());
+                copied.setWidth(sourceMedia.getWidth());
+                copied.setHeight(sourceMedia.getHeight());
+                copied.setAltText(sourceMedia.getAltText());
+                copiedMedia.add(copied);
+            }
+        }
+
+        if (!copiedMedia.isEmpty()) {
+            taskAnalysisStepMediaRepository.saveAll(copiedMedia);
+        }
     }
 
     private String normalize(String value) {

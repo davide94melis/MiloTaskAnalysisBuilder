@@ -262,6 +262,100 @@ class TaskDetailServiceTest {
     }
 
     @Test
+    void preservesMediaAssociationWhenExistingStepsAreReordered() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        UUID firstStepId = UUID.fromString("99999999-1111-1111-1111-111111111111");
+        UUID secondStepId = UUID.fromString("99999999-2222-2222-2222-222222222222");
+        UUID mediaId = UUID.fromString("99999999-3333-3333-3333-333333333333");
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Lavarsi le mani",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                secondStepId,
+                                1,
+                                "Secondo passo",
+                                "Chiudi l'acqua",
+                                true,
+                                null,
+                                null,
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest("Chiudi", null, null)
+                        ),
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                firstStepId,
+                                2,
+                                "Primo passo",
+                                "Apri l'acqua",
+                                true,
+                                null,
+                                null,
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Apri",
+                                        null,
+                                        new UpdateTaskRequest.StepImageRequest(
+                                                mediaId,
+                                                "task-a/image-1.png",
+                                                "step-1.png",
+                                                "image/png",
+                                                321L,
+                                                320,
+                                                240,
+                                                "Rubinetto aperto",
+                                                "/api/tasks/%s/media/%s/content".formatted(taskId, mediaId)
+                                        )
+                                )
+                        )
+                )
+        );
+
+        TaskAnalysisStepEntity reorderedFirst = step(taskId, secondStepId, 1, "Secondo passo");
+        reorderedFirst.setVisualText("Chiudi");
+        TaskAnalysisStepEntity reorderedSecond = step(taskId, firstStepId, 2, "Primo passo");
+        reorderedSecond.setVisualText("Apri");
+
+        TaskAnalysisStepMediaEntity uploadedImage = media(
+                taskId,
+                mediaId,
+                firstStepId,
+                "task-a/image-1.png",
+                "step-1.png",
+                "Rubinetto aperto"
+        );
+
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+        when(taskShellRepository.save(task)).thenReturn(task);
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId))
+                .thenReturn(List.of(reorderedFirst, reorderedSecond));
+        when(taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(mediaId, taskId))
+                .thenReturn(Optional.of(uploadedImage));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId))
+                .thenReturn(List.of(uploadedImage));
+        when(taskMediaStorageService.buildAccessUrl(taskId, mediaId))
+                .thenReturn("/api/tasks/%s/media/%s/content".formatted(taskId, mediaId));
+
+        TaskDetailResponse response = taskDetailService.updateTask(taskId, ownerId, request);
+
+        assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::id)
+                .containsExactly(secondStepId, firstStepId);
+        assertThat(response.steps().get(1).visualSupport().image().mediaId()).isEqualTo(mediaId);
+        assertThat(uploadedImage.getTaskAnalysisStepId()).isEqualTo(firstStepId);
+        verify(taskAnalysisStepMediaRepository).save(uploadedImage);
+    }
+
+    @Test
     void rejectsNegativeEstimatedMinutes() {
         UUID ownerId = UUID.randomUUID();
         UUID taskId = UUID.randomUUID();
