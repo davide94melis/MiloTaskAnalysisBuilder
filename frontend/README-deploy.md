@@ -74,6 +74,26 @@ The frontend now supports:
 
 The route container still owns load/save orchestration, while the dedicated step editor owns local step editing state.
 
+## Phase 5 Frontend Contract
+
+Phase 5 keeps `/tasks/:taskId` as the single authoring surface and adds mixed visual-support editing per step.
+
+The frontend now expects:
+
+- `POST /api/tasks/{taskId}/media/uploads` to return a task-scoped image descriptor for local draft use
+- `GET /api/tasks/{taskId}` to return each step with nested `visualSupport.text`, `visualSupport.symbol`, and `visualSupport.image`
+- `PUT /api/tasks/{taskId}` to persist the full ordered step array with those nested `visualSupport` values intact
+- `GET /api/tasks/{taskId}/media/{mediaId}/content` to resolve authenticated media previews for saved image descriptors
+
+Editor behavior in Phase 5:
+
+- image uploads stay local to the current draft until the user explicitly saves the task
+- text, symbol, and image combinations can coexist on the same step
+- save/reload must preserve the exact visual-support payload the backend returns
+- duplicated tasks are expected to reopen with the same saved visual supports still attached
+
+The frontend should treat `mediaId` and `storageKey` as the stable saved identifiers. The returned image URL is a usable authenticated preview, not a permanent public asset URL.
+
 ## Deployment Checklist
 
 1. Set `API_URL` for the Task Builder backend.
@@ -84,4 +104,4 @@ The route container still owns load/save orchestration, while the dedicated step
 
 ## Scope Reminder
 
-Phase 4 makes the task route a real non-media authoring surface, but media selection, uploads, symbols, and mixed visual-support layouts remain Phase 5 work.
+Phase 5 makes the task route a real mixed-media authoring surface, but it still does not include Phase 7 present-mode playback UI or Phase 8 public sharing/public media exposure.

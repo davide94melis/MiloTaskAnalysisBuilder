@@ -63,6 +63,25 @@ Phase 4 expands the step payload on the existing task-detail aggregate instead o
 
 The `taskbuilder.task_analysis_step` table now stores the non-media authoring fields needed for Phase 4. Media-related fields are still deferred.
 
+## Phase 5 API Contract
+
+Phase 5 keeps media persistence inside the authenticated task aggregate while splitting binary upload onto a dedicated endpoint.
+
+- `POST /api/tasks/{taskId}/media/uploads` accepts authenticated multipart image upload and returns the saved media descriptor needed by the editor draft
+- `GET /api/tasks/{taskId}` returns each ordered step with `visualSupport.text`, `visualSupport.symbol`, and `visualSupport.image`
+- `PUT /api/tasks/{taskId}` persists the full ordered step array, including text, symbol references, and uploaded image references
+- `GET /api/tasks/{taskId}/media/{mediaId}/content` resolves authenticated media bytes for saved image descriptors
+
+Saved image descriptors must persist stable identifiers such as `mediaId` and `storageKey`. Do not treat returned content URLs as durable storage values.
+
+Phase 5 duplication behavior copies:
+
+- visual text
+- symbol library/key/label references
+- saved media metadata rows pointing at the same storage object
+
+This is the intended v1 boundary. Physical object cloning, public asset exposure, and share-safe media authorization remain Phase 8 concerns.
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -74,4 +93,4 @@ The `taskbuilder.task_analysis_step` table now stores the non-media authoring fi
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 4 adds full non-media step authoring on the existing aggregate, but still does not include symbol/image/media workflows.
+This backend does not implement local login, registration, or shared Milo entities. Phase 5 adds authenticated media upload and save/reload fidelity on the existing aggregate, but it still does not include Phase 7 present-mode UI behavior or Phase 8 public media access.

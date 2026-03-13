@@ -135,3 +135,38 @@ Phase 4 turns `/tasks/:taskId` into a real non-media step authoring workflow.
 ### Boundary with Phase 5
 
 Phase 4 intentionally stops at text and guidance authoring. Image upload, symbols, photo attachments, and mixed visual-support layouts still belong to Phase 5.
+
+## Phase 5 Media Support Pipeline Contract
+
+Phase 5 extends the existing task-detail aggregate instead of inventing separate step-media CRUD for saved composition.
+
+### Backend API introduced in Phase 5
+
+- `POST /api/tasks/{taskId}/media/uploads` accepts authenticated task-scoped image uploads
+- `GET /api/tasks/{taskId}` now returns each step with a nested `visualSupport` object
+- `PUT /api/tasks/{taskId}` still owns explicit persistence for the full ordered step array, including saved media references
+- `GET /api/tasks/{taskId}/media/{mediaId}/content` serves authenticated image content for saved step media
+
+### Step visual support payload
+
+Each saved step now round-trips this nested shape:
+
+- `visualSupport.text`
+- `visualSupport.symbol`
+- `visualSupport.image`
+
+`visualSupport.image` persists stable media metadata such as `mediaId`, `storageKey`, `fileName`, `mimeType`, `fileSizeBytes`, dimensions, and optional `altText`.
+
+### Media reliability rules
+
+- Uploaded binaries are handled only by the authenticated upload endpoint
+- Saved step composition still persists only through explicit task save on `PUT /api/tasks/{taskId}`
+- Stored step data keeps stable storage identifiers and metadata, not expiring signed URLs
+- Read responses resolve a usable authenticated media URL at request time
+- Task duplication copies visual text, symbol references, and saved media references so Phase 6 variants can build from stable authored content
+
+### Boundary with later phases
+
+- Phase 5 does **not** implement Phase 7 present-mode UI
+- Phase 5 does **not** expose public or unauthenticated media access; that remains Phase 8 work
+- Public asset rules, share-safe authorization, and any public media URLs stay deferred until sharing is designed explicitly
