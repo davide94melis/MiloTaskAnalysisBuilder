@@ -119,7 +119,16 @@ describe('TaskLibraryService', () => {
           required: true,
           supportGuidance: 'Prompt verbale',
           reinforcementNotes: 'Bravo',
-          estimatedMinutes: 1
+          estimatedMinutes: 1,
+          visualSupport: {
+            text: 'Apri',
+            symbol: {
+              library: 'symwriter',
+              key: 'tap',
+              label: 'Rubinetto'
+            },
+            image: null
+          }
         }
       ]
     });
@@ -147,7 +156,22 @@ describe('TaskLibraryService', () => {
             required: false,
             supportGuidance: 'Modello visivo',
             reinforcementNotes: '',
-            estimatedMinutes: 2
+            estimatedMinutes: 2,
+            visualSupport: {
+              text: 'Sapone',
+              symbol: null,
+              image: {
+                mediaId: 'media-2',
+                storageKey: 'tasks/task-1/media-2.png',
+                fileName: 'sapone.png',
+                mimeType: 'image/png',
+                fileSizeBytes: 2048,
+                width: 512,
+                height: 512,
+                altText: 'Dispenser del sapone',
+                url: '/api/tasks/task-1/media/media-2/content'
+              }
+            }
           },
           {
             id: 'step-1',
@@ -157,7 +181,16 @@ describe('TaskLibraryService', () => {
             required: true,
             supportGuidance: 'Prompt verbale',
             reinforcementNotes: 'Bravo',
-            estimatedMinutes: 1
+            estimatedMinutes: 1,
+            visualSupport: {
+              text: 'Apri',
+              symbol: {
+                library: 'symwriter',
+                key: 'tap',
+                label: 'Rubinetto'
+              },
+              image: null
+            }
           }
         ]
       })
@@ -168,6 +201,8 @@ describe('TaskLibraryService', () => {
     expect(request.request.body.steps.map((step: { id: string }) => step.id)).toEqual(['step-2', 'step-1']);
     expect(request.request.body.environmentLabel).toBe('Bagno di casa');
     expect(request.request.body.steps[0].supportGuidance).toBe('Modello visivo');
+    expect(request.request.body.steps[0].visualSupport.image.mediaId).toBe('media-2');
+    expect(request.request.body.steps[1].visualSupport.symbol.key).toBe('tap');
     request.flush({
       id: 'task-1',
       title: 'Lavarsi le mani',
@@ -195,7 +230,22 @@ describe('TaskLibraryService', () => {
           required: false,
           supportGuidance: 'Modello visivo',
           reinforcementNotes: '',
-          estimatedMinutes: 2
+          estimatedMinutes: 2,
+          visualSupport: {
+            text: 'Sapone',
+            symbol: null,
+            image: {
+              mediaId: 'media-2',
+              storageKey: 'tasks/task-1/media-2.png',
+              fileName: 'sapone.png',
+              mimeType: 'image/png',
+              fileSizeBytes: 2048,
+              width: 512,
+              height: 512,
+              altText: 'Dispenser del sapone',
+              url: '/api/tasks/task-1/media/media-2/content'
+            }
+          }
         },
         {
           id: 'step-1',
@@ -205,9 +255,41 @@ describe('TaskLibraryService', () => {
           required: true,
           supportGuidance: 'Prompt verbale',
           reinforcementNotes: 'Bravo',
-          estimatedMinutes: 1
+          estimatedMinutes: 1,
+          visualSupport: {
+            text: 'Apri',
+            symbol: {
+              library: 'symwriter',
+              key: 'tap',
+              label: 'Rubinetto'
+            },
+            image: null
+          }
         }
       ]
+    });
+  });
+
+  it('uploads task-scoped media with multipart form data', () => {
+    const file = new File(['image-bytes'], 'rubinetto.png', { type: 'image/png' });
+
+    service.uploadTaskMedia('task-1', file).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/media/uploads');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body instanceof FormData).toBeTrue();
+    expect((request.request.body as FormData).get('file')).toBe(file);
+    request.flush({
+      mediaId: 'media-1',
+      taskId: 'task-1',
+      fileName: 'rubinetto.png',
+      mimeType: 'image/png',
+      fileSizeBytes: 11,
+      width: 640,
+      height: 480,
+      storageKey: 'tasks/task-1/media-1.png',
+      altText: null,
+      url: '/api/tasks/task-1/media/media-1/content'
     });
   });
 });

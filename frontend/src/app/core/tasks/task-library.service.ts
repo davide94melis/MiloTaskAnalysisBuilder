@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppConfigService } from '../config/app-config.service';
-import { TaskDetailRecord, UpdateTaskDetailRequest } from './task-detail.models';
+import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
   CreateTaskShellRequest,
   TaskCardRecord,
@@ -54,6 +54,12 @@ export class TaskLibraryService {
 
   updateTask(taskId: string, request: UpdateTaskDetailRequest): Observable<TaskDetailRecord> {
     return this.http.put<TaskDetailRecord>(`${this.tasksUrl}/${taskId}`, request);
+  }
+
+  uploadTaskMedia(taskId: string, file: File): Observable<TaskMediaUploadRecord> {
+    const payload = new FormData();
+    payload.append('file', file);
+    return this.http.post<TaskMediaUploadRecord>(`${this.tasksUrl}/${taskId}/media/uploads`, payload);
   }
 
   createDraft(request: CreateTaskShellRequest = {}): Observable<TaskCardRecord> {
