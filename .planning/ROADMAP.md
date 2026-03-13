@@ -12,7 +12,7 @@
 | 2 | Complete | 2026-03-13 |
 | 3 | Complete | 2026-03-13 |
 | 4 | Complete | 2026-03-13 |
-| 5 | Next | - |
+| 5 | In Progress | 1/3 plans complete |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -173,4 +173,5 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/04-core-step-a
 
 ## Phase 5 Next
 
-**Phase 5: Media Support Pipeline** - Add image/photo/symbol support and make media reliable in editing and playback contexts.
+Plan `05-01` completed on 2026-03-13 in `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md`.
+Next up: continue Phase 5 execution with plans `05-02` and `05-03`.

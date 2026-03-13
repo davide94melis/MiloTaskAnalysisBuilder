@@ -31,8 +31,8 @@
 
 - [x] **STEP-01**: User can add, edit, reorder, duplicate, and delete steps within a task analysis.
 - [x] **STEP-02**: User can define a short title and descriptive text for each step.
-- [ ] **STEP-03**: User can attach at least one visual support to each step, including symbol, image/photo, or text.
-- [ ] **STEP-04**: User can combine visual modalities on a step, including symbol plus text or photo plus text.
+- [x] **STEP-03**: User can attach at least one visual support to each step, including symbol, image/photo, or text.
+- [x] **STEP-04**: User can combine visual modalities on a step, including symbol plus text or photo plus text.
 - [x] **STEP-05**: User can mark a step as required or optional.
 - [x] **STEP-06**: User can define prompt/support guidance and optional reinforcement notes for a step.
 - [x] **STEP-07**: User can define estimated time for a step.
@@ -63,8 +63,8 @@
 
 ### Media
 
-- [ ] **MEDI-01**: User can upload or attach images/photos for task steps.
-- [ ] **MEDI-02**: Uploaded media is delivered reliably in both editor and present mode.
+- [x] **MEDI-01**: User can upload or attach images/photos for task steps.
+- [x] **MEDI-02**: Uploaded media is delivered reliably in both editor and present mode.
 - [ ] **MEDI-03**: Publicly shared tasks expose only the media required by that shared task.
 
 ### Session Tracking
@@ -142,8 +142,8 @@
 | META-04 | Phase 3 | Complete |
 | STEP-01 | Phase 4 | Complete |
 | STEP-02 | Phase 4 | Complete |
-| STEP-03 | Phase 5 | Pending |
-| STEP-04 | Phase 5 | Pending |
+| STEP-03 | Phase 5 | Complete |
+| STEP-04 | Phase 5 | Complete |
 | STEP-05 | Phase 4 | Complete |
 | STEP-06 | Phase 4 | Complete |
 | STEP-07 | Phase 4 | Complete |
@@ -162,8 +162,8 @@
 | SHAR-03 | Phase 8 | Pending |
 | SHAR-04 | Phase 8 | Pending |
 | SHAR-05 | Phase 8 | Pending |
-| MEDI-01 | Phase 5 | Pending |
-| MEDI-02 | Phase 5 | Pending |
+| MEDI-01 | Phase 5 | Complete |
+| MEDI-02 | Phase 5 | Complete |
 | MEDI-03 | Phase 8 | Pending |
 | SESS-01 | Phase 9 | Pending |
 | SESS-02 | Phase 9 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after Phase 4 completion*
+*Last updated: 2026-03-13 after Phase 5 Plan 05-01 completion*
