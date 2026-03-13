@@ -42,6 +42,18 @@ public class TaskAnalysisStepEntity {
     @Column(name = "estimated_minutes")
     private Integer estimatedMinutes;
 
+    @Column(name = "visual_text")
+    private String visualText;
+
+    @Column(name = "symbol_library")
+    private String symbolLibrary;
+
+    @Column(name = "symbol_key")
+    private String symbolKey;
+
+    @Column(name = "symbol_label")
+    private String symbolLabel;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -133,6 +145,38 @@ public class TaskAnalysisStepEntity {
 
     public void setEstimatedMinutes(Integer estimatedMinutes) {
         this.estimatedMinutes = estimatedMinutes;
+    }
+
+    public String getVisualText() {
+        return visualText;
+    }
+
+    public void setVisualText(String visualText) {
+        this.visualText = visualText;
+    }
+
+    public String getSymbolLibrary() {
+        return symbolLibrary;
+    }
+
+    public void setSymbolLibrary(String symbolLibrary) {
+        this.symbolLibrary = symbolLibrary;
+    }
+
+    public String getSymbolKey() {
+        return symbolKey;
+    }
+
+    public void setSymbolKey(String symbolKey) {
+        this.symbolKey = symbolKey;
+    }
+
+    public String getSymbolLabel() {
+        return symbolLabel;
+    }
+
+    public void setSymbolLabel(String symbolLabel) {
+        this.symbolLabel = symbolLabel;
     }
 
     public Instant getCreatedAt() {
