@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: milo-task-analysis-builder-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: taskbuilder
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    default-schema: taskbuilder
+    schemas:
+      - taskbuilder
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  shutdown: graceful
+
+milo:
+  jwt:
+    secret: ${APP_JWT_SECRET:}

@@ -7,9 +7,9 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can access the application using Milo SSO without creating a separate local account.
-- [ ] **AUTH-02**: User session remains valid across browser refresh until logout or session expiry.
-- [ ] **AUTH-03**: Authenticated API requests are authorized using Milo-issued identity and app-specific access rules.
+- [x] **AUTH-01**: User can access the application using Milo SSO without creating a separate local account.
+- [x] **AUTH-02**: User session remains valid across browser refresh until logout or session expiry.
+- [x] **AUTH-03**: Authenticated API requests are authorized using Milo-issued identity and app-specific access rules.
 
 ### Library
 
@@ -127,9 +127,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
 | LIBR-01 | Phase 2 | Pending |
 | LIBR-02 | Phase 2 | Pending |
 | LIBR-03 | Phase 2 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after initial definition*
+*Last updated: 2026-03-13 after Phase 1 completion*

@@ -1,0 +1,4 @@
+{
+  "apiUrl": "http://localhost:8080/api",
+  "miloApiUrl": "http://localhost:8081/api"
+}
