@@ -25,7 +25,48 @@ public record UpdateTaskRequest(
             Boolean required,
             String supportGuidance,
             String reinforcementNotes,
-            Integer estimatedMinutes
+            Integer estimatedMinutes,
+            VisualSupportRequest visualSupport
+    ) {
+
+        public UpdateTaskStepRequest(
+                UUID id,
+                Integer position,
+                String title,
+                String description,
+                Boolean required,
+                String supportGuidance,
+                String reinforcementNotes,
+                Integer estimatedMinutes
+        ) {
+            this(id, position, title, description, required, supportGuidance, reinforcementNotes, estimatedMinutes, null);
+        }
+    }
+
+    public record VisualSupportRequest(
+            String text,
+            StepSymbolRequest symbol,
+            StepImageRequest image
+    ) {
+    }
+
+    public record StepSymbolRequest(
+            String library,
+            String key,
+            String label
+    ) {
+    }
+
+    public record StepImageRequest(
+            UUID mediaId,
+            String storageKey,
+            String fileName,
+            String mimeType,
+            Long fileSizeBytes,
+            Integer width,
+            Integer height,
+            String altText,
+            String url
     ) {
     }
 }

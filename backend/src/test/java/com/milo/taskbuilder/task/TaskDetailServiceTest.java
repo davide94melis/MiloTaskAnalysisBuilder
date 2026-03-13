@@ -18,7 +18,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +30,12 @@ class TaskDetailServiceTest {
     @Mock
     private TaskAnalysisStepRepository taskAnalysisStepRepository;
 
+    @Mock
+    private TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository;
+
+    @Mock
+    private TaskMediaStorageService taskMediaStorageService;
+
     private TaskDetailService taskDetailService;
 
     @BeforeEach
@@ -38,7 +43,9 @@ class TaskDetailServiceTest {
         taskDetailService = new TaskDetailService(
                 taskShellRepository,
                 taskAnalysisStepRepository,
-                new TaskDetailMapper()
+                taskAnalysisStepMediaRepository,
+                new TaskDetailMapper(),
+                taskMediaStorageService
         );
     }
 
@@ -46,6 +53,7 @@ class TaskDetailServiceTest {
     void updatesMetadataAndPreservesSubmittedStepOrder() {
         UUID ownerId = UUID.randomUUID();
         UUID taskId = UUID.randomUUID();
+        UUID mediaId = UUID.fromString("aaaaaaaa-1111-1111-1111-111111111111");
         TaskShellEntity task = task(taskId, ownerId);
 
         UpdateTaskRequest request = new UpdateTaskRequest(
@@ -68,7 +76,22 @@ class TaskDetailServiceTest {
                                 true,
                                 "Prompt verbale",
                                 "Bravo subito",
-                                1
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Apri",
+                                        null,
+                                        new UpdateTaskRequest.StepImageRequest(
+                                                mediaId,
+                                                "task-a/image-1.png",
+                                                "step-1.png",
+                                                "image/png",
+                                                321L,
+                                                320,
+                                                240,
+                                                "Rubinetto aperto",
+                                                "/api/tasks/%s/media/%s/content".formatted(taskId, mediaId)
+                                        )
+                                )
                         ),
                         new UpdateTaskRequest.UpdateTaskStepRequest(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
@@ -78,7 +101,12 @@ class TaskDetailServiceTest {
                                 null,
                                 "Prompt visivo",
                                 null,
-                                2
+                                2,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Sapone",
+                                        new UpdateTaskRequest.StepSymbolRequest("arasaac", "soap", "Sapone"),
+                                        null
+                                )
                         )
                 )
         );
@@ -91,13 +119,33 @@ class TaskDetailServiceTest {
         persistedSteps.get(0).setSupportGuidance("Prompt verbale");
         persistedSteps.get(0).setReinforcementNotes("Bravo subito");
         persistedSteps.get(0).setEstimatedMinutes(1);
+        persistedSteps.get(0).setVisualText("Apri");
         persistedSteps.get(1).setRequired(true);
         persistedSteps.get(1).setSupportGuidance("Prompt visivo");
         persistedSteps.get(1).setEstimatedMinutes(2);
+        persistedSteps.get(1).setVisualText("Sapone");
+        persistedSteps.get(1).setSymbolLibrary("arasaac");
+        persistedSteps.get(1).setSymbolKey("soap");
+        persistedSteps.get(1).setSymbolLabel("Sapone");
+
+        TaskAnalysisStepMediaEntity uploadedImage = media(
+                taskId,
+                mediaId,
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "task-a/image-1.png",
+                "step-1.png",
+                "Rubinetto aperto"
+        );
 
         when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
         when(taskShellRepository.save(task)).thenReturn(task);
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId)).thenReturn(persistedSteps);
+        when(taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(uploadedImage.getId(), taskId))
+                .thenReturn(Optional.of(uploadedImage));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId))
+                .thenReturn(List.of(uploadedImage));
+        when(taskMediaStorageService.buildAccessUrl(taskId, uploadedImage.getId()))
+                .thenReturn("/api/tasks/%s/media/%s/content".formatted(taskId, uploadedImage.getId()));
 
         TaskDetailResponse response = taskDetailService.updateTask(taskId, ownerId, request);
 
@@ -112,11 +160,15 @@ class TaskDetailServiceTest {
         assertThat(savedSteps.get(0).getSupportGuidance()).isEqualTo("Prompt verbale");
         assertThat(savedSteps.get(0).getReinforcementNotes()).isEqualTo("Bravo subito");
         assertThat(savedSteps.get(0).getEstimatedMinutes()).isEqualTo(1);
+        assertThat(savedSteps.get(0).getVisualText()).isEqualTo("Apri");
         assertThat(savedSteps.get(1).getPosition()).isEqualTo(2);
         assertThat(savedSteps.get(1).getTitle()).isEqualTo("Insapona le mani");
         assertThat(savedSteps.get(1).isRequired()).isTrue();
         assertThat(savedSteps.get(1).getSupportGuidance()).isEqualTo("Prompt visivo");
         assertThat(savedSteps.get(1).getEstimatedMinutes()).isEqualTo(2);
+        assertThat(savedSteps.get(1).getVisualText()).isEqualTo("Sapone");
+        assertThat(savedSteps.get(1).getSymbolLibrary()).isEqualTo("arasaac");
+        assertThat(savedSteps.get(1).getSymbolKey()).isEqualTo("soap");
 
         assertThat(task.getTitle()).isEqualTo("Lavarsi le mani");
         assertThat(task.getCategory()).isEqualTo("Autonomia personale");
@@ -136,6 +188,10 @@ class TaskDetailServiceTest {
                 .containsExactly(1, 2);
         assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::required)
                 .containsExactly(true, true);
+        assertThat(response.steps().get(0).visualSupport().image().mediaId()).isEqualTo(uploadedImage.getId());
+        assertThat(response.steps().get(0).visualSupport().image().url())
+                .isEqualTo("/api/tasks/%s/media/%s/content".formatted(taskId, uploadedImage.getId()));
+        assertThat(response.steps().get(1).visualSupport().symbol().key()).isEqualTo("soap");
     }
 
     @Test
@@ -160,9 +216,26 @@ class TaskDetailServiceTest {
         steps.get(0).setSupportGuidance("Indicazione gestuale");
         steps.get(0).setReinforcementNotes("Token");
         steps.get(0).setEstimatedMinutes(3);
+        steps.get(0).setVisualText("Bagna");
+        steps.get(1).setSymbolLibrary("arasaac");
+        steps.get(1).setSymbolKey("rinse");
+        steps.get(1).setSymbolLabel("Sciacqua");
+
+        TaskAnalysisStepMediaEntity media = media(
+                taskId,
+                UUID.fromString("66666666-6666-6666-6666-666666666666"),
+                UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                "task-b/image-1.png",
+                "step-3.png",
+                "Acqua sulle mani"
+        );
 
         when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(eq(taskId))).thenReturn(steps);
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId))
+                .thenReturn(List.of(media));
+        when(taskMediaStorageService.buildAccessUrl(taskId, media.getId()))
+                .thenReturn("/api/tasks/%s/media/%s/content".formatted(taskId, media.getId()));
 
         TaskDetailResponse response = taskDetailService.getTaskDetail(taskId, ownerId);
 
@@ -178,6 +251,9 @@ class TaskDetailServiceTest {
         assertThat(response.steps().get(0).supportGuidance()).isEqualTo("Indicazione gestuale");
         assertThat(response.steps().get(0).reinforcementNotes()).isEqualTo("Token");
         assertThat(response.steps().get(0).estimatedMinutes()).isEqualTo(3);
+        assertThat(response.steps().get(0).visualSupport().text()).isEqualTo("Bagna");
+        assertThat(response.steps().get(0).visualSupport().image().storageKey()).isEqualTo("task-b/image-1.png");
+        assertThat(response.steps().get(1).visualSupport().symbol().label()).isEqualTo("Sciacqua");
         assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::id)
                 .containsExactly(
                         UUID.fromString("33333333-3333-3333-3333-333333333333"),
@@ -211,7 +287,8 @@ class TaskDetailServiceTest {
                                 true,
                                 null,
                                 null,
-                                -1
+                                -1,
+                                new UpdateTaskRequest.VisualSupportRequest("Step", null, null)
                         )
                 )
         );
@@ -249,21 +326,128 @@ class TaskDetailServiceTest {
                                 null,
                                 null,
                                 null,
-                                null
+                                null,
+                                new UpdateTaskRequest.VisualSupportRequest("Nuovo step", null, null)
                         )
                 )
         );
 
         TaskAnalysisStepEntity persistedStep = step(taskId, UUID.fromString("55555555-5555-5555-5555-555555555555"), 1, "Nuovo step");
+        persistedStep.setVisualText("Nuovo step");
+
         when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
         when(taskShellRepository.save(task)).thenReturn(task);
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId)).thenReturn(List.of(persistedStep));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId)).thenReturn(List.of());
 
         taskDetailService.updateTask(taskId, ownerId, request);
 
         ArgumentCaptor<List<TaskAnalysisStepEntity>> stepsCaptor = ArgumentCaptor.forClass(List.class);
         verify(taskAnalysisStepRepository).saveAll(stepsCaptor.capture());
         assertThat(stepsCaptor.getValue().get(0).isRequired()).isTrue();
+    }
+
+    @Test
+    void rejectsStepWithoutAnyVisualSupport() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Task",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                null,
+                                1,
+                                "Nuovo step",
+                                "Descrizione",
+                                true,
+                                null,
+                                null,
+                                null,
+                                new UpdateTaskRequest.VisualSupportRequest(null, null, null)
+                        )
+                )
+        );
+
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+
+        assertThatThrownBy(() -> taskDetailService.updateTask(taskId, ownerId, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("at least one visual support");
+    }
+
+    @Test
+    void rejectsUnknownTaskMediaReference() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        UUID mediaId = UUID.fromString("77777777-7777-7777-7777-777777777777");
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Task",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                UUID.fromString("88888888-8888-8888-8888-888888888888"),
+                                1,
+                                "Nuovo step",
+                                "Descrizione",
+                                true,
+                                null,
+                                null,
+                                null,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Foto",
+                                        null,
+                                        new UpdateTaskRequest.StepImageRequest(
+                                                mediaId,
+                                                "missing.png",
+                                                "missing.png",
+                                                "image/png",
+                                                12L,
+                                                10,
+                                                10,
+                                                null,
+                                                null
+                                        )
+                                )
+                        )
+                )
+        );
+
+        TaskAnalysisStepEntity persistedStep = step(
+                taskId,
+                UUID.fromString("88888888-8888-8888-8888-888888888888"),
+                1,
+                "Nuovo step"
+        );
+        persistedStep.setVisualText("Foto");
+
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId)).thenReturn(List.of(persistedStep));
+        when(taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(mediaId, taskId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskDetailService.updateTask(taskId, ownerId, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Unknown media reference for task");
     }
 
     private TaskShellEntity task(UUID taskId, UUID ownerId) {
@@ -287,5 +471,30 @@ class TaskDetailServiceTest {
         step.setDescription(title + " description");
         step.setRequired(true);
         return step;
+    }
+
+    private TaskAnalysisStepMediaEntity media(
+            UUID taskId,
+            UUID mediaId,
+            UUID stepId,
+            String storageKey,
+            String fileName,
+            String altText
+    ) {
+        TaskAnalysisStepMediaEntity media = new TaskAnalysisStepMediaEntity();
+        media.setId(mediaId);
+        media.setTaskAnalysisId(taskId);
+        media.setTaskAnalysisStepId(stepId);
+        media.setKind("image");
+        media.setStorageProvider("filesystem");
+        media.setStorageBucket("task-step-media");
+        media.setStorageKey(storageKey);
+        media.setFileName(fileName);
+        media.setMimeType("image/png");
+        media.setFileSizeBytes(1024);
+        media.setWidth(320);
+        media.setHeight(240);
+        media.setAltText(altText);
+        return media;
     }
 }

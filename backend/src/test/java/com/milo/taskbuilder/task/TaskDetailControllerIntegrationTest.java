@@ -5,11 +5,14 @@ import com.milo.taskbuilder.auth.MiloJwtService;
 import com.milo.taskbuilder.auth.TaskBuilderPrincipal;
 import com.milo.taskbuilder.library.TaskLibraryController;
 import com.milo.taskbuilder.task.dto.TaskDetailResponse;
+import com.milo.taskbuilder.task.dto.TaskMediaUploadResponse;
 import com.milo.taskbuilder.task.dto.UpdateTaskRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -25,11 +28,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(TaskLibraryController.class)
+@WebMvcTest({TaskLibraryController.class, TaskMediaController.class})
 @AutoConfigureMockMvc(addFilters = false)
 class TaskDetailControllerIntegrationTest {
 
@@ -44,6 +49,9 @@ class TaskDetailControllerIntegrationTest {
 
     @MockitoBean
     private TaskDetailService taskDetailService;
+
+    @MockitoBean
+    private TaskMediaStorageService taskMediaStorageService;
 
     @MockitoBean
     private MiloJwtService miloJwtService;
@@ -66,6 +74,9 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(jsonPath("$.steps[0].title").value("Apri l'acqua"))
                 .andExpect(jsonPath("$.steps[0].required").value(true))
                 .andExpect(jsonPath("$.steps[0].supportGuidance").value("Indicazione verbale breve"))
+                .andExpect(jsonPath("$.steps[0].visualSupport.text").value("Apri"))
+                .andExpect(jsonPath("$.steps[0].visualSupport.image.mediaId")
+                        .value("aaaaaaaa-1111-1111-1111-111111111111"))
                 .andExpect(jsonPath("$.steps[1].position").value(2));
     }
 
@@ -93,7 +104,25 @@ class TaskDetailControllerIntegrationTest {
                                 true,
                                 "Indicazione verbale breve",
                                 "Lode immediata",
-                                1
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Apri",
+                                        null,
+                                        new UpdateTaskRequest.StepImageRequest(
+                                                UUID.fromString("aaaaaaaa-1111-1111-1111-111111111111"),
+                                                "task-1/image-1.png",
+                                                "step-1.png",
+                                                "image/png",
+                                                1024L,
+                                                320,
+                                                240,
+                                                "Apri il rubinetto",
+                                                "/api/tasks/%s/media/%s/content".formatted(
+                                                        response.id(),
+                                                        UUID.fromString("aaaaaaaa-1111-1111-1111-111111111111")
+                                                )
+                                        )
+                                )
                         ),
                         new UpdateTaskRequest.UpdateTaskStepRequest(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
@@ -103,7 +132,12 @@ class TaskDetailControllerIntegrationTest {
                                 false,
                                 "Modello visivo",
                                 null,
-                                2
+                                2,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Insapona",
+                                        new UpdateTaskRequest.StepSymbolRequest("arasaac", "soap", "Sapone"),
+                                        null
+                                )
                         )
                 )
         );
@@ -119,10 +153,62 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(jsonPath("$.title").value(response.title()))
                 .andExpect(jsonPath("$.steps[0].id").value("11111111-1111-1111-1111-111111111111"))
                 .andExpect(jsonPath("$.steps[0].estimatedMinutes").value(1))
+                .andExpect(jsonPath("$.steps[0].visualSupport.image.storageKey").value("task-1/image-1.png"))
                 .andExpect(jsonPath("$.steps[1].id").value("22222222-2222-2222-2222-222222222222"))
+                .andExpect(jsonPath("$.steps[1].visualSupport.symbol.key").value("soap"))
                 .andExpect(jsonPath("$.stepCount").value(2));
 
         verify(taskDetailService).updateTask(eq(response.id()), eq(principal.getLocalUserId()), any(UpdateTaskRequest.class));
+    }
+
+    @Test
+    void uploadsTaskMediaForAuthenticatedUser() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID mediaId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        MockMultipartFile file = new MockMultipartFile("file", "step.png", "image/png", new byte[]{1, 2, 3});
+
+        when(taskMediaStorageService.upload(eq(taskId), eq(principal.getLocalUserId()), any()))
+                .thenReturn(new TaskMediaUploadResponse(
+                        mediaId,
+                        taskId,
+                        "step.png",
+                        "image/png",
+                        3,
+                        320,
+                        240,
+                        "task-1/step.png",
+                        null,
+                        "/api/tasks/%s/media/%s/content".formatted(taskId, mediaId)
+                ));
+
+        mockMvc.perform(multipart("/api/tasks/{taskId}/media/uploads", taskId)
+                        .file(file)
+                        .principal(authentication(principal)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.mediaId").value(mediaId.toString()))
+                .andExpect(jsonPath("$.storageKey").value("task-1/step.png"))
+                .andExpect(jsonPath("$.url").value("/api/tasks/%s/media/%s/content".formatted(taskId, mediaId)));
+    }
+
+    @Test
+    void returnsStoredTaskMediaContentForAuthenticatedUser() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID mediaId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
+        when(taskMediaStorageService.loadOwnedMedia(taskId, mediaId, principal.getLocalUserId()))
+                .thenReturn(new TaskMediaStorageService.StoredTaskMediaContent(
+                        new byte[]{1, 2, 3},
+                        MediaType.IMAGE_PNG_VALUE,
+                        "step.png"
+                ));
+
+        mockMvc.perform(get("/api/tasks/{taskId}/media/{mediaId}/content", taskId, mediaId)
+                        .principal(authentication(principal)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.IMAGE_PNG_VALUE))
+                .andExpect(content().bytes(new byte[]{1, 2, 3}));
     }
 
     private TaskBuilderPrincipal principal() {
@@ -165,7 +251,22 @@ class TaskDetailControllerIntegrationTest {
                                 true,
                                 "Indicazione verbale breve",
                                 "Lode immediata",
-                                1
+                                1,
+                                new TaskDetailResponse.VisualSupportDetail(
+                                        "Apri",
+                                        null,
+                                        new TaskDetailResponse.StepImageDetail(
+                                                UUID.fromString("aaaaaaaa-1111-1111-1111-111111111111"),
+                                                "task-1/image-1.png",
+                                                "step-1.png",
+                                                "image/png",
+                                                1024,
+                                                320,
+                                                240,
+                                                "Apri il rubinetto",
+                                                "/api/tasks/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/media/aaaaaaaa-1111-1111-1111-111111111111/content"
+                                        )
+                                )
                         ),
                         new TaskDetailResponse.TaskStepDetail(
                                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
@@ -175,7 +276,12 @@ class TaskDetailControllerIntegrationTest {
                                 false,
                                 "Modello visivo",
                                 null,
-                                2
+                                2,
+                                new TaskDetailResponse.VisualSupportDetail(
+                                        "Insapona",
+                                        new TaskDetailResponse.StepSymbolDetail("arasaac", "soap", "Sapone"),
+                                        null
+                                )
                         )
                 )
         );
