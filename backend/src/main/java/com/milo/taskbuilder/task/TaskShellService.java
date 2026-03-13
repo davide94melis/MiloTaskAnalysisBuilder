@@ -19,10 +19,16 @@ public class TaskShellService {
     private static final String DEFAULT_TITLE = "Nuova task analysis";
 
     private final TaskShellRepository repository;
+    private final TaskAnalysisStepRepository taskAnalysisStepRepository;
     private final TaskShellMapper mapper;
 
-    public TaskShellService(TaskShellRepository repository, TaskShellMapper mapper) {
+    public TaskShellService(
+            TaskShellRepository repository,
+            TaskAnalysisStepRepository taskAnalysisStepRepository,
+            TaskShellMapper mapper
+    ) {
         this.repository = repository;
+        this.taskAnalysisStepRepository = taskAnalysisStepRepository;
         this.mapper = mapper;
     }
 
@@ -32,7 +38,12 @@ public class TaskShellService {
                 ? newDraft(ownerId, ownerEmail, request.title())
                 : duplicateAccessibleTask(request.templateId(), ownerId, ownerEmail, request.title());
 
-        return mapper.toCard(repository.save(draft));
+        TaskShellEntity savedDraft = repository.save(draft);
+        if (draft.getSourceTaskId() != null) {
+            copySteps(draft.getSourceTaskId(), savedDraft.getId());
+        }
+
+        return mapper.toCard(savedDraft);
     }
 
     @Transactional(readOnly = true)
@@ -103,7 +114,9 @@ public class TaskShellService {
     @Transactional
     public TaskCardResponse duplicate(UUID sourceTaskId, UUID ownerId, String ownerEmail) {
         TaskShellEntity copy = duplicateAccessibleTask(sourceTaskId, ownerId, ownerEmail, null);
-        return mapper.toCard(repository.save(copy));
+        TaskShellEntity savedCopy = repository.save(copy);
+        copySteps(copy.getSourceTaskId(), savedCopy.getId());
+        return mapper.toCard(savedCopy);
     }
 
     private TaskShellEntity newDraft(UUID ownerId, String ownerEmail, String requestedTitle) {
@@ -126,14 +139,44 @@ public class TaskShellService {
         copy.setSourceTaskId(source.getId());
         copy.setTitle(normalize(requestedTitle) == null ? source.getTitle() : requestedTitle.trim());
         copy.setCategory(source.getCategory());
+        copy.setDescription(source.getDescription());
+        copy.setEducationalObjective(source.getEducationalObjective());
+        copy.setProfessionalNotes(source.getProfessionalNotes());
         copy.setTargetLabel(source.getTargetLabel());
         copy.setSupportLevel(source.getSupportLevel());
+        copy.setDifficultyLevel(source.getDifficultyLevel());
         copy.setContextLabel(source.getContextLabel());
         copy.setStatus(TaskShellStatus.DRAFT);
         copy.setVisibility(TaskShellVisibility.PRIVATE);
         copy.setStepCount(source.getStepCount());
         copy.setAuthorName(ownerEmail);
         return copy;
+    }
+
+    private void copySteps(UUID sourceTaskId, UUID destinationTaskId) {
+        if (sourceTaskId == null) {
+            return;
+        }
+
+        List<TaskAnalysisStepEntity> sourceSteps =
+                taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(sourceTaskId);
+
+        if (sourceSteps.isEmpty()) {
+            return;
+        }
+
+        List<TaskAnalysisStepEntity> copiedSteps = sourceSteps.stream()
+                .map(sourceStep -> {
+                    TaskAnalysisStepEntity copiedStep = new TaskAnalysisStepEntity();
+                    copiedStep.setTaskAnalysisId(destinationTaskId);
+                    copiedStep.setPosition(sourceStep.getPosition());
+                    copiedStep.setTitle(sourceStep.getTitle());
+                    copiedStep.setDescription(sourceStep.getDescription());
+                    return copiedStep;
+                })
+                .toList();
+
+        taskAnalysisStepRepository.saveAll(copiedSteps);
     }
 
     private String normalize(String value) {

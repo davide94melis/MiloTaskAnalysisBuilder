@@ -8,7 +8,9 @@ import com.milo.taskbuilder.library.dto.DashboardResponse;
 import com.milo.taskbuilder.library.dto.TaskCardResponse;
 import com.milo.taskbuilder.library.dto.TaskLibraryFilterOptionsResponse;
 import com.milo.taskbuilder.library.dto.TaskLibraryResponse;
+import com.milo.taskbuilder.task.TaskDetailService;
 import com.milo.taskbuilder.task.TaskShellService;
+import com.milo.taskbuilder.task.dto.TaskDetailResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,9 @@ class TaskLibraryControllerIntegrationTest {
 
     @MockitoBean
     private TaskShellService taskShellService;
+
+    @MockitoBean
+    private TaskDetailService taskDetailService;
 
     @MockitoBean
     private MiloJwtService miloJwtService;
@@ -156,16 +161,17 @@ class TaskLibraryControllerIntegrationTest {
     }
 
     @Test
-    void reopensOwnedDraftById() throws Exception {
+    void returnsTaskDetailById() throws Exception {
         TaskBuilderPrincipal principal = principal();
-        TaskCardResponse reopened = card("Task riapribile", principal.getEmail(), "draft");
+        TaskDetailResponse reopened = detail("Task riapribile", principal.getEmail(), "draft");
 
-        when(taskShellService.reopenDraft(reopened.id(), principal.getLocalUserId())).thenReturn(reopened);
+        when(taskDetailService.getTaskDetail(reopened.id(), principal.getLocalUserId())).thenReturn(reopened);
 
         mockMvc.perform(get("/api/tasks/{taskId}", reopened.id()).principal(authentication(principal)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reopened.id().toString()))
-                .andExpect(jsonPath("$.title").value(reopened.title()));
+                .andExpect(jsonPath("$.title").value(reopened.title()))
+                .andExpect(jsonPath("$.steps[0].title").value("Apri il rubinetto"));
     }
 
     @Test
@@ -205,6 +211,42 @@ class TaskLibraryControllerIntegrationTest {
                 authorName,
                 null,
                 Instant.parse("2026-03-13T10:15:30Z")
+        );
+    }
+
+    private TaskDetailResponse detail(String title, String authorName, String status) {
+        return new TaskDetailResponse(
+                UUID.randomUUID(),
+                title,
+                "Routine quotidiana",
+                "Sequenza per routine guidata",
+                "Favorire autonomia",
+                "Note per il team",
+                "Casa",
+                "Bambino",
+                "Visivo",
+                "Base",
+                "Casa",
+                "template".equals(status) ? "template" : "private",
+                status,
+                2,
+                authorName,
+                null,
+                Instant.parse("2026-03-13T10:15:30Z"),
+                List.of(
+                        new TaskDetailResponse.TaskStepDetail(
+                                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                                1,
+                                "Apri il rubinetto",
+                                "Apri l'acqua"
+                        ),
+                        new TaskDetailResponse.TaskStepDetail(
+                                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                                2,
+                                "Bagna le mani",
+                                "Passa le mani sotto l'acqua"
+                        )
+                )
         );
     }
 }

@@ -5,13 +5,18 @@ import com.milo.taskbuilder.library.dto.CreateTaskRequest;
 import com.milo.taskbuilder.library.dto.DashboardResponse;
 import com.milo.taskbuilder.library.dto.TaskCardResponse;
 import com.milo.taskbuilder.library.dto.TaskLibraryResponse;
+import com.milo.taskbuilder.task.TaskDetailService;
 import com.milo.taskbuilder.task.TaskShellService;
+import com.milo.taskbuilder.task.dto.TaskDetailResponse;
+import com.milo.taskbuilder.task.dto.UpdateTaskRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,9 +30,12 @@ import java.util.UUID;
 public class TaskLibraryController {
 
     private final TaskShellService taskShellService;
+    private TaskDetailService taskDetailService;
 
-    public TaskLibraryController(TaskShellService taskShellService) {
+    @Autowired
+    public TaskLibraryController(TaskShellService taskShellService, TaskDetailService taskDetailService) {
         this.taskShellService = taskShellService;
+        this.taskDetailService = taskDetailService;
     }
 
     @GetMapping("/tasks/dashboard")
@@ -87,7 +95,7 @@ public class TaskLibraryController {
     }
 
     @GetMapping("/tasks/{taskId}")
-    public ResponseEntity<TaskCardResponse> reopenTask(
+    public ResponseEntity<TaskDetailResponse> reopenTask(
             Authentication authentication,
             @PathVariable UUID taskId
     ) {
@@ -95,7 +103,20 @@ public class TaskLibraryController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(taskShellService.reopenDraft(taskId, principal.getLocalUserId()));
+        return ResponseEntity.ok(taskDetailService.getTaskDetail(taskId, principal.getLocalUserId()));
+    }
+
+    @PutMapping("/tasks/{taskId}")
+    public ResponseEntity<TaskDetailResponse> updateTask(
+            Authentication authentication,
+            @PathVariable UUID taskId,
+            @RequestBody UpdateTaskRequest request
+    ) {
+        TaskBuilderPrincipal principal = principal(authentication);
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(taskDetailService.updateTask(taskId, principal.getLocalUserId(), request));
     }
 
     @PostMapping("/tasks/{taskId}/duplicate")

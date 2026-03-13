@@ -10,7 +10,8 @@
 |-------|--------|-----------|
 | 1 | Complete | 2026-03-13 |
 | 2 | Complete | 2026-03-13 |
-| 3 | Next | - |
+| 3 | Complete | 2026-03-13 |
+| 4 | Next | - |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -163,4 +164,8 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/02-dashboard-a
 
 ## Phase 3 Next
 
-**Phase 3: Task Metadata And Persistence** - Establish the task-analysis domain model, metadata fields, and durable save behavior.
+Completed on 2026-03-13. Verification passed in `.planning/phases/03-task-metadata-and-persistence/03-VERIFICATION.md`.
+
+## Phase 4 Next
+
+**Phase 4: Core Step Authoring** - Deliver the editable step-by-step authoring experience without rich media complexity yet.

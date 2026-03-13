@@ -22,10 +22,10 @@
 
 ### Task Metadata
 
-- [ ] **META-01**: User can define task title, category, description, educational objective, and professional notes.
-- [ ] **META-02**: User can define intended target as a freeform child, group, or audience label without requiring a global Milo entity in v1.
-- [ ] **META-03**: User can define difficulty level, environment of use, and visibility state for a task analysis.
-- [ ] **META-04**: User can assign a support level profile to a task analysis.
+- [x] **META-01**: User can define task title, category, description, educational objective, and professional notes.
+- [x] **META-02**: User can define intended target as a freeform child, group, or audience label without requiring a global Milo entity in v1.
+- [x] **META-03**: User can define difficulty level, environment of use, and visibility state for a task analysis.
+- [x] **META-04**: User can assign a support level profile to a task analysis.
 
 ### Step Editor
 
@@ -36,7 +36,7 @@
 - [ ] **STEP-05**: User can mark a step as required or optional.
 - [ ] **STEP-06**: User can define prompt/support guidance and optional reinforcement notes for a step.
 - [ ] **STEP-07**: User can define estimated time for a step.
-- [ ] **STEP-08**: User can save editor changes and preserve step order exactly as configured.
+- [x] **STEP-08**: User can save editor changes and preserve step order exactly as configured.
 
 ### Support Variants
 
@@ -136,10 +136,10 @@
 | LIBR-04 | Phase 2 | Complete |
 | LIBR-05 | Phase 2 | Complete |
 | LIBR-06 | Phase 2 | Complete |
-| META-01 | Phase 3 | Pending |
-| META-02 | Phase 3 | Pending |
-| META-03 | Phase 3 | Pending |
-| META-04 | Phase 3 | Pending |
+| META-01 | Phase 3 | Complete |
+| META-02 | Phase 3 | Complete |
+| META-03 | Phase 3 | Complete |
+| META-04 | Phase 3 | Complete |
 | STEP-01 | Phase 4 | Pending |
 | STEP-02 | Phase 4 | Pending |
 | STEP-03 | Phase 5 | Pending |
@@ -147,7 +147,7 @@
 | STEP-05 | Phase 4 | Pending |
 | STEP-06 | Phase 4 | Pending |
 | STEP-07 | Phase 4 | Pending |
-| STEP-08 | Phase 3 | Pending |
+| STEP-08 | Phase 3 | Complete |
 | SUPP-01 | Phase 6 | Pending |
 | SUPP-02 | Phase 6 | Pending |
 | SUPP-03 | Phase 6 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after Phase 2 completion*
+*Last updated: 2026-03-13 after Phase 3 completion*

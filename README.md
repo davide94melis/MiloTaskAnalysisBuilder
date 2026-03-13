@@ -73,3 +73,32 @@ Phase 2 persists only a lightweight task shell in `taskbuilder.task_analysis`:
 - duplication lineage
 
 This is deliberate. Full metadata semantics and editor persistence are still deferred to Phase 3.
+
+## Phase 3 Task Detail Contract
+
+Phase 3 turns `/tasks/:taskId` into a real metadata editor and adds persisted ordered step drafts without pulling full step authoring forward from Phase 4.
+
+### Backend API introduced in Phase 3
+
+- `GET /api/tasks/{taskId}` now returns the task detail payload instead of a lightweight card
+- `PUT /api/tasks/{taskId}` saves metadata plus the current ordered step draft array
+
+### Task detail payload
+
+The editor now round-trips:
+
+- title
+- category
+- description
+- educational objective
+- professional notes
+- context label
+- target label
+- support level
+- difficulty level
+- visibility
+- ordered step drafts with `id`, `position`, `title`, and `description`
+
+### Boundary with Phase 4
+
+Phase 3 proves save/reload fidelity for metadata and step order only. Rich step authoring actions such as add, duplicate, delete, symbol/image/audio editing, and present-mode behavior still belong to later phases.

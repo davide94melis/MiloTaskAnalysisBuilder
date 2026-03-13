@@ -86,4 +86,107 @@ describe('TaskLibraryService', () => {
       sourceTaskId: 'tpl-1'
     });
   });
+
+  it('loads a task detail payload for the editor route', () => {
+    service.getTaskDetail('task-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      id: 'task-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      description: 'Sequenza visiva per il bagno.',
+      educationalObjective: 'Consolidare l autonomia in bagno.',
+      professionalNotes: 'Usare il supporto visivo vicino al lavabo.',
+      contextLabel: 'Bagno',
+      environmentLabel: 'Bagno di casa',
+      targetLabel: 'Bambino',
+      supportLevel: 'Guidato',
+      difficultyLevel: 'Base',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-13T10:15:30Z',
+      authorName: 'teacher@example.com',
+      sourceTaskId: null,
+      steps: [
+        {
+          id: 'step-1',
+          position: 1,
+          title: 'Apri il rubinetto',
+          description: 'Ruota la manopola.'
+        }
+      ]
+    });
+  });
+
+  it('saves task detail metadata and ordered step drafts', () => {
+    service
+      .updateTask('task-1', {
+        title: 'Lavarsi le mani',
+        category: 'Autonomia personale',
+        description: 'Sequenza visiva per il bagno.',
+        educationalObjective: 'Consolidare l autonomia in bagno.',
+        professionalNotes: 'Usare il supporto visivo vicino al lavabo.',
+        targetLabel: 'Bambino',
+        difficultyLevel: 'Base',
+        environmentLabel: 'Bagno di casa',
+        visibility: 'private',
+        supportLevel: 'Guidato',
+        steps: [
+          {
+            id: 'step-2',
+            position: 1,
+            title: 'Prendi il sapone',
+            description: 'Usa il dispenser.'
+          },
+          {
+            id: 'step-1',
+            position: 2,
+            title: 'Apri il rubinetto',
+            description: 'Ruota la manopola.'
+          }
+        ]
+      })
+      .subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body.steps.map((step: { id: string }) => step.id)).toEqual(['step-2', 'step-1']);
+    expect(request.request.body.environmentLabel).toBe('Bagno di casa');
+    request.flush({
+      id: 'task-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      description: 'Sequenza visiva per il bagno.',
+      educationalObjective: 'Consolidare l autonomia in bagno.',
+      professionalNotes: 'Usare il supporto visivo vicino al lavabo.',
+      contextLabel: 'Bagno',
+      environmentLabel: 'Bagno di casa',
+      targetLabel: 'Bambino',
+      supportLevel: 'Guidato',
+      difficultyLevel: 'Base',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-13T11:10:00Z',
+      authorName: 'teacher@example.com',
+      sourceTaskId: null,
+      steps: [
+        {
+          id: 'step-2',
+          position: 1,
+          title: 'Prendi il sapone',
+          description: 'Usa il dispenser.'
+        },
+        {
+          id: 'step-1',
+          position: 2,
+          title: 'Apri il rubinetto',
+          description: 'Ruota la manopola.'
+        }
+      ]
+    });
+  });
 });

@@ -32,6 +32,20 @@ Phase 2 adds the authenticated dashboard and library API:
 
 The persisted Phase 2 model is intentionally a lightweight task shell in `taskbuilder.task_analysis`. Do not treat it as the full Phase 3 editor schema.
 
+## Phase 3 API Contract
+
+Phase 3 expands the backend into a real task detail persistence boundary:
+
+- `GET /api/tasks/{taskId}` returns the authenticated owner's full task detail payload
+- `PUT /api/tasks/{taskId}` saves metadata and the ordered step draft array
+
+The persisted model now spans:
+
+- `taskbuilder.task_analysis` for task-level metadata
+- `taskbuilder.task_analysis_step` for ordered step drafts
+
+`environmentLabel` is currently backed by the existing `context_label` field so Phase 4 can extend authoring without another schema rewrite.
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -43,4 +57,4 @@ The persisted Phase 2 model is intentionally a lightweight task shell in `taskbu
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 2 only adds dashboard/library task-shell persistence and APIs on top of the Phase 1 auth foundation.
+This backend does not implement local login, registration, or shared Milo entities. Phase 3 adds metadata persistence and step-order save/reload, but not full step authoring operations.

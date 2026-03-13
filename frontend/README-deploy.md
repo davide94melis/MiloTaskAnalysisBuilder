@@ -38,7 +38,24 @@ The frontend expects these Phase 2 backend payloads:
 
 - dashboard summary with `recentDrafts`, `seedTemplates`, and `stats`
 - library response with `items` plus `availableFilters`
-- task-shell create/reopen/duplicate responses shaped like a task card
+- task-shell create/duplicate responses shaped like a task card
+
+## Phase 3 Frontend Contract
+
+Phase 3 upgrades `/tasks/:taskId` from a handoff page into a real metadata editor.
+
+The frontend now expects:
+
+- `GET /api/tasks/{taskId}` to return a task detail payload with metadata and ordered steps
+- `PUT /api/tasks/{taskId}` to persist the current metadata form plus the current step order
+
+The editor intentionally supports only:
+
+- metadata editing
+- reload-safe save behavior
+- existing-row step reorder via simple controls
+
+It does not yet implement full step creation or rich media authoring. That remains Phase 4 scope.
 
 ## Deployment Checklist
 
@@ -50,4 +67,4 @@ The frontend expects these Phase 2 backend payloads:
 
 ## Scope Reminder
 
-Phase 2 adds dashboard and library workflows, but not the full editor yet. The task-shell entry route is a deliberate bridge into Phase 3 rather than a fake finished editor.
+Phase 3 makes the task route real for metadata persistence, but it is still not the full authoring surface. Rich step editing and present-mode depth remain later-phase work.

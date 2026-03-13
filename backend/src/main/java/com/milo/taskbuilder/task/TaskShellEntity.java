@@ -31,11 +31,23 @@ public class TaskShellEntity {
     @Column(name = "category")
     private String category;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "educational_objective")
+    private String educationalObjective;
+
+    @Column(name = "professional_notes")
+    private String professionalNotes;
+
     @Column(name = "target_label")
     private String targetLabel;
 
     @Column(name = "support_level")
     private String supportLevel;
+
+    @Column(name = "difficulty_level")
+    private String difficultyLevel;
 
     @Column(name = "context_label")
     private String contextLabel;
@@ -115,6 +127,30 @@ public class TaskShellEntity {
         this.category = category;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getEducationalObjective() {
+        return educationalObjective;
+    }
+
+    public void setEducationalObjective(String educationalObjective) {
+        this.educationalObjective = educationalObjective;
+    }
+
+    public String getProfessionalNotes() {
+        return professionalNotes;
+    }
+
+    public void setProfessionalNotes(String professionalNotes) {
+        this.professionalNotes = professionalNotes;
+    }
+
     public String getTargetLabel() {
         return targetLabel;
     }
@@ -129,6 +165,14 @@ public class TaskShellEntity {
 
     public void setSupportLevel(String supportLevel) {
         this.supportLevel = supportLevel;
+    }
+
+    public String getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(String difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
     }
 
     public String getContextLabel() {

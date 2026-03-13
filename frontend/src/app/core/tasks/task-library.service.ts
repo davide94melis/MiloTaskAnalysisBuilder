@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppConfigService } from '../config/app-config.service';
+import { TaskDetailRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
   CreateTaskShellRequest,
   TaskCardRecord,
@@ -45,6 +46,14 @@ export class TaskLibraryService {
 
   getTask(taskId: string): Observable<TaskCardRecord> {
     return this.http.get<TaskCardRecord>(`${this.tasksUrl}/${taskId}`);
+  }
+
+  getTaskDetail(taskId: string): Observable<TaskDetailRecord> {
+    return this.http.get<TaskDetailRecord>(`${this.tasksUrl}/${taskId}`);
+  }
+
+  updateTask(taskId: string, request: UpdateTaskDetailRequest): Observable<TaskDetailRecord> {
+    return this.http.put<TaskDetailRecord>(`${this.tasksUrl}/${taskId}`, request);
   }
 
   createDraft(request: CreateTaskShellRequest = {}): Observable<TaskCardRecord> {
