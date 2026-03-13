@@ -63,7 +63,7 @@ Existing infrastructure covers all phase requirements.
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Metadata and ordered steps survive browser refresh after save | STEP-08 | Real save/reload confidence is stronger with an end-user refresh flow than with isolated component assertions alone | Open `/tasks/:id`, edit metadata and step order, save, refresh, confirm values and order remain intact |
+| Metadata and ordered steps survive browser refresh after save | STEP-08 | Real save/reload confidence is stronger with an end-user refresh flow than with isolated component assertions alone | Open `/tasks/:id`, change metadata, reorder existing step draft rows with the minimal move controls, save, refresh, confirm values and order remain intact |
 
 ---
 

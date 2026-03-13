@@ -21,6 +21,7 @@ What Phase 3 should add:
 - richer task metadata fields
 - durable save/update APIs
 - minimal ordered step draft persistence needed to satisfy save/reload stability
+- a simple explicit reorder mechanism for already-present step draft rows so `STEP-08` is actually user-verifiable
 - a real metadata editing screen for `/tasks/:taskId`
 
 What Phase 3 should not fully deliver yet:
@@ -80,8 +81,9 @@ Recommended UI scope:
 - support level, difficulty, environment, visibility controls
 - notes/objective/description inputs
 - minimal step draft section that can render and submit ordered steps already present in the payload
+- a simple move-up / move-down reorder control for existing step draft rows only
 
-The step area should support persistence and reload, but not full authoring ergonomics yet. A simple ordered list with basic editable fields is enough if it proves save/reload stability.
+The step area should support persistence and reload, but not full authoring ergonomics yet. Phase 3 should allow order changes for existing draft rows, but should avoid becoming the general step-authoring phase. If step fields are editable at all, keep them limited to persistence of already-present rows rather than broad add/edit/restructure workflows.
 
 ## Contract Recommendations
 
