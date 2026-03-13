@@ -74,9 +74,36 @@ describe('TaskStepAuthoringEditorComponent', () => {
     expect(emitted[0]?.[0].visualSupport).toEqual(createEmptyVisualSupport());
   });
 
-  it('supports text-only visual support and preserves duplicate reorder delete interactions', () => {
+  it('preserves mixed visual supports across duplicate reorder delete interactions', () => {
     component.steps = [
-      ...baseSteps,
+      {
+        ...baseSteps[0],
+        visualSupport: {
+          text: 'Apri',
+          symbol: {
+            library: 'symwriter',
+            key: 'tap',
+            label: 'Rubinetto'
+          },
+          image: {
+            mediaId: 'media-1',
+            storageKey: 'tasks/task-1/media-1.png',
+            fileName: 'rubinetto.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 1536,
+            width: 640,
+            height: 480,
+            altText: 'Rubinetto',
+            url: '/api/tasks/task-1/media/media-1/content'
+          }
+        },
+        uploadState: {
+          status: 'uploaded',
+          errorMessage: '',
+          localPreviewUrl: '/api/tasks/task-1/media/media-1/content',
+          pendingPersistence: true
+        }
+      },
       {
         id: 'step-2',
         position: 2,
@@ -96,16 +123,13 @@ describe('TaskStepAuthoringEditorComponent', () => {
     component.stepsChange.subscribe((steps) => emitted.push(steps));
 
     const host = fixture.nativeElement as HTMLElement;
-    const visualTextAreas = Array.from(host.querySelectorAll('section.visual-support textarea')) as HTMLTextAreaElement[];
-    visualTextAreas[0].value = 'Apri';
-    visualTextAreas[0].dispatchEvent(new Event('input'));
-    expect(emitted.at(-1)?.[0].visualSupport.text).toBe('Apri');
-
-    component.steps = emitted.at(-1) ?? component.steps;
-    fixture.detectChanges();
     const buttons = Array.from(host.querySelectorAll('.step__actions button')) as HTMLButtonElement[];
     buttons.find((button) => button.textContent?.trim() === 'Duplica')?.click();
     expect(emitted.at(-1)?.length).toBe(3);
+    expect(emitted.at(-1)?.[1].visualSupport.text).toBe('Apri');
+    expect(emitted.at(-1)?.[1].visualSupport.symbol?.key).toBe('tap');
+    expect(emitted.at(-1)?.[1].visualSupport.image?.mediaId).toBe('media-1');
+    expect(emitted.at(-1)?.[1].uploadState?.pendingPersistence).toBeTrue();
 
     component.steps = emitted.at(-1) ?? component.steps;
     fixture.detectChanges();
@@ -114,12 +138,14 @@ describe('TaskStepAuthoringEditorComponent', () => {
     );
     moveDownButtons[0].click();
     expect(emitted.at(-1)?.[0].title).toContain('copia');
+    expect(emitted.at(-1)?.[0].visualSupport.image?.mediaId).toBe('media-1');
 
     component.steps = emitted.at(-1) ?? component.steps;
     fixture.detectChanges();
     const deleteButtons = Array.from(fixture.nativeElement.querySelectorAll('.step__danger')) as HTMLButtonElement[];
     deleteButtons[0].click();
     expect(emitted.at(-1)?.length).toBe(2);
+    expect(emitted.at(-1)?.[0].visualSupport.text).toBe('Apri');
   });
 
   it('supports symbol plus text combinations', () => {

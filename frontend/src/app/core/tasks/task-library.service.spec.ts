@@ -87,8 +87,12 @@ describe('TaskLibraryService', () => {
     });
   });
 
-  it('loads a task detail payload for the editor route', () => {
-    service.getTaskDetail('task-1').subscribe();
+  it('loads a mixed-modality task detail payload for the editor route', () => {
+    let response: { steps: Array<{ visualSupport: { text: string | null; image: { mediaId: string } | null } }> } | undefined;
+
+    service.getTaskDetail('task-1').subscribe((value) => {
+      response = value;
+    });
 
     const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1');
     expect(request.request.method).toBe('GET');
@@ -132,6 +136,9 @@ describe('TaskLibraryService', () => {
         }
       ]
     });
+
+    expect(response?.steps[0].visualSupport.text).toBe('Apri');
+    expect(response?.steps[0].visualSupport.image).toBeNull();
   });
 
   it('saves task detail metadata and ordered step drafts', () => {

@@ -82,7 +82,7 @@ describe('TaskShellEditorEntryComponent', () => {
     ]
   };
 
-  it('loads detail data, retains draft upload state, and saves backend-aligned visual support payloads', async () => {
+  it('loads detail data, retains draft upload state, and saves backend-aligned mixed visual support payloads', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValues(
       of(baseTask),
@@ -110,6 +110,19 @@ describe('TaskShellEditorEntryComponent', () => {
                 altText: 'Foto del rubinetto',
                 url: '/api/tasks/task-1/media/media-9/content'
               }
+            },
+            uploadState: createIdleUploadState()
+          },
+          {
+            ...baseTask.steps[1],
+            visualSupport: {
+              text: 'Sapone delicato',
+              symbol: {
+                library: 'symwriter',
+                key: 'soap',
+                label: 'Sapone'
+              },
+              image: null
             },
             uploadState: createIdleUploadState()
           }
@@ -200,7 +213,21 @@ describe('TaskShellEditorEntryComponent', () => {
     };
 
     const stepsList = fixture.debugElement.query(By.directive(TaskStepsDraftListComponent)).componentInstance as TaskStepsDraftListComponent;
-    stepsList.stepsChange.emit([draftStep]);
+    stepsList.stepsChange.emit([
+      draftStep,
+      {
+        ...baseTask.steps[1],
+        visualSupport: {
+          text: 'Sapone delicato',
+          symbol: {
+            library: 'symwriter',
+            key: 'soap',
+            label: 'Sapone'
+          },
+          image: null
+        }
+      }
+    ]);
     fixture.detectChanges();
 
     expect(host.textContent).toContain('immagine/i caricate in bozza');
@@ -221,6 +248,8 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(submittedRequest.title).toBe('Lavarsi bene le mani');
     expect(submittedRequest.steps[0].visualSupport.text).toBe('Apri bene');
     expect(submittedRequest.steps[0].visualSupport.image.mediaId).toBe('media-9');
+    expect(submittedRequest.steps[1].visualSupport.text).toBe('Sapone delicato');
+    expect(submittedRequest.steps[1].visualSupport.symbol?.key).toBe('soap');
     expect(submittedRequest.steps[0].uploadState).toBeUndefined();
     expect(host.textContent).toContain('Task salvata con i supporti visivi correnti.');
 
@@ -232,6 +261,8 @@ describe('TaskShellEditorEntryComponent', () => {
     const routeComponent = fixture.componentInstance as unknown as { steps: () => TaskStepDraftRecord[] };
     expect(routeComponent.steps()[0].visualSupport.image?.mediaId).toBe('media-9');
     expect(routeComponent.steps()[0].uploadState?.pendingPersistence).toBeFalse();
+    expect(routeComponent.steps()[1].visualSupport.text).toBe('Sapone delicato');
+    expect(routeComponent.steps()[1].visualSupport.symbol?.key).toBe('soap');
   });
 
   it('creates a draft and redirects when the route has no task id', async () => {
