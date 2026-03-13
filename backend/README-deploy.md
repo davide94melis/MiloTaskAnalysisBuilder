@@ -19,6 +19,19 @@ This backend joins the Milo shared-auth ecosystem. It validates Milo-issued JWTs
 - The backend resolves or creates a local app user from the Milo user UUID and email.
 - `GET /api/auth/me` is the protected bootstrap endpoint for frontend session restore.
 
+## Phase 2 API Contract
+
+Phase 2 adds the authenticated dashboard and library API:
+
+- `GET /api/tasks/dashboard` - recent drafts, seed templates, and simple counters
+- `GET /api/tasks` - library cards plus available filter values
+- `POST /api/tasks` - create a blank draft or create from `templateId`
+- `GET /api/tasks/{taskId}` - reopen an owned draft by id
+- `POST /api/tasks/{taskId}/duplicate` - copy an accessible draft or template into a new user-owned draft
+- `GET /api/templates` - seed template cards
+
+The persisted Phase 2 model is intentionally a lightweight task shell in `taskbuilder.task_analysis`. Do not treat it as the full Phase 3 editor schema.
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -30,4 +43,4 @@ This backend joins the Milo shared-auth ecosystem. It validates Milo-issued JWTs
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities in Phase 1. It only provides Milo SSO trust and app-local authorization bootstrap.
+This backend does not implement local login, registration, or shared Milo entities. Phase 2 only adds dashboard/library task-shell persistence and APIs on top of the Phase 1 auth foundation.

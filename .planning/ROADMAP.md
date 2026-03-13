@@ -9,7 +9,8 @@
 | Phase | Status | Completed |
 |-------|--------|-----------|
 | 1 | Complete | 2026-03-13 |
-| 2 | Next | - |
+| 2 | Complete | 2026-03-13 |
+| 3 | Next | - |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -158,4 +159,8 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/01-milo-sso-fo
 
 ## Phase 2 Next
 
-**Phase 2: Dashboard And Library** - Provide an operational home and library where users can create, find, filter, reopen, duplicate, and start from templates.
+Completed on 2026-03-13. Verification passed in `.planning/phases/02-dashboard-and-library/02-VERIFICATION.md`.
+
+## Phase 3 Next
+
+**Phase 3: Task Metadata And Persistence** - Establish the task-analysis domain model, metadata fields, and durable save behavior.

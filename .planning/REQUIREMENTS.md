@@ -13,12 +13,12 @@
 
 ### Library
 
-- [ ] **LIBR-01**: User can create a new task analysis from scratch.
-- [ ] **LIBR-02**: User can view a library of their task analyses as cards showing title, step count, support level, sharing state, and last update.
-- [ ] **LIBR-03**: User can filter the library by category, context, target label, author, status, and support level.
-- [ ] **LIBR-04**: User can save a task analysis as draft and later reopen it for editing.
-- [ ] **LIBR-05**: User can duplicate an existing task analysis into their own space.
-- [ ] **LIBR-06**: User can start from at least one seed template when creating a new task analysis.
+- [x] **LIBR-01**: User can create a new task analysis from scratch.
+- [x] **LIBR-02**: User can view a library of their task analyses as cards showing title, step count, support level, sharing state, and last update.
+- [x] **LIBR-03**: User can filter the library by category, context, target label, author, status, and support level.
+- [x] **LIBR-04**: User can save a task analysis as draft and later reopen it for editing.
+- [x] **LIBR-05**: User can duplicate an existing task analysis into their own space.
+- [x] **LIBR-06**: User can start from at least one seed template when creating a new task analysis.
 
 ### Task Metadata
 
@@ -82,7 +82,7 @@
 ### UX Foundation
 
 - [ ] **UX-01**: The application uses a visual language compatible with Milo and Symwriter.
-- [ ] **UX-02**: The dashboard feels operational and reassuring rather than technical or developer-oriented.
+- [x] **UX-02**: The dashboard feels operational and reassuring rather than technical or developer-oriented.
 - [ ] **UX-03**: Core workflows for create, edit, present, share, and export are understandable without training-heavy UI.
 
 ## v2 Requirements
@@ -130,12 +130,12 @@
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
-| LIBR-01 | Phase 2 | Pending |
-| LIBR-02 | Phase 2 | Pending |
-| LIBR-03 | Phase 2 | Pending |
-| LIBR-04 | Phase 2 | Pending |
-| LIBR-05 | Phase 2 | Pending |
-| LIBR-06 | Phase 2 | Pending |
+| LIBR-01 | Phase 2 | Complete |
+| LIBR-02 | Phase 2 | Complete |
+| LIBR-03 | Phase 2 | Complete |
+| LIBR-04 | Phase 2 | Complete |
+| LIBR-05 | Phase 2 | Complete |
+| LIBR-06 | Phase 2 | Complete |
 | META-01 | Phase 3 | Pending |
 | META-02 | Phase 3 | Pending |
 | META-03 | Phase 3 | Pending |
@@ -172,7 +172,7 @@
 | EXPT-02 | Phase 10 | Pending |
 | EXPT-03 | Phase 10 | Pending |
 | UX-01 | Phase 10 | Pending |
-| UX-02 | Phase 2 | Pending |
+| UX-02 | Phase 2 | Complete |
 | UX-03 | Phase 10 | Pending |
 
 **Coverage:**
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after Phase 1 completion*
+*Last updated: 2026-03-13 after Phase 2 completion*

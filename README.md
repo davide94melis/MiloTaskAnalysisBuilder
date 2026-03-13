@@ -37,3 +37,39 @@ The frontend and later phases should treat `GET /api/auth/me` as the canonical w
 ## Important V1 Scope Rule
 
 Phase 1 only establishes SSO with Milo. The app does **not** yet reuse Milo Writer global entities such as children, classes, or other shared records.
+
+## Phase 2 Dashboard And Library Contract
+
+Phase 2 adds the first operational product surface on top of Phase 1 auth:
+
+- authenticated dashboard at `/dashboard`
+- card-based library at `/library`
+- lightweight task-shell handoff route at `/tasks/:taskId`
+- blank-task creation and template-start flow
+- duplication and draft reopen behavior
+
+### Backend API introduced in Phase 2
+
+- `GET /api/tasks/dashboard`
+- `GET /api/tasks`
+- `POST /api/tasks`
+- `GET /api/tasks/{taskId}`
+- `POST /api/tasks/{taskId}/duplicate`
+- `GET /api/templates`
+
+### Phase 2 data boundary
+
+Phase 2 persists only a lightweight task shell in `taskbuilder.task_analysis`:
+
+- title
+- category
+- target label
+- support level
+- context label
+- visibility
+- status
+- step count
+- owner and timestamps
+- duplication lineage
+
+This is deliberate. Full metadata semantics and editor persistence are still deferred to Phase 3.

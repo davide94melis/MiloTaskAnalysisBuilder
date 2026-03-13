@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
 import { LoginBridgeComponent } from './features/auth/login-bridge.component';
+import { LibraryPageComponent } from './features/library/library-page.component';
+import { TaskShellEditorEntryComponent } from './features/library/task-shell-editor-entry.component';
 import { MainLayoutComponent } from './layout/main-layout.component';
 
 export const appRoutes: Routes = [
@@ -11,7 +14,30 @@ export const appRoutes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    component: MainLayoutComponent
+    component: MainLayoutComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'dashboard'
+      },
+      {
+        path: 'dashboard',
+        component: DashboardPageComponent
+      },
+      {
+        path: 'library',
+        component: LibraryPageComponent
+      },
+      {
+        path: 'tasks/new',
+        component: TaskShellEditorEntryComponent
+      },
+      {
+        path: 'tasks/:taskId',
+        component: TaskShellEditorEntryComponent
+      }
+    ]
   },
   {
     path: '**',
