@@ -3,7 +3,13 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { TaskDetailRecord, TaskStepDraftRecord, UpdateTaskDetailRequest } from '../../core/tasks/task-detail.models';
+import {
+  TaskDetailRecord,
+  TaskStepDraftRecord,
+  UpdateTaskDetailRequest,
+  createEmptyVisualSupport,
+  createIdleUploadState
+} from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 import { TaskMetadataFormComponent } from './task-metadata-form.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
@@ -39,8 +45,8 @@ type TaskMetadataFormGroup = FormGroup<{
           <p class="entry__eyebrow">Editor metadata task</p>
           <h2>{{ currentTask.title || 'Nuova task analysis' }}</h2>
           <p class="entry__copy">
-            Completa metadata e costruisci gli step con prompt, rinforzi e tempo stimato. Il salvataggio mantiene
-            ordine e contenuto della sequenza.
+            Completa metadata e costruisci gli step con prompt, simboli, testo visivo e foto. Il salvataggio esplicito
+            mantiene ordine, contenuto e supporti della sequenza.
           </p>
         </div>
 
@@ -76,14 +82,15 @@ type TaskMetadataFormGroup = FormGroup<{
             <strong *ngIf="!saving() && saveNotice()">{{ saveNotice() }}</strong>
             <p *ngIf="saveError()" class="entry__error">{{ saveError() }}</p>
             <p *ngIf="!saveError()">
-              Ogni modifica agli step resta locale finché non salvi la task.
+              Ogni modifica agli step resta locale finche non salvi la task. Upload, simboli e testo visivo rientrano
+              nello stesso salvataggio esplicito.
             </p>
           </section>
 
           <section class="entry__panel">
             <p class="entry__panel-label">Azioni</p>
             <div class="entry__actions">
-              <button type="submit" [disabled]="saving()">Salva metadata</button>
+              <button type="submit" [disabled]="saving()">Salva task</button>
               <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
                 Duplica task
               </button>
@@ -319,7 +326,12 @@ export class TaskShellEditorEntryComponent {
 
   protected updateSteps(steps: TaskStepDraftRecord[]): void {
     this.steps.set(steps);
-    this.saveNotice.set('Step aggiornati. Salva per rendere persistenti le modifiche.');
+    const pendingUploads = steps.filter((step) => step.uploadState?.pendingPersistence).length;
+    this.saveNotice.set(
+      pendingUploads > 0
+        ? `${pendingUploads} immagine/i caricate in bozza. Salva la task per confermare testo, simboli e foto.`
+        : 'Step aggiornati. Salva per rendere persistenti le modifiche.'
+    );
   }
 
   protected async saveTask(): Promise<void> {
@@ -336,7 +348,7 @@ export class TaskShellEditorEntryComponent {
       const saved = await firstValueFrom(this.taskLibrary.updateTask(currentTask.id, this.buildRequest()));
       this.patchEditor(saved);
       this.savedAt.set(saved.lastUpdatedAt);
-      this.saveNotice.set('Metadata e step salvati.');
+      this.saveNotice.set('Task salvata con i supporti visivi correnti.');
     } catch {
       this.saveError.set('Salvataggio non riuscito. Riprova tra poco.');
     } finally {
@@ -401,8 +413,19 @@ export class TaskShellEditorEntryComponent {
       visibility: formValue.visibility,
       supportLevel: formValue.supportLevel,
       steps: this.steps().map((step, index) => ({
-        ...step,
-        position: index + 1
+        id: step.id,
+        position: index + 1,
+        title: step.title,
+        description: step.description,
+        required: step.required,
+        supportGuidance: step.supportGuidance,
+        reinforcementNotes: step.reinforcementNotes,
+        estimatedMinutes: step.estimatedMinutes,
+        visualSupport: {
+          text: step.visualSupport.text,
+          symbol: step.visualSupport.symbol ? { ...step.visualSupport.symbol } : null,
+          image: step.visualSupport.image ? { ...step.visualSupport.image } : null
+        }
       }))
     };
   }
@@ -416,7 +439,22 @@ export class TaskShellEditorEntryComponent {
         required: step.required ?? true,
         supportGuidance: step.supportGuidance ?? '',
         reinforcementNotes: step.reinforcementNotes ?? '',
-        estimatedMinutes: step.estimatedMinutes ?? null
+        estimatedMinutes: step.estimatedMinutes ?? null,
+        visualSupport: {
+          ...createEmptyVisualSupport(),
+          ...(step.visualSupport ?? {}),
+          symbol: step.visualSupport?.symbol ? { ...step.visualSupport.symbol } : null,
+          image: step.visualSupport?.image ? { ...step.visualSupport.image } : null
+        },
+        uploadState: step.uploadState
+          ? {
+              ...createIdleUploadState(),
+              ...step.uploadState
+            }
+          : {
+              ...createIdleUploadState(),
+              localPreviewUrl: step.visualSupport?.image?.url ?? null
+            }
       }));
   }
 }

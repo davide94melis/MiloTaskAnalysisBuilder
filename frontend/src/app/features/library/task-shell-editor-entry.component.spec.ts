@@ -1,11 +1,17 @@
-import { convertToParamMap, provideRouter, Router } from '@angular/router';
+import { convertToParamMap, provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { ActivatedRoute } from '@angular/router';
-import { TaskDetailRecord } from '../../core/tasks/task-detail.models';
+import {
+  TaskDetailRecord,
+  TaskStepDraftRecord,
+  createEmptyVisualSupport,
+  createIdleUploadState
+} from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.component';
+import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 
 describe('TaskShellEditorEntryComponent', () => {
   const baseTask: TaskDetailRecord = {
@@ -35,7 +41,17 @@ describe('TaskShellEditorEntryComponent', () => {
         required: true,
         supportGuidance: 'Prompt verbale',
         reinforcementNotes: 'Bravo',
-        estimatedMinutes: 1
+        estimatedMinutes: 1,
+        visualSupport: {
+          text: 'Apri',
+          symbol: {
+            library: 'symwriter',
+            key: 'tap',
+            label: 'Rubinetto'
+          },
+          image: null
+        },
+        uploadState: createIdleUploadState()
       },
       {
         id: 'step-2',
@@ -45,15 +61,63 @@ describe('TaskShellEditorEntryComponent', () => {
         required: false,
         supportGuidance: 'Modello visivo',
         reinforcementNotes: '',
-        estimatedMinutes: 2
+        estimatedMinutes: 2,
+        visualSupport: {
+          text: 'Sapone',
+          symbol: null,
+          image: {
+            mediaId: 'media-2',
+            storageKey: 'tasks/task-1/media-2.png',
+            fileName: 'sapone.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 2048,
+            width: 512,
+            height: 512,
+            altText: 'Dispenser del sapone',
+            url: '/api/tasks/task-1/media/media-2/content'
+          }
+        },
+        uploadState: createIdleUploadState()
       }
     ]
   };
 
-  it('loads detail data into editable controls and saves authored steps', async () => {
+  it('loads detail data, retains draft upload state, and saves backend-aligned visual support payloads', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValues(
+      of(baseTask),
+      of({
+        ...baseTask,
+        lastUpdatedAt: '2026-03-13T11:35:00Z',
+        steps: [
+          {
+            ...baseTask.steps[0],
+            visualSupport: {
+              text: 'Apri bene',
+              symbol: {
+                library: 'symwriter',
+                key: 'tap',
+                label: 'Rubinetto'
+              },
+              image: {
+                mediaId: 'media-9',
+                storageKey: 'tasks/task-1/media-9.png',
+                fileName: 'rubinetto.png',
+                mimeType: 'image/png',
+                fileSizeBytes: 3000,
+                width: 640,
+                height: 480,
+                altText: 'Foto del rubinetto',
+                url: '/api/tasks/task-1/media/media-9/content'
+              }
+            },
+            uploadState: createIdleUploadState()
+          }
+        ]
+      })
+    );
     const updateTask = jasmine.createSpy('updateTask').and.callFake(
-      (_taskId: string, request: { steps: Array<{ id: string; title: string; required: boolean }> }) =>
+      (_taskId: string, request: { steps: Array<{ id: string; visualSupport: TaskStepDraftRecord['visualSupport'] }> }) =>
         of({
           ...baseTask,
           title: 'Lavarsi bene le mani',
@@ -63,10 +127,13 @@ describe('TaskShellEditorEntryComponent', () => {
               description: '',
               supportGuidance: '',
               reinforcementNotes: '',
-              estimatedMinutes: null
+              estimatedMinutes: null,
+              visualSupport: createEmptyVisualSupport(),
+              uploadState: createIdleUploadState()
             }),
             ...step,
-            position: index + 1
+            position: index + 1,
+            uploadState: createIdleUploadState()
           }))
         })
     );
@@ -85,7 +152,7 @@ describe('TaskShellEditorEntryComponent', () => {
         {
           provide: TaskLibraryService,
           useValue: {
-            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask)),
+            getTaskDetail,
             updateTask,
             createDraft: jasmine.createSpy('createDraft'),
             duplicateTask: jasmine.createSpy('duplicateTask')
@@ -103,22 +170,47 @@ describe('TaskShellEditorEntryComponent', () => {
     const titleInput = host.querySelector<HTMLInputElement>('input[formcontrolname="title"]');
     expect(titleInput?.value).toBe('Lavarsi le mani');
 
-    const titleField = host.querySelectorAll<HTMLInputElement>('ol.steps input[type="text"]')[0];
-    titleField.value = 'Apri bene il rubinetto';
-    titleField.dispatchEvent(new Event('input'));
+    const draftStep: TaskStepDraftRecord = {
+      ...baseTask.steps[0],
+      visualSupport: {
+        text: 'Apri bene',
+        symbol: {
+          library: 'symwriter',
+          key: 'tap',
+          label: 'Rubinetto'
+        },
+        image: {
+          mediaId: 'media-9',
+          storageKey: 'tasks/task-1/media-9.png',
+          fileName: 'rubinetto.png',
+          mimeType: 'image/png',
+          fileSizeBytes: 3000,
+          width: 640,
+          height: 480,
+          altText: 'Foto del rubinetto',
+          url: '/api/tasks/task-1/media/media-9/content'
+        }
+      },
+      uploadState: {
+        status: 'uploaded',
+        errorMessage: '',
+        localPreviewUrl: '/api/tasks/task-1/media/media-9/content',
+        pendingPersistence: true
+      }
+    };
+
+    const stepsList = fixture.debugElement.query(By.directive(TaskStepsDraftListComponent)).componentInstance as TaskStepsDraftListComponent;
+    stepsList.stepsChange.emit([draftStep]);
     fixture.detectChanges();
 
-    const duplicateButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.textContent?.trim() === 'Duplica'
-    );
-    duplicateButton?.click();
-    fixture.detectChanges();
+    expect(host.textContent).toContain('immagine/i caricate in bozza');
 
-    const saveButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.textContent?.trim() === 'Salva metadata'
-    );
     titleInput!.value = 'Lavarsi bene le mani';
     titleInput!.dispatchEvent(new Event('input'));
+
+    const saveButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Salva task'
+    );
     saveButton?.click();
 
     await fixture.whenStable();
@@ -127,18 +219,19 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(updateTask).toHaveBeenCalled();
     const submittedRequest = updateTask.calls.mostRecent().args[1];
     expect(submittedRequest.title).toBe('Lavarsi bene le mani');
-    expect(submittedRequest.steps).toEqual(
-      jasmine.arrayContaining([
-        jasmine.objectContaining({ id: 'step-1', title: 'Apri bene il rubinetto', required: true }),
-        jasmine.objectContaining({ title: 'Apri bene il rubinetto copia' })
-      ])
-    );
+    expect(submittedRequest.steps[0].visualSupport.text).toBe('Apri bene');
+    expect(submittedRequest.steps[0].visualSupport.image.mediaId).toBe('media-9');
+    expect(submittedRequest.steps[0].uploadState).toBeUndefined();
+    expect(host.textContent).toContain('Task salvata con i supporti visivi correnti.');
 
-    const orderedTitles = Array.from(host.querySelectorAll('ol.steps strong')).map((element) =>
-      element.textContent?.trim()
-    );
-    expect(orderedTitles).toContain('Apri bene il rubinetto copia');
-    expect(host.textContent).toContain('Metadata e step salvati.');
+    params$.next(convertToParamMap({ taskId: 'task-1' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const routeComponent = fixture.componentInstance as unknown as { steps: () => TaskStepDraftRecord[] };
+    expect(routeComponent.steps()[0].visualSupport.image?.mediaId).toBe('media-9');
+    expect(routeComponent.steps()[0].uploadState?.pendingPersistence).toBeFalse();
   });
 
   it('creates a draft and redirects when the route has no task id', async () => {
