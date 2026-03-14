@@ -1,5 +1,6 @@
 export type TaskStatus = 'draft' | 'template' | 'shared';
 export type TaskVariantRole = 'standalone' | 'root' | 'variant';
+export type TaskShareMode = 'view' | 'present';
 
 export interface TaskCardRecord {
   id: string;
@@ -63,6 +64,64 @@ export interface CreateTaskShellRequest {
 export interface CreateTaskVariantRequest {
   supportLevel: string;
   title?: string;
+}
+
+export interface CreateTaskShareRequest {
+  mode: TaskShareMode;
+}
+
+export interface TaskShareSummaryRecord {
+  id: string;
+  taskId: string;
+  mode: TaskShareMode;
+  token: string;
+  shareUrl: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  revokedAt: string | null;
+}
+
+export interface PublicTaskShareVisualSupportRecord {
+  text: string;
+  symbol: {
+    library: string;
+    key: string;
+    label: string;
+  } | null;
+  image: {
+    mediaId: string;
+    storageKey: string;
+    fileName: string;
+    mimeType: string;
+    fileSizeBytes: number;
+    width: number | null;
+    height: number | null;
+    altText: string | null;
+    url: string;
+  } | null;
+}
+
+export interface PublicTaskShareStepRecord {
+  id: string;
+  position: number;
+  title: string;
+  description: string;
+  required: boolean;
+  supportGuidance: string;
+  reinforcementNotes: string;
+  estimatedMinutes: number | null;
+  visualSupport: PublicTaskShareVisualSupportRecord;
+}
+
+export interface PublicTaskShareRecord {
+  token: string;
+  mode: TaskShareMode;
+  title: string;
+  description: string;
+  educationalObjective: string;
+  supportLevel: string;
+  steps: PublicTaskShareStepRecord[];
 }
 
 export const EMPTY_LIBRARY_FILTERS: TaskLibraryFilters = {

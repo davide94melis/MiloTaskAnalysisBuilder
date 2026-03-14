@@ -219,6 +219,14 @@ Plan 08-01 completed on 2026-03-14. Summary:
 
 - `.planning/phases/08-safe-sharing-and-public-access/08-01-SUMMARY.md`
 
-Phase 8 now has a backend share-management foundation with a dedicated share table, opaque mode-specific links, and authenticated owner lifecycle APIs that preserve the existing task-detail and saved-task boundaries.
+Plan 08-02 completed on 2026-03-14. Summary:
 
-Next up: execute Plan 08-02 to add the public read contract and anonymous route foundation on top of the new share domain.
+- `.planning/phases/08-safe-sharing-and-public-access/08-02-SUMMARY.md`
+
+Plan 08-03 completed on 2026-03-14. Summary:
+
+- `.planning/phases/08-safe-sharing-and-public-access/08-03-SUMMARY.md`
+
+Phase 8 now has a backend share-management foundation, a safe public backend contract, and the authenticated editor share panel plus frontend service-layer support needed to manage `view` and `present` links from saved task state.
+
+Next up: execute Plan 08-04 to connect the new public frontend routes and presentation surfaces to the Phase 8 share contract.

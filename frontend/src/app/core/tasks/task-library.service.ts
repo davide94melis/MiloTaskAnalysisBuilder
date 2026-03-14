@@ -4,12 +4,16 @@ import { Observable } from 'rxjs';
 import { AppConfigService } from '../config/app-config.service';
 import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
+  CreateTaskShareRequest,
   CreateTaskShellRequest,
   CreateTaskVariantRequest,
+  PublicTaskShareRecord,
   TaskCardRecord,
   TaskDashboardSummary,
   TaskLibraryFilters,
-  TaskLibraryResponse
+  TaskLibraryResponse,
+  TaskShareMode,
+  TaskShareSummaryRecord
 } from './task-library.models';
 
 @Injectable({ providedIn: 'root' })
@@ -77,5 +81,33 @@ export class TaskLibraryService {
       variantSourceTaskId: taskId,
       supportLevel: request.supportLevel
     });
+  }
+
+  listTaskShares(taskId: string): Observable<TaskShareSummaryRecord[]> {
+    return this.http.get<TaskShareSummaryRecord[]>(`${this.tasksUrl}/${taskId}/shares`);
+  }
+
+  createTaskShare(taskId: string, request: CreateTaskShareRequest): Observable<TaskShareSummaryRecord> {
+    return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares`, request);
+  }
+
+  regenerateTaskShare(taskId: string, mode: TaskShareMode): Observable<TaskShareSummaryRecord> {
+    return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares/${mode}/regenerate`, {});
+  }
+
+  revokeTaskShare(taskId: string, shareId: string): Observable<TaskShareSummaryRecord> {
+    return this.http.delete<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares/${shareId}`);
+  }
+
+  getPublicTaskShare(token: string): Observable<PublicTaskShareRecord> {
+    return this.http.get<PublicTaskShareRecord>(`${this.config.apiUrl}/public/shares/${token}`);
+  }
+
+  getPublicPresentTaskShare(token: string): Observable<PublicTaskShareRecord> {
+    return this.http.get<PublicTaskShareRecord>(`${this.config.apiUrl}/public/shares/${token}/present`);
+  }
+
+  duplicateTaskFromShare(token: string): Observable<TaskCardRecord> {
+    return this.http.post<TaskCardRecord>(`${this.config.apiUrl}/public/shares/${token}/duplicate`, {});
   }
 }

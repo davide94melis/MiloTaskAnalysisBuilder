@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T03:21:03.000Z"
+last_updated: "2026-03-14T08:58:30.000Z"
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 30
-  completed_plans: 26
+  completed_plans: 28
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 8 safe sharing and public access is in progress. Plan 08-01 established the backend share-management foundation on top of the saved-task contract.
+**Current focus:** Phase 8 safe sharing and public access is in progress. Plans 08-01 through 08-03 now cover backend share management, the safe public backend contract, and the authenticated frontend share-management surface.
 
 ## Status
 
@@ -45,6 +45,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 7 Plan 07-03 executed and verified
 - Phase 7 Plan 07-04 executed and verified
 - Phase 8 Plan 08-01 executed and verified
+- Phase 8 Plan 08-02 executed and verified
+- Phase 8 Plan 08-03 executed and verified
 
 ## Active Milestone
 
@@ -52,7 +54,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `Execute Phase 8 plan 08-02`
+- `Execute Phase 8 plan 08-04`
 
 ## Recent Decisions
 
@@ -85,6 +87,13 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Task sharing now has a dedicated `task_share` persistence model with opaque tokens and mode-specific revocation state instead of overloading task visibility or status.
 - Owners can now create, list, regenerate, and revoke one active `view` share and one active `present` share per saved task through authenticated task routes.
 - Share-management responses now expose mode, token, derived share URL, and active state while public read, public media, and duplicate-from-share remain deferred to later Phase 8 plans.
+- Public share reads now use dedicated safe DTOs on `/api/public/shares/{token}` and `/api/public/shares/{token}/present` instead of exposing the owner `TaskDetailResponse`.
+- Only the narrow public share `GET` routes are anonymous; the rest of `/api/**` remains authenticated, including duplicate-from-share.
+- Public media now resolves through `/api/public/shares/{token}/media/{mediaId}/content` and is served only when the active share token resolves to media still attached to a current persisted step.
+- Duplicate-from-share now uses `POST /api/public/shares/{token}/duplicate`, still requires authentication, and always creates a new private recipient-owned draft via existing copy semantics.
+- The authenticated editor now owns share management with separate `view` and `present` controls, while keeping link lifecycle actions outside any public route.
+- Frontend share messaging now states that links always reuse the last saved task state and never publish unsaved draft media or active save-in-progress changes.
+- The frontend service layer now has explicit owner share-management methods plus public-share read and duplicate accessors so later public pages can consume the Phase 8 backend contract without reusing `getTaskDetail`.
 
 ## Constraints To Preserve
 
@@ -96,5 +105,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 08-01-PLAN.md
+- Stopped at: Completed 08-03-PLAN.md
 - Resume file: None

@@ -12,6 +12,7 @@ import {
   createIdleUploadState
 } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { TaskShareMode, TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
 import { TaskMetadataFormComponent } from './task-metadata-form.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 
@@ -122,6 +123,83 @@ type TaskMetadataFormGroup = FormGroup<{
             </div>
             <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
               Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.
+            </p>
+          </section>
+
+          <section class="entry__panel" *ngIf="task() as currentTask">
+            <div class="entry__share-header">
+              <div>
+                <p class="entry__panel-label">Condivisione pubblica</p>
+                <strong>Link separati per vista e presentazione</strong>
+              </div>
+              <span class="entry__share-state" *ngIf="shareLoading()">Aggiornamento link...</span>
+            </div>
+            <p>
+              I link pubblici riusano solo l ultima versione salvata della task. Nessuna bozza locale, modifica non
+              salvata o immagine pendente viene pubblicata in automatico.
+            </p>
+            <p class="entry__hint">
+              Il link <strong>Vista</strong> apre la lettura pubblica. Il link <strong>Presenta</strong> riusera la
+              stessa esperienza guidata salvata prevista dalla modalita present corrente.
+            </p>
+            <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
+            <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
+            <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
+
+            <article class="entry__share-card" *ngFor="let mode of shareModes">
+              <div class="entry__share-card-copy">
+                <div class="entry__share-card-head">
+                  <strong>{{ shareModeLabel(mode) }}</strong>
+                  <span class="entry__share-pill" [class.entry__share-pill--active]="shareForMode(mode)?.active">
+                    {{ shareForMode(mode)?.active ? 'Attivo' : 'Non creato' }}
+                  </span>
+                </div>
+                <p>{{ shareModeDescription(mode) }}</p>
+                <code class="entry__share-url" *ngIf="shareForMode(mode) as share">{{ publicShareLink(share) }}</code>
+                <p class="entry__hint" *ngIf="!shareForMode(mode)">
+                  Nessun link {{ shareModeLabel(mode).toLowerCase() }} attivo per questa task salvata.
+                </p>
+              </div>
+
+              <div class="entry__share-actions">
+                <button
+                  type="button"
+                  class="entry__ghost"
+                  [disabled]="isShareActionDisabled(mode)"
+                  (click)="createShare(mode)"
+                >
+                  {{ shareForMode(mode) ? 'Ricrea link' : 'Crea link' }}
+                </button>
+                <button
+                  type="button"
+                  class="entry__ghost"
+                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                  (click)="copyShareLink(mode)"
+                >
+                  Copia link
+                </button>
+                <button
+                  type="button"
+                  class="entry__ghost"
+                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                  (click)="regenerateShare(mode)"
+                >
+                  Rigenera link
+                </button>
+                <button
+                  type="button"
+                  class="entry__ghost entry__ghost--danger"
+                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                  (click)="revokeShare(mode)"
+                >
+                  Revoca link
+                </button>
+              </div>
+            </article>
+
+            <p class="entry__hint">
+              La gestione dei link resta solo nell editor autenticato del proprietario. I link pubblici non abilitano
+              modifica, salvataggio o sessioni separate dal contenuto salvato.
             </p>
           </section>
 
@@ -315,6 +393,17 @@ type TaskMetadataFormGroup = FormGroup<{
         color: #31566b;
       }
 
+      .entry__ghost {
+        border: 1px solid rgba(17, 65, 91, 0.16);
+        background: rgba(255, 255, 255, 0.94);
+        color: #31566b;
+      }
+
+      .entry__ghost--danger {
+        border-color: rgba(180, 35, 24, 0.22);
+        color: #b42318;
+      }
+
       .entry__actions a {
         display: inline-flex;
         align-items: center;
@@ -326,6 +415,64 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__panel {
         display: grid;
         gap: 0.55rem;
+      }
+
+      .entry__share-header,
+      .entry__share-card-head {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .entry__share-card {
+        display: grid;
+        gap: 0.8rem;
+        padding: 0.95rem;
+        border-radius: 1.2rem;
+        background: rgba(247, 250, 252, 0.96);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+      }
+
+      .entry__share-card-copy,
+      .entry__share-actions {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .entry__share-actions button {
+        min-height: 2.65rem;
+        border-radius: 999px;
+        padding: 0 1rem;
+        font: inherit;
+      }
+
+      .entry__share-state,
+      .entry__share-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2rem;
+        padding: 0 0.8rem;
+        border-radius: 999px;
+        background: rgba(17, 65, 91, 0.08);
+        color: #31566b;
+        font-size: 0.84rem;
+      }
+
+      .entry__share-pill--active {
+        background: rgba(25, 77, 45, 0.12);
+        color: #194d2d;
+      }
+
+      .entry__share-url {
+        display: block;
+        padding: 0.75rem 0.9rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px dashed rgba(17, 65, 91, 0.16);
+        color: #11415b;
+        overflow-wrap: anywhere;
       }
 
       .entry__family-facts {
@@ -420,6 +567,12 @@ export class TaskShellEditorEntryComponent {
   protected readonly saveError = signal('');
   protected readonly saveNotice = signal('');
   protected readonly savedAt = signal<string | null>(null);
+  protected readonly shares = signal<TaskShareSummaryRecord[]>([]);
+  protected readonly shareLoading = signal(false);
+  protected readonly shareError = signal('');
+  protected readonly shareNotice = signal('');
+  protected readonly shareBusyMode = signal<TaskShareMode | null>(null);
+  protected readonly shareModes: readonly TaskShareMode[] = ['view', 'present'];
 
   protected readonly metadataForm: TaskMetadataFormGroup = new FormGroup({
     title: new FormControl('', { nonNullable: true }),
@@ -545,6 +698,7 @@ export class TaskShellEditorEntryComponent {
     const detail = await firstValueFrom(this.taskLibrary.getTaskDetail(taskId));
     this.patchEditor(detail);
     this.savedAt.set(detail.lastUpdatedAt);
+    await this.refreshShares(detail.id);
   }
 
   private patchEditor(detail: TaskDetailRecord): void {
@@ -631,6 +785,108 @@ export class TaskShellEditorEntryComponent {
     return this.steps().some((step) => step.uploadState?.pendingPersistence);
   }
 
+  protected shareForMode(mode: TaskShareMode): TaskShareSummaryRecord | null {
+    return this.shares().find((share) => share.mode === mode && share.active) ?? null;
+  }
+
+  protected shareModeLabel(mode: TaskShareMode): string {
+    return mode === 'present' ? 'Presenta' : 'Vista';
+  }
+
+  protected shareModeDescription(mode: TaskShareMode): string {
+    return mode === 'present'
+      ? 'Apre il percorso pubblico in modalita guidata, riusando gli step salvati senza esporre l editor.'
+      : 'Apre una lettura pubblica della task salvata, separata dai controlli di authoring.';
+  }
+
+  protected shareBoundaryNotice(): string {
+    if (this.saving()) {
+      return 'Salvataggio in corso: attendi la conferma prima di aggiornare o copiare i link pubblici.';
+    }
+
+    if (this.hasPendingDraftMedia()) {
+      return 'Sono presenti immagini ancora in bozza. Salva prima la task per includerle nei link pubblici.';
+    }
+
+    return 'Se hai modificato testo, simboli o step, salva prima la task quando vuoi che i link riflettano quelle modifiche.';
+  }
+
+  protected isShareActionDisabled(mode: TaskShareMode): boolean {
+    return !this.task()?.id || this.saving() || this.hasPendingDraftMedia() || this.shareBusyMode() === mode;
+  }
+
+  protected publicShareLink(share: TaskShareSummaryRecord): string {
+    if (/^https?:\/\//.test(share.shareUrl)) {
+      return share.shareUrl;
+    }
+
+    if (typeof window === 'undefined') {
+      return share.shareUrl;
+    }
+
+    return new URL(share.shareUrl, window.location.origin).toString();
+  }
+
+  protected async createShare(mode: TaskShareMode): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.isShareActionDisabled(mode)) {
+      return;
+    }
+
+    await this.runShareAction(mode, async () => {
+      const created = await firstValueFrom(this.taskLibrary.createTaskShare(currentTask.id, { mode }));
+      this.upsertShare(created);
+      this.shareNotice.set(`Link ${this.shareModeLabel(mode).toLowerCase()} creato sulla versione salvata corrente.`);
+    });
+  }
+
+  protected async copyShareLink(mode: TaskShareMode): Promise<void> {
+    const share = this.shareForMode(mode);
+    if (!share || this.isShareActionDisabled(mode)) {
+      return;
+    }
+
+    const link = this.publicShareLink(share);
+    const clipboard = typeof navigator === 'undefined' ? null : navigator.clipboard;
+
+    if (clipboard?.writeText) {
+      await clipboard.writeText(link);
+      this.shareNotice.set(`Link ${this.shareModeLabel(mode).toLowerCase()} copiato negli appunti.`);
+      return;
+    }
+
+    this.shareNotice.set(`Copia manuale richiesta per il link ${this.shareModeLabel(mode).toLowerCase()}: ${link}`);
+  }
+
+  protected async regenerateShare(mode: TaskShareMode): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.isShareActionDisabled(mode)) {
+      return;
+    }
+
+    await this.runShareAction(mode, async () => {
+      const rotated = await firstValueFrom(this.taskLibrary.regenerateTaskShare(currentTask.id, mode));
+      this.upsertShare(rotated);
+      this.shareNotice.set(
+        `Link ${this.shareModeLabel(mode).toLowerCase()} rigenerato. Il token precedente non e piu valido.`
+      );
+    });
+  }
+
+  protected async revokeShare(mode: TaskShareMode): Promise<void> {
+    const currentTask = this.task();
+    const share = this.shareForMode(mode);
+    if (!currentTask || !share || this.isShareActionDisabled(mode)) {
+      return;
+    }
+
+    await this.runShareAction(mode, async () => {
+      const revoked = await firstValueFrom(this.taskLibrary.revokeTaskShare(currentTask.id, share.id));
+      this.upsertShare(revoked);
+      this.shareNotice.set(`Link ${this.shareModeLabel(mode).toLowerCase()} revocato.`);
+    });
+  }
+
   protected familyRoleLabel(task: TaskDetailRecord): string {
     switch (task.variantRole ?? 'standalone') {
       case 'root':
@@ -673,5 +929,43 @@ export class TaskShellEditorEntryComponent {
     }
 
     await this.router.navigate(['/tasks', taskId]);
+  }
+
+  private async refreshShares(taskId: string): Promise<void> {
+    this.shareLoading.set(true);
+    this.shareError.set('');
+
+    try {
+      const shares = await firstValueFrom(this.taskLibrary.listTaskShares(taskId));
+      this.shares.set(shares);
+    } catch {
+      this.shares.set([]);
+      this.shareError.set('Impossibile aggiornare i link pubblici della task.');
+    } finally {
+      this.shareLoading.set(false);
+    }
+  }
+
+  private async runShareAction(mode: TaskShareMode, action: () => Promise<void>): Promise<void> {
+    this.shareBusyMode.set(mode);
+    this.shareError.set('');
+    this.shareNotice.set('');
+
+    try {
+      await action();
+    } catch {
+      this.shareError.set(`Operazione ${this.shareModeLabel(mode).toLowerCase()} non riuscita. Riprova tra poco.`);
+    } finally {
+      this.shareBusyMode.set(null);
+    }
+  }
+
+  private upsertShare(share: TaskShareSummaryRecord): void {
+    this.shares.update((currentShares) => {
+      const nextShares = currentShares.filter(
+        (currentShare) => currentShare.id !== share.id && currentShare.mode !== share.mode
+      );
+      return [...nextShares, share].sort((left, right) => left.mode.localeCompare(right.mode));
+    });
   }
 }

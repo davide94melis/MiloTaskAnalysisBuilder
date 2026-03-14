@@ -8,6 +8,10 @@ import java.util.UUID;
 
 public interface TaskShareRepository extends JpaRepository<TaskShareEntity, UUID> {
 
+    Optional<TaskShareEntity> findByShareTokenAndActiveTrue(String shareToken);
+
+    Optional<TaskShareEntity> findByShareTokenAndAccessModeAndActiveTrue(String shareToken, String accessMode);
+
     List<TaskShareEntity> findByTaskAnalysisIdAndOwnerIdAndActiveTrueOrderByCreatedAtAsc(
             UUID taskAnalysisId,
             UUID ownerId

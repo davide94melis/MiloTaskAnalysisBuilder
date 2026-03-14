@@ -139,6 +139,14 @@ public class TaskShellService {
         return toCard(savedCopy, ownerId);
     }
 
+    @Transactional
+    public TaskCardResponse duplicateSharedTask(TaskShellEntity source, UUID ownerId, String ownerEmail) {
+        TaskShellEntity copy = duplicateTask(source, ownerId, ownerEmail, null);
+        TaskShellEntity savedCopy = repository.save(copy);
+        copySteps(copy.getSourceTaskId(), savedCopy.getId());
+        return toCard(savedCopy, ownerId);
+    }
+
     private TaskShellEntity newDraft(UUID ownerId, String ownerEmail, String requestedTitle) {
         TaskShellEntity entity = new TaskShellEntity();
         entity.setOwnerId(ownerId);
@@ -153,7 +161,10 @@ public class TaskShellService {
     private TaskShellEntity duplicateAccessibleTask(UUID sourceTaskId, UUID ownerId, String ownerEmail, String requestedTitle) {
         TaskShellEntity source = repository.findAccessibleById(sourceTaskId, ownerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task source not found"));
+        return duplicateTask(source, ownerId, ownerEmail, requestedTitle);
+    }
 
+    private TaskShellEntity duplicateTask(TaskShellEntity source, UUID ownerId, String ownerEmail, String requestedTitle) {
         TaskShellEntity copy = new TaskShellEntity();
         copy.setOwnerId(ownerId);
         copy.setSourceTaskId(source.getId());

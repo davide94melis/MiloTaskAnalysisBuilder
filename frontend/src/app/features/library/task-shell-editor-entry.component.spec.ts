@@ -11,6 +11,7 @@ import {
   createIdleUploadState
 } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
 import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 import { TaskGuidedPresentPageComponent } from '../present/task-guided-present-page.component';
@@ -104,6 +105,30 @@ describe('TaskShellEditorEntryComponent', () => {
         uploadState: createIdleUploadState()
       }
     ]
+  };
+
+  const viewShare: TaskShareSummaryRecord = {
+    id: 'share-view',
+    taskId: 'task-1',
+    mode: 'view',
+    token: 'sharetokenview',
+    shareUrl: '/shared/sharetokenview',
+    active: true,
+    createdAt: '2026-03-13T10:40:00Z',
+    updatedAt: '2026-03-13T10:40:00Z',
+    revokedAt: null
+  };
+
+  const presentShare: TaskShareSummaryRecord = {
+    id: 'share-present',
+    taskId: 'task-1',
+    mode: 'present',
+    token: 'sharetokenpresent',
+    shareUrl: '/shared/sharetokenpresent/present',
+    active: true,
+    createdAt: '2026-03-13T10:45:00Z',
+    updatedAt: '2026-03-13T10:45:00Z',
+    revokedAt: null
   };
 
   it('registers the authenticated preview and present routes outside the editor path', () => {
@@ -200,6 +225,10 @@ describe('TaskShellEditorEntryComponent', () => {
           useValue: {
             getTaskDetail,
             updateTask,
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
             createDraft: jasmine.createSpy('createDraft'),
             duplicateTask: jasmine.createSpy('duplicateTask'),
             createVariant: jasmine.createSpy('createVariant')
@@ -334,6 +363,10 @@ describe('TaskShellEditorEntryComponent', () => {
           useValue: {
             getTaskDetail: jasmine.createSpy('getTaskDetail'),
             updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
             createDraft,
             duplicateTask: jasmine.createSpy('duplicateTask'),
             createVariant: jasmine.createSpy('createVariant')
@@ -373,6 +406,10 @@ describe('TaskShellEditorEntryComponent', () => {
           useValue: {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
             createDraft: jasmine.createSpy('createDraft'),
             duplicateTask: jasmine.createSpy('duplicateTask'),
             createVariant: jasmine.createSpy('createVariant')
@@ -497,6 +534,10 @@ describe('TaskShellEditorEntryComponent', () => {
           useValue: {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
             createDraft: jasmine.createSpy('createDraft'),
             duplicateTask: jasmine.createSpy('duplicateTask'),
             createVariant: jasmine.createSpy('createVariant')
@@ -559,6 +600,10 @@ describe('TaskShellEditorEntryComponent', () => {
           useValue: {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
             createDraft: jasmine.createSpy('createDraft'),
             duplicateTask: jasmine.createSpy('duplicateTask'),
             createVariant
@@ -600,5 +645,191 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(createVariant).toHaveBeenCalledWith('task-1', { supportLevel: 'Supportato' });
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-4']);
     expect(host.textContent).toContain('Variante creata. Apertura della nuova task in corso.');
+  });
+
+  it('renders separate view and present share controls and manages copy, regenerate, and revoke actions', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
+    const listTaskShares = jasmine.createSpy('listTaskShares').and.returnValue(of([viewShare, presentShare]));
+    const regenerateTaskShare = jasmine.createSpy('regenerateTaskShare').and.returnValue(
+      of({
+        ...presentShare,
+        token: 'rotatedpresent',
+        shareUrl: '/shared/rotatedpresent/present',
+        updatedAt: '2026-03-13T11:00:00Z'
+      })
+    );
+    const revokeTaskShare = jasmine.createSpy('revokeTaskShare').and.returnValue(
+      of({
+        ...viewShare,
+        active: false,
+        revokedAt: '2026-03-13T11:05:00Z',
+        updatedAt: '2026-03-13T11:05:00Z'
+      })
+    );
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares,
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare,
+            revokeTaskShare,
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const clipboard =
+      navigator.clipboard ??
+      ({
+        writeText: async (_value: string) => undefined
+      } as Clipboard);
+    if (!navigator.clipboard) {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: clipboard,
+        configurable: true
+      });
+    }
+    const writeText = spyOn(clipboard, 'writeText').and.returnValue(Promise.resolve());
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const shareCards = host.querySelectorAll<HTMLElement>('.entry__share-card');
+    expect(listTaskShares).toHaveBeenCalledWith('task-1');
+    expect(host.textContent).toContain('Condivisione pubblica');
+    expect(shareCards.length).toBe(2);
+    expect(shareCards[0].textContent).toContain('Vista');
+    expect(shareCards[1].textContent).toContain('Presenta');
+    expect(host.textContent).toContain('/shared/sharetokenview');
+    expect(host.textContent).toContain('/shared/sharetokenpresent/present');
+
+    const viewButtons = shareCards[0].querySelectorAll<HTMLButtonElement>('button');
+    viewButtons[1].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(writeText).toHaveBeenCalledWith(jasmine.stringMatching('/shared/sharetokenview$') as unknown as string);
+    expect(host.textContent).toContain('Link vista copiato negli appunti.');
+
+    const presentButtons = shareCards[1].querySelectorAll<HTMLButtonElement>('button');
+    presentButtons[2].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(regenerateTaskShare).toHaveBeenCalledWith('task-1', 'present');
+    expect(host.textContent).toContain('rotatedpresent/present');
+    expect(host.textContent).toContain('Il token precedente non e piu valido.');
+
+    viewButtons[3].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(revokeTaskShare).toHaveBeenCalledWith('task-1', 'share-view');
+    expect(shareCards[0].textContent).toContain('Non creato');
+    expect(shareCards[0].textContent).not.toContain('/shared/sharetokenview');
+    expect(host.textContent).toContain('Link vista revocato.');
+  });
+
+  it('keeps share actions behind the saved-only boundary and creates missing mode links explicitly', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
+    const listTaskShares = jasmine.createSpy('listTaskShares').and.returnValue(of([viewShare]));
+    const createTaskShare = jasmine.createSpy('createTaskShare').and.returnValue(of(presentShare));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares,
+            createTaskShare,
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const stepsList = fixture.debugElement.query(By.directive(TaskStepsDraftListComponent)).componentInstance as TaskStepsDraftListComponent;
+    const shareCards = () => host.querySelectorAll<HTMLElement>('.entry__share-card');
+
+    stepsList.stepsChange.emit([
+      {
+        ...baseTask.steps[0],
+        uploadState: {
+          status: 'uploaded',
+          errorMessage: '',
+          localPreviewUrl: '/local-only-preview.png',
+          pendingPersistence: true
+        }
+      },
+      baseTask.steps[1]
+    ]);
+    fixture.detectChanges();
+
+    let presentCreateButton = shareCards()[1].querySelectorAll<HTMLButtonElement>('button')[0];
+    expect(presentCreateButton.disabled).toBeTrue();
+    expect(host.textContent).toContain('Sono presenti immagini ancora in bozza. Salva prima la task per includerle nei link pubblici.');
+
+    stepsList.stepsChange.emit([
+      {
+        ...baseTask.steps[0],
+        uploadState: createIdleUploadState()
+      },
+      baseTask.steps[1]
+    ]);
+    fixture.detectChanges();
+
+    presentCreateButton = shareCards()[1].querySelectorAll<HTMLButtonElement>('button')[0];
+    expect(presentCreateButton.disabled).toBeFalse();
+
+    presentCreateButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(createTaskShare).toHaveBeenCalledWith('task-1', { mode: 'present' });
+    expect(shareCards()[1].textContent).toContain('/shared/sharetokenpresent/present');
+    expect(host.textContent).toContain('Link presenta creato sulla versione salvata corrente.');
   });
 });
