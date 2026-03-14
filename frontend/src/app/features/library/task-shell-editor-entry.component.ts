@@ -85,17 +85,31 @@ type TaskMetadataFormGroup = FormGroup<{
               Ogni modifica agli step resta locale finche non salvi la task. Upload, simboli e testo visivo rientrano
               nello stesso salvataggio esplicito.
             </p>
+            <p class="entry__hint">
+              L anteprima playback apre sempre l ultima versione salvata, fuori dalla superficie di authoring.
+            </p>
           </section>
 
           <section class="entry__panel">
             <p class="entry__panel-label">Azioni</p>
             <div class="entry__actions">
               <button type="submit" [disabled]="saving()">Salva task</button>
+              <button
+                type="button"
+                class="entry__ghost"
+                [disabled]="saving() || !canOpenPreview()"
+                (click)="openPreview()"
+              >
+                Apri anteprima playback
+              </button>
               <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
                 Duplica task
               </button>
               <a routerLink="/library">Torna alla libreria</a>
             </div>
+            <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
+              Salva prima la task per includere nell anteprima le immagini ancora in bozza.
+            </p>
           </section>
         </aside>
 
@@ -258,8 +272,17 @@ type TaskMetadataFormGroup = FormGroup<{
         line-height: 1.5;
       }
 
+      .entry__hint,
+      .entry__panel-note {
+        font-size: 0.92rem;
+      }
+
       .entry__error {
         color: #b42318;
+      }
+
+      .entry__panel-note {
+        color: #7c5f3b;
       }
 
       .entry__steps {
@@ -367,6 +390,16 @@ export class TaskShellEditorEntryComponent {
     await this.router.navigate(['/tasks', duplicated.id]);
   }
 
+  protected async openPreview(): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.saving() || !this.canOpenPreview()) {
+      return;
+    }
+
+    this.saveNotice.set('Anteprima aperta sulla versione salvata della task.');
+    await this.router.navigate(['/tasks', currentTask.id, 'preview']);
+  }
+
   private async loadTask(taskId: string | null): Promise<void> {
     this.saveError.set('');
     this.saveNotice.set('');
@@ -454,7 +487,15 @@ export class TaskShellEditorEntryComponent {
           : {
               ...createIdleUploadState(),
               localPreviewUrl: step.visualSupport?.image?.url ?? null
-            }
+          }
       }));
+  }
+
+  protected canOpenPreview(): boolean {
+    return Boolean(this.task()?.id) && !this.hasPendingDraftMedia();
+  }
+
+  protected hasPendingDraftMedia(): boolean {
+    return this.steps().some((step) => step.uploadState?.pendingPersistence);
   }
 }

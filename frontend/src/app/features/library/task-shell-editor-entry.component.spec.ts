@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject, of } from 'rxjs';
 
+import { appRoutes } from '../../app.routes';
 import {
   TaskDetailRecord,
   TaskStepDraftRecord,
@@ -12,6 +13,7 @@ import {
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
+import { TaskPlaybackPreviewPageComponent } from '../present/task-playback-preview-page.component';
 
 describe('TaskShellEditorEntryComponent', () => {
   const baseTask: TaskDetailRecord = {
@@ -81,6 +83,13 @@ describe('TaskShellEditorEntryComponent', () => {
       }
     ]
   };
+
+  it('registers the authenticated preview route outside the editor path', () => {
+    const shellRoute = appRoutes.find((route) => route.path === '');
+    const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
+
+    expect(previewRoute?.component).toBe(TaskPlaybackPreviewPageComponent);
+  });
 
   it('loads detail data, retains draft upload state, and saves backend-aligned mixed visual support payloads', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
@@ -316,5 +325,86 @@ describe('TaskShellEditorEntryComponent', () => {
 
     expect(createDraft).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-new'], { replaceUrl: true });
+  });
+
+  it('opens playback preview only for the saved task payload and blocks launch while media is pending persistence', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const stepsList = fixture.debugElement.query(By.directive(TaskStepsDraftListComponent)).componentInstance as TaskStepsDraftListComponent;
+    stepsList.stepsChange.emit([
+      {
+        ...baseTask.steps[0],
+        uploadState: {
+          status: 'uploaded',
+          errorMessage: '',
+          localPreviewUrl: '/local-only-preview.png',
+          pendingPersistence: true
+        }
+      },
+      baseTask.steps[1]
+    ]);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    let previewButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Apri anteprima playback'
+    ) as HTMLButtonElement | undefined;
+    expect(previewButton?.disabled).toBeTrue();
+    previewButton?.click();
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    stepsList.stepsChange.emit([
+      {
+        ...baseTask.steps[0],
+        uploadState: createIdleUploadState()
+      },
+      baseTask.steps[1]
+    ]);
+    fixture.detectChanges();
+
+    previewButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Apri anteprima playback'
+    ) as HTMLButtonElement | undefined;
+    expect(previewButton?.disabled).toBeFalse();
+
+    previewButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'preview']);
+    expect(getTaskDetail).toHaveBeenCalledTimes(1);
+    expect(host.textContent).toContain('Anteprima aperta sulla versione salvata della task.');
   });
 });
