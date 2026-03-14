@@ -87,8 +87,18 @@ describe('TaskLibraryService', () => {
     });
   });
 
-  it('loads a mixed-modality task detail payload for the editor route', () => {
-    let response: { steps: Array<{ visualSupport: { text: string | null; image: { mediaId: string } | null } }> } | undefined;
+  it('loads the saved task-detail contract used by both editor reload and authenticated preview', () => {
+    let response:
+      | {
+          steps: Array<{
+            visualSupport: {
+              text: string | null;
+              symbol: { key: string } | null;
+              image: { mediaId: string; url: string } | null;
+            };
+          }>;
+        }
+      | undefined;
 
     service.getTaskDetail('task-1').subscribe((value) => {
       response = value;
@@ -133,12 +143,40 @@ describe('TaskLibraryService', () => {
             },
             image: null
           }
+        },
+        {
+          id: 'step-2',
+          position: 2,
+          title: 'Prendi il sapone',
+          description: 'Usa il dispenser.',
+          required: false,
+          supportGuidance: '',
+          reinforcementNotes: '',
+          estimatedMinutes: 2,
+          visualSupport: {
+            text: 'Sapone',
+            symbol: null,
+            image: {
+              mediaId: 'media-2',
+              storageKey: 'tasks/task-1/media-2.png',
+              fileName: 'sapone.png',
+              mimeType: 'image/png',
+              fileSizeBytes: 2048,
+              width: 512,
+              height: 512,
+              altText: 'Dispenser del sapone',
+              url: '/api/tasks/task-1/media/media-2/content'
+            }
+          }
         }
       ]
     });
 
     expect(response?.steps[0].visualSupport.text).toBe('Apri');
+    expect(response?.steps[0].visualSupport.symbol?.key).toBe('tap');
     expect(response?.steps[0].visualSupport.image).toBeNull();
+    expect(response?.steps[1].visualSupport.image?.mediaId).toBe('media-2');
+    expect(response?.steps[1].visualSupport.image?.url).toBe('/api/tasks/task-1/media/media-2/content');
   });
 
   it('saves task detail metadata and ordered step drafts', () => {

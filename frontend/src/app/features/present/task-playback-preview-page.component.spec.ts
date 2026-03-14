@@ -45,8 +45,8 @@ describe('TaskPlaybackPreviewPageComponent', () => {
       {
         id: 'step-2',
         position: 2,
-        title: 'Controlla il simbolo',
-        description: 'Riconosci il materiale da portare.',
+        title: 'Controlla il materiale salvato',
+        description: 'Riconosci il materiale da portare dalla versione persistita.',
         required: true,
         supportGuidance: '',
         reinforcementNotes: 'Bene cosi',
@@ -58,7 +58,17 @@ describe('TaskPlaybackPreviewPageComponent', () => {
             key: 'book',
             label: 'Libro'
           },
-          image: null
+          image: {
+            mediaId: 'media-2',
+            storageKey: 'tasks/task-42/media-2.png',
+            fileName: 'quaderno.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 1536,
+            width: 640,
+            height: 480,
+            altText: 'Quaderno rosso',
+            url: '/api/tasks/task-42/media/media-2/content'
+          }
         },
         uploadState: {
           status: 'uploaded',
@@ -70,8 +80,8 @@ describe('TaskPlaybackPreviewPageComponent', () => {
       {
         id: 'step-3',
         position: 3,
-        title: 'Inserisci la borraccia',
-        description: 'Mettila nella tasca laterale.',
+        title: 'Controlla lo step senza supporti salvati',
+        description: 'La preview non deve usare upload locali come fonte di verita.',
         required: true,
         supportGuidance: '',
         reinforcementNotes: '',
@@ -79,17 +89,7 @@ describe('TaskPlaybackPreviewPageComponent', () => {
         visualSupport: {
           text: '',
           symbol: null,
-          image: {
-            mediaId: 'media-3',
-            storageKey: 'tasks/task-42/media-3.png',
-            fileName: 'borraccia.png',
-            mimeType: 'image/png',
-            fileSizeBytes: 2048,
-            width: 800,
-            height: 600,
-            altText: 'Borraccia blu',
-            url: '/api/tasks/task-42/media/media-3/content'
-          }
+          image: null
         },
         uploadState: {
           status: 'uploaded',
@@ -101,7 +101,7 @@ describe('TaskPlaybackPreviewPageComponent', () => {
     ]
   };
 
-  it('renders persisted text, symbol, and image supports one saved step at a time', async () => {
+  it('renders persisted mixed visual supports and ignores draft-only preview state', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-42' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(previewTask));
 
@@ -140,19 +140,25 @@ describe('TaskPlaybackPreviewPageComponent', () => {
     buttons[1].click();
     fixture.detectChanges();
 
-    expect(host.textContent).toContain('Controlla il simbolo');
+    expect(host.textContent).toContain('Controlla il materiale salvato');
     expect(host.textContent).toContain('Libro');
     expect(host.textContent).toContain('symwriter');
     expect(host.textContent).toContain('book');
+    expect(host.textContent).toContain('Quaderno');
+
+    let image = host.querySelector<HTMLImageElement>('img');
+    expect(image?.getAttribute('src')).toBe('/api/tasks/task-42/media/media-2/content');
+    expect(image?.getAttribute('src')).not.toBe('/draft-only-book.png');
+    expect(image?.getAttribute('alt')).toBe('Quaderno rosso');
 
     buttons[1].click();
     fixture.detectChanges();
 
-    const image = host.querySelector<HTMLImageElement>('img');
-    expect(host.textContent).toContain('Inserisci la borraccia');
-    expect(image?.getAttribute('src')).toBe('/api/tasks/task-42/media/media-3/content');
-    expect(image?.getAttribute('src')).not.toBe('/draft-only-bottle.png');
-    expect(image?.getAttribute('alt')).toBe('Borraccia blu');
+    image = host.querySelector<HTMLImageElement>('img');
+    expect(host.textContent).toContain('Controlla lo step senza supporti salvati');
+    expect(host.textContent).toContain('Nessun supporto visivo salvato per questo step.');
+    expect(image).toBeNull();
+    expect(host.textContent).not.toContain('/draft-only-bottle.png');
     expect(getTaskDetail).toHaveBeenCalledWith('task-42');
   });
 

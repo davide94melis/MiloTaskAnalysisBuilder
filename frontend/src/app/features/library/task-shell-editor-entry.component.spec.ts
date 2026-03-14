@@ -366,6 +366,20 @@ describe('TaskShellEditorEntryComponent', () => {
     stepsList.stepsChange.emit([
       {
         ...baseTask.steps[0],
+        visualSupport: {
+          ...baseTask.steps[0].visualSupport,
+          image: {
+            mediaId: 'draft-media',
+            storageKey: 'tasks/task-1/draft-media.png',
+            fileName: 'bozza.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 4096,
+            width: 800,
+            height: 600,
+            altText: 'Bozza locale non salvata',
+            url: '/api/tasks/task-1/media/draft-media/content'
+          }
+        },
         uploadState: {
           status: 'uploaded',
           errorMessage: '',
@@ -382,6 +396,7 @@ describe('TaskShellEditorEntryComponent', () => {
       (button) => button.textContent?.trim() === 'Apri anteprima playback'
     ) as HTMLButtonElement | undefined;
     expect(previewButton?.disabled).toBeTrue();
+    expect(host.textContent).toContain('Salva prima la task per includere nell anteprima le immagini ancora in bozza.');
     previewButton?.click();
     expect(router.navigate).not.toHaveBeenCalled();
 
