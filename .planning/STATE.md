@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T01:35:09Z"
+last_updated: "2026-03-14T01:38:07Z"
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 6 create-variant backend flow is complete. Ready to wire the explicit family-aware contract into library UI behavior.
+**Current focus:** Phase 6 library UI now exposes family-aware cards and explicit variant creation. Ready for the editor family panel and final variant-flow closure in 06-04.
 
 ## Status
 
@@ -38,6 +38,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 5 Plan 05-05 executed and verified
 - Phase 6 Plan 06-01 executed and verified
 - Phase 6 Plan 06-02 executed and verified
+- Phase 6 Plan 06-03 executed and verified
 
 ## Active Milestone
 
@@ -61,6 +62,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Generic duplicate remains outside variant-family semantics until the dedicated create-variant flow is implemented.
 - Create-variant requests now use the existing `POST /api/tasks` entry point with `variantSourceTaskId` plus required `supportLevel`, while generic duplicate stays on `POST /api/tasks/{taskId}/duplicate`.
 - Variant creation resolves the family root from `source.variantFamilyId ?? source.id` and reuses the exact Phase 5 step/media copy boundary without cloning files.
+- Library cards now keep `supportLevel` as the dominant label, with standalone/root/variant badges and family counts as secondary cues.
+- The library's `Create variant` action stays explicit beside generic duplicate and uses the backend `POST /api/tasks` variant request contract directly.
 
 ## Constraints To Preserve
 
@@ -72,5 +75,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 06-02-PLAN.md
+- Stopped at: Completed 06-03-PLAN.md
 - Resume file: None

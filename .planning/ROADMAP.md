@@ -190,5 +190,6 @@ In progress on 2026-03-14. Summaries:
 
 - `.planning/phases/06-support-variants/06-01-SUMMARY.md`
 - `.planning/phases/06-support-variants/06-02-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-03-SUMMARY.md`
 
-Next up: execute `06-03` to consume the new create-variant contract in the library client and UI, while preserving the explicit split between generic duplicate and family-aware variant creation.
+Next up: execute `06-04` to add the editor family panel, sibling navigation, and final verification closure on top of the now-complete backend and library variant flow.
