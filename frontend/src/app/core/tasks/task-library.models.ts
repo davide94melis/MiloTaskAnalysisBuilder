@@ -1,4 +1,5 @@
 export type TaskStatus = 'draft' | 'template' | 'shared';
+export type TaskVariantRole = 'standalone' | 'root' | 'variant';
 
 export interface TaskCardRecord {
   id: string;
@@ -13,6 +14,11 @@ export interface TaskCardRecord {
   lastUpdatedAt: string;
   authorName: string;
   sourceTaskId?: string | null;
+  variantFamilyId?: string | null;
+  variantRootTaskId?: string | null;
+  variantRootTitle?: string | null;
+  variantRole?: TaskVariantRole;
+  variantCount?: number;
 }
 
 export interface TaskLibraryFilters {
@@ -51,6 +57,12 @@ export interface TaskDashboardSummary {
 
 export interface CreateTaskShellRequest {
   templateId?: string;
+  title?: string;
+}
+
+export interface CreateTaskVariantRequest {
+  supportLevel: string;
+  title?: string;
 }
 
 export const EMPTY_LIBRARY_FILTERS: TaskLibraryFilters = {

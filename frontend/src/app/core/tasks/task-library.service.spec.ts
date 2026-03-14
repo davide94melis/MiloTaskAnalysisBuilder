@@ -83,7 +83,48 @@ describe('TaskLibraryService', () => {
       stepCount: 6,
       lastUpdatedAt: '2026-03-13T10:15:30Z',
       authorName: 'teacher@example.com',
-      sourceTaskId: 'tpl-1'
+      sourceTaskId: 'tpl-1',
+      variantFamilyId: null,
+      variantRootTaskId: null,
+      variantRootTitle: null,
+      variantRole: 'standalone',
+      variantCount: 1
+    });
+  });
+
+  it('posts explicit variant creation requests through the task shell API', () => {
+    service
+      .createVariant('task-root', {
+        supportLevel: 'Autonomo',
+        title: 'Lavarsi le mani'
+      })
+      .subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      title: 'Lavarsi le mani',
+      variantSourceTaskId: 'task-root',
+      supportLevel: 'Autonomo'
+    });
+    request.flush({
+      id: 'task-variant',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      contextLabel: 'Bagno',
+      targetLabel: 'Bambino',
+      supportLevel: 'Autonomo',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 6,
+      lastUpdatedAt: '2026-03-14T09:15:30Z',
+      authorName: 'teacher@example.com',
+      sourceTaskId: 'task-root',
+      variantFamilyId: 'task-root',
+      variantRootTaskId: 'task-root',
+      variantRootTitle: 'Lavarsi le mani',
+      variantRole: 'variant',
+      variantCount: 2
     });
   });
 
@@ -124,6 +165,11 @@ describe('TaskLibraryService', () => {
       lastUpdatedAt: '2026-03-13T10:15:30Z',
       authorName: 'teacher@example.com',
       sourceTaskId: null,
+      variantFamilyId: 'task-root',
+      variantRootTaskId: 'task-root',
+      variantRootTitle: 'Lavarsi le mani',
+      variantRole: 'root',
+      variantCount: 3,
       steps: [
         {
           id: 'step-1',
@@ -266,6 +312,11 @@ describe('TaskLibraryService', () => {
       lastUpdatedAt: '2026-03-13T11:10:00Z',
       authorName: 'teacher@example.com',
       sourceTaskId: null,
+      variantFamilyId: null,
+      variantRootTaskId: null,
+      variantRootTitle: null,
+      variantRole: 'standalone',
+      variantCount: 1,
       steps: [
         {
           id: 'step-2',

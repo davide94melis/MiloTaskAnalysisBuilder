@@ -5,6 +5,7 @@ import { AppConfigService } from '../config/app-config.service';
 import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
   CreateTaskShellRequest,
+  CreateTaskVariantRequest,
   TaskCardRecord,
   TaskDashboardSummary,
   TaskLibraryFilters,
@@ -68,5 +69,13 @@ export class TaskLibraryService {
 
   duplicateTask(taskId: string): Observable<TaskCardRecord> {
     return this.http.post<TaskCardRecord>(`${this.tasksUrl}/${taskId}/duplicate`, {});
+  }
+
+  createVariant(taskId: string, request: CreateTaskVariantRequest): Observable<TaskCardRecord> {
+    return this.http.post<TaskCardRecord>(this.tasksUrl, {
+      title: request.title,
+      variantSourceTaskId: taskId,
+      supportLevel: request.supportLevel
+    });
   }
 }
