@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T11:29:00.000Z"
+last_updated: "2026-03-14T13:20:00.000Z"
 progress:
   total_phases: 12
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 33
-  completed_plans: 33
+  completed_plans: 36
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** V1 product scope is complete. Optional cleanup phases 11 and 12 are now planned to close milestone audit debt before archive.
+**Current focus:** Phase 11 planning cleanup is complete. The only remaining optional debt is Phase 12 manual validation and test hygiene before milestone archive.
 
 ## Status
 
@@ -55,7 +55,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 10 Plan 10-01 executed and verified
 - Phase 10 Plan 10-02 executed and verified
 - Phase 10 Plan 10-03 executed and verified
-- Phase 11 planned for planning and validation cleanup
+- Phase 11 Plan 11-01 executed and verified
+- Phase 11 Plan 11-02 executed and verified
+- Phase 11 Plan 11-03 executed and verified
 - Phase 12 planned for manual validation and test hygiene
 
 ## Active Milestone
@@ -65,7 +67,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-plan-phase 11`
+- `$gsd-plan-phase 12`
 
 ## Recent Decisions
 
@@ -121,6 +123,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Public share surfaces remain safe DTO consumers after the Phase 10 polish pass and still do not expose owner-only export or metadata.
 - Milestone audit found no blocker gaps but did find cleanup debt: requirement checklist drift, missing Phase 07/08 validation artifacts, skipped manual walkthroughs, and persistent non-blocking test warnings.
 - Two optional cleanup phases were added after Phase 10 so that archive-quality planning hygiene and manual closure evidence can be handled without reopening v1 product scope.
+- Phase 11 closed the planning-side debt by aligning the checklist, backfilling summary metadata, and restoring missing validation artifacts for Phase 07 and Phase 08.
+- The remaining optional debt is now limited to manual walkthrough evidence and persistent non-blocking test warnings.
 
 ## Constraints To Preserve
 
@@ -132,5 +136,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Planned optional cleanup phases 11 and 12
+- Stopped at: Completed Phase 11 cleanup, Phase 12 planned
 - Resume file: None

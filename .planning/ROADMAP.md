@@ -18,7 +18,7 @@
 | 8 | Complete | 2026-03-14 |
 | 9 | Complete | 2026-03-14 |
 | 10 | Complete | 2026-03-14 |
-| 11 | Planned | |
+| 11 | Complete | 2026-03-14 |
 | 12 | Planned | |
 
 | # | Phase | Goal | Requirements | Success Criteria |
@@ -288,11 +288,15 @@ Next up: execute optional cleanup phases if you want to remove audit debt before
 
 ## Phase 11 Next
 
-Planned on 2026-03-14 from milestone audit debt.
+Completed on 2026-03-14. Summaries:
 
-This optional cleanup phase exists to fix planning drift rather than add product scope. It should align requirement checklists, summary metadata expectations, and the missing Phase 07 and Phase 08 validation artifacts so the milestone audit can pass cleanly without documentation warnings.
+- `.planning/phases/11-milestone-planning-cleanup/11-01-SUMMARY.md`
+- `.planning/phases/11-milestone-planning-cleanup/11-02-SUMMARY.md`
+- `.planning/phases/11-milestone-planning-cleanup/11-03-SUMMARY.md`
 
-Next up: plan Phase 11 before any milestone re-audit if you want to remove audit process debt.
+Phase 11 closed the planning-only audit debt by aligning requirement checklists, backfilling `requirements-completed` summary metadata, and restoring the missing Phase 07 and Phase 08 validation artifacts.
+
+Next up: Phase 12 if you want to close manual validation debt and test-noise findings before the final milestone archive.
 
 ## Phase 12 Next
 
