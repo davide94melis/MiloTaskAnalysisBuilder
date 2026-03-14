@@ -2,90 +2,95 @@
 
 ## What This Is
 
-Milo Task Analysis Builder e una web app per insegnanti, terapisti, educatori e famiglie che permette di creare, usare e condividere task analysis visuali per insegnare abilita passo-passo. Il prodotto si colloca a meta tra editor visuale, strumento operativo, libreria didattica e tracker leggero di esecuzione, con un'esperienza coerente con l'ecosistema Milo e con il linguaggio visivo di Symwriter.
+Milo Task Analysis Builder is a shipped v1 MVP for creating, presenting, sharing, tracking minimally, and exporting visual task analyses for therapists, teachers, educators, and families. It is aligned with the Milo ecosystem, uses Milo SSO in v1, and keeps a Milo/Symwriter-compatible operational interface.
 
 ## Core Value
 
 Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
 
+## Current State
+
+- Shipped version: `v1.0 MVP` on 2026-03-14
+- Stack: Java REST backend on Render, Angular frontend on Vercel, Supabase/Postgres with dedicated schema
+- Scope shipped:
+  - Milo SSO authentication
+  - dashboard and task library
+  - task metadata and step authoring
+  - media supports with text, symbol, and image
+  - support variants
+  - guided present mode
+  - public sharing and duplicate-from-share
+  - minimal session tracking
+  - browser-print PDF export
+- Accepted residual debt from closeout:
+  - no final post-fix manual rerun recorded for owner-history and print-to-PDF
+  - non-blocking Karma mocked-media warnings
+  - non-blocking Mockito dynamic-agent warning on JDK 21
+
 ## Requirements
 
 ### Validated
 
-(None yet - ship to validate)
+- [x] Professionals can create structured visual task analyses for daily, school, and social skills - v1.0
+- [x] Each task analysis can be executed inside the app in a guided step-by-step present mode - v1.0
+- [x] Task analyses can be shared through public links for viewing or guided use without requiring an account for the recipient - v1.0
+- [x] Shared task analyses can be duplicated into the recipient's own Milo space - v1.0
+- [x] The app supports multimodal visual supports per step, including text, symbol, and image/photo - v1.0
+- [x] The product supports different support levels through task variants - v1.0
+- [x] The app records minimal completion sessions for guided runs - v1.0
+- [x] The app provides printable PDF export for real-world use - v1.0
+- [x] v1 authentication uses Milo SSO only - v1.0
 
 ### Active
 
-- [ ] I professionisti possono creare task analysis visuali strutturate per abilita quotidiane, scolastiche e sociali.
-- [ ] Ogni task analysis puo essere eseguita dentro l'app in una modalita presentazione guidata step-by-step, pulita e fullscreen.
-- [ ] Le task analysis possono essere condivise tramite link pubblico per visualizzazione o uso interattivo senza richiedere account al destinatario.
-- [ ] Le task analysis possono essere duplicate nel proprio spazio per favorire riuso e diffusione.
-- [ ] L'app supporta supporti visivi multimodali per step, inclusi testo, simbolo e immagine/foto.
-- [ ] Il prodotto supporta livelli di supporto differenti per costruire varianti progressive della stessa task analysis.
-- [ ] L'app registra un tracking minimo di sessione per sapere quando, da chi e quante volte una task e stata completata.
-- [ ] L'app permette export stampabile in PDF per l'uso nel contesto reale.
-- [ ] L'autenticazione utente in v1 usa solo SSO con Milo.
+- [ ] Reuse global Milo entities for children, classes, and shared users instead of freeform labels
+- [ ] Add per-step tracking with help level, timing, and notes
+- [ ] Introduce workspace/team collaboration with roles and shared libraries
+- [ ] Support assignment flows toward children or groups with family/school access boundaries
+- [ ] Explore automation features such as generated variants, text simplification, and QR distribution
 
 ### Out of Scope
 
-- Tracking clinico avanzato per singolo step con aiuto usato, tempo e note - rinviato a V2 per non appesantire l'MVP.
-- Collaborazione strutturata con workspace, ruoli e librerie di team - rinviata a V2 dopo validazione dell'uso individuale e della condivisione via link.
-- Assegnazione task a bambini/classi con progressi dedicati - rinviata a V3 perche richiede un modello prodotto piu ampio.
-- Riutilizzo in v1 di bambini, classi e utenti globali di Milo Writer/Symwriter - in v1 si integra solo il login SSO.
-- Varianti automatiche AI, analytics avanzati, marketplace template e integrazione con PEI/obiettivi - future evoluzioni successive all'MVP.
+- Native mobile apps until the web product proves insufficient in real usage
+- Backend-generated PDF pipeline until browser-print export becomes a proven limitation
+- Full clinical analytics until minimal tracking and assignment workflows are validated
+
+## Next Milestone Goals
+
+The next milestone should focus on ecosystem convergence and operational depth rather than broadening v1 indiscriminately:
+
+1. Reuse Milo global entities for children, classes, and user relationships.
+2. Define the first assignment model linking task analyses to real recipients.
+3. Expand tracking from session-level completion into step-level execution evidence.
+4. Decide whether collaboration lands before or after advanced tracking, based on product and buyer priority.
 
 ## Context
 
-Il prodotto nasce per risolvere un problema operativo concreto nel lavoro con bambini autistici, con disabilita cognitive o con bisogni educativi speciali: la necessita di scomporre attivita complesse in sequenze comprensibili, riusabili e condivisibili. Oggi questo lavoro viene spesso gestito in modo artigianale con fogli stampati, immagini prese online, PowerPoint, Word, Boardmaker e materiali non standardizzati, con forte perdita di tempo, scarsa coerenza tra operatori e nessuna vera tracciabilita.
+The shipped MVP proves the core loop: authenticated professionals can create visual task analyses, run them in guided present mode, share them safely, and export them for offline use. The product remains positioned between visual editor, operational teaching tool, reusable educational library, and lightweight execution tracker.
 
-L'app deve servire soprattutto terapisti ABA, logopedisti, TNPEE, educatori, insegnanti di sostegno e insegnanti della primaria o infanzia con bambini BES. Come target secondario puo servire genitori, piccoli centri educativi, cooperative e scuole che vogliono standardizzare materiali e procedure. Il prodotto deve quindi essere semplice nell'uso quotidiano ma abbastanza robusto e professionale da sostenere un modello in abbonamento.
-
-La struttura ideale del prodotto comprende:
-- una dashboard iniziale con task recenti, template pronti, bozze, categorie, task piu usate e segnali operativi;
-- una libreria centrale di task analysis filtrabile per categoria, destinatario, contesto, autore, stato e livello di supporto;
-- un editor task analysis semplice ma potente con header della task, lista step ordinata, azioni di riordino/duplicazione e gestione supporti;
-- una present mode estremamente pulita per l'uso diretto con il bambino su tablet, telefono o PC.
-
-Il cuore differenziante del prodotto e il concetto di livello di supporto. La stessa task analysis deve poter esistere in varianti progressive, ad esempio da supporto totale fino ad autonomia, usando combinazioni diverse di foto reali, simboli, testo, audio, numero di step mostrati e prompt.
-
-V1 e definita come MVP operativo:
-- autenticazione;
-- creazione task analysis;
-- editor step-by-step;
-- immagini, simboli e testo;
-- drag and drop;
-- template base;
-- modalita presentazione;
-- tracking semplice di sessione;
-- export PDF;
-- condivisione link.
-
-Milo e la piattaforma principale dell'ecosistema: questa app deve essere concepita come applicazione figlia collegata a Milo. In v1 riusa solo l'SSO di Milo; in v2 dovra poter convergere verso entita globali condivise tra piu app dell'ecosistema, incluse utenti, bambini e classi provenienti da Milo Writer/Symwriter.
-
-La grafica deve essere coerente con Symwriter e Milo. In particolare va mantenuta una design language compatibile con il loro frontend: interfacce chiare e rassicuranti, superfici morbide, card pulite, gradienti controllati, bottoni primari evidenti, attenzione a viste full-screen ben curate e nessuna sensazione da strumento tecnico freddo.
-
-## Constraints
-
-- **Backend**: Java con REST API - coerenza con lo stack gia usato nell'ecosistema Milo e deploy previsto su Render.
-- **Frontend**: Angular - coerenza con le altre web app Milo e deploy previsto su Vercel.
-- **Database**: Supabase/Postgres - il prodotto usa uno schema dedicato distinto dallo schema `milo`.
-- **Auth**: SSO con Milo in v1 - l'app deve integrarsi con l'identita centralizzata senza introdurre un sistema auth separato.
-- **Ecosystem alignment**: compatibilita con Milo e Symwriter - architettura, UX e crescita futura devono restare allineate all'ecosistema principale.
-- **MVP scope**: evitare complessita prematura - tracking clinico avanzato, ruoli, workspace e assegnazioni sono esclusi dalla prima versione.
-- **UX**: esperienza rassicurante e operativa - l'app deve risultare usabile nel lavoro reale con bambini, non solo come editor di materiali.
+The next product risk is no longer "can the basic loop exist?" but "which ecosystem and workflow expansion creates the most value next?" The strongest next candidates are Milo global entities, assignment, deeper tracking, and structured collaboration.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Stack backend Java REST deployato su Render | Allineamento con il resto dell'ecosistema Milo e preferenza tecnologica gia definita | - Pending |
-| Frontend Angular deployato su Vercel | Coerenza con le altre app Milo e con il modo attuale di svilupparle/deployarle | - Pending |
-| Database su Supabase con schema dedicato separato da `milo` | Separare i dati applicativi della nuova app mantenendo l'integrazione con l'ecosistema condiviso | - Pending |
-| V1 usa solo SSO con Milo | Riduce complessita iniziale e accelera il time-to-market mantenendo continuita utente nell'ecosistema | - Pending |
-| Present mode step-by-step inclusa in V1 | Trasforma il prodotto da semplice editor a strumento operativo reale | - Pending |
-| Tracking V1 limitato alla sessione completata | Offre visibilita d'uso senza introdurre subito un modello clinico troppo complesso | - Pending |
-| Condivisione V1 tramite link pubblico + duplicazione | Massimizza utilita immediata e viralita senza costruire subito collaboration avanzata | - Pending |
-| Coerenza visiva con Symwriter/Milo | L'app deve apparire parte dello stesso ecosistema e non un prodotto isolato | - Pending |
+| Java REST backend on Render | Stay aligned with the Milo ecosystem backend stack | Good |
+| Angular frontend on Vercel | Stay aligned with existing Milo apps and deployment model | Good |
+| Dedicated Supabase schema separate from `milo` | Keep app data isolated while preserving ecosystem integration options | Good |
+| Milo SSO only in v1 | Ship faster without duplicating auth/account systems | Good |
+| Guided present mode in v1 | Make the product operational, not just an editor | Good |
+| Minimal session tracking in v1 | Capture usage signal without dragging in clinical-model complexity | Good |
+| Public link sharing plus duplicate-from-share in v1 | Maximize usefulness and reuse before collaboration/workspace features | Good |
+| Milo/Symwriter-compatible visual language | Keep the app visibly inside the same ecosystem | Good |
+| Browser-print PDF export for v1 | Ship practical export without backend PDF infrastructure | Revisit if print limitations become material |
+
+## Constraints
+
+- Backend remains Java REST on Render
+- Frontend remains Angular on Vercel
+- Database remains Supabase/Postgres with dedicated schema separation from `milo`
+- Auth should continue to originate from Milo
+- UX should remain visually compatible with Symwriter and Milo
 
 ---
-*Last updated: 2026-03-13 after initialization*
+*Last updated: 2026-03-14 after v1.0 milestone completion*

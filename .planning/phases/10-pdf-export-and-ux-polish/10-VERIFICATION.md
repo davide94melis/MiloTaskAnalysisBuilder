@@ -63,7 +63,7 @@ Phase 10 meets its goal in the current repo state. The app now exposes a print-o
 
 ## Remaining Gaps
 
-- Manual browser print-to-PDF checks from `10-VALIDATION.md` were not executed in this pass, so real print preview pagination was not re-confirmed manually.
+- Phase 12 did not produce a final manual print-to-PDF rerun, so real print preview pagination is still accepted closeout debt rather than freshly revalidated evidence.
 - There is still no backend-generated PDF pipeline or public anonymous export route, by design.
 
 ## Notes
