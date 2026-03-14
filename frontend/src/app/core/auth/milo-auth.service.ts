@@ -1,12 +1,31 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { AppConfigService } from '../config/app-config.service';
 
 export interface TaskBuilderAuthUser {
   id: string;
   miloUserId?: string | null;
   email: string | null;
+}
+
+export interface MiloAuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string | null;
+  } | null;
+}
+
+export interface MiloLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface MiloRegisterRequest {
+  email: string;
+  password: string;
 }
 
 interface AuthMeResponse {
@@ -69,6 +88,28 @@ export class MiloAuthService {
     }
   }
 
+  login(request: MiloLoginRequest) {
+    const body = {
+      email: request.email.trim(),
+      password: request.password
+    };
+
+    return this.http
+      .post<MiloAuthResponse>(`${this.config.miloApiBaseUrl}/auth/login`, body)
+      .pipe(tap((response) => this.setSessionFromMilo(response)));
+  }
+
+  register(request: MiloRegisterRequest) {
+    const body = {
+      email: request.email.trim(),
+      password: request.password
+    };
+
+    return this.http
+      .post<MiloAuthResponse>(`${this.config.miloApiBaseUrl}/auth/register`, body)
+      .pipe(tap((response) => this.setSessionFromMilo(response)));
+  }
+
   acceptTokenHandoff(token: string): void {
     const trimmed = token.trim();
     if (!trimmed) {
@@ -84,9 +125,7 @@ export class MiloAuthService {
     shareToken?: string;
     redirectTo?: string;
   } = {}): string {
-    const baseUrl =
-      typeof window === 'undefined' ? 'http://localhost/auth/login' : `${window.location.origin}/auth/login`;
-    const url = new URL(baseUrl);
+    const url = new URL('/auth/login', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
 
     if (options.intent) {
       url.searchParams.set('intent', options.intent);
@@ -100,13 +139,29 @@ export class MiloAuthService {
       url.searchParams.set('redirectTo', options.redirectTo);
     }
 
-    return url.toString();
+    return `${url.pathname}${url.search}`;
   }
 
-  beginMiloLogin(returnUrl = window.location.href): void {
-    const miloBase = this.config.miloApiBaseUrl.replace(/\/api\/?$/, '');
-    const separator = miloBase.includes('?') ? '&' : '?';
-    window.location.href = `${miloBase}/login${separator}returnUrl=${encodeURIComponent(returnUrl)}`;
+  buildRegisterUrl(options: {
+    intent?: string;
+    shareToken?: string;
+    redirectTo?: string;
+  } = {}): string {
+    const url = new URL('/auth/register', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+
+    if (options.intent) {
+      url.searchParams.set('intent', options.intent);
+    }
+
+    if (options.shareToken) {
+      url.searchParams.set('shareToken', options.shareToken);
+    }
+
+    if (options.redirectTo) {
+      url.searchParams.set('redirectTo', options.redirectTo);
+    }
+
+    return `${url.pathname}${url.search}`;
   }
 
   logout(): void {
@@ -136,5 +191,20 @@ export class MiloAuthService {
     this.userSignal.set(user);
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
+  }
+
+  private setSessionFromMilo(response: MiloAuthResponse): void {
+    const token = response.token?.trim();
+    if (!token) {
+      return;
+    }
+
+    const provisionalUser: TaskBuilderAuthUser = {
+      id: response.user?.id ?? '',
+      miloUserId: response.user?.id ?? null,
+      email: response.user?.email ?? null
+    };
+
+    this.persist(token, provisionalUser);
   }
 }

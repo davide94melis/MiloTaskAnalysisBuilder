@@ -372,7 +372,7 @@ export class TaskSharedViewPageComponent {
     if (!this.auth.isLoggedIn()) {
       const redirectTo = `/shared/${currentShare.token}`;
       this.notice.set('Per duplicare la task devi accedere con Milo. Ti reindirizzo al login.');
-      this.auth.beginMiloLogin(
+      await this.router.navigateByUrl(
         this.auth.buildLoginBridgeUrl({
           intent: 'duplicate-share',
           shareToken: currentShare.token,

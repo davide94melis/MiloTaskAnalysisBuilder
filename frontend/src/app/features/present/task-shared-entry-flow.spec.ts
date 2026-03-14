@@ -123,7 +123,6 @@ describe('Task shared entry flow', () => {
 
   it('keeps anonymous duplication explicit by sending recipients through the login bridge', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ token: 'share-view-1' }));
-    const beginMiloLogin = jasmine.createSpy('beginMiloLogin');
     const buildLoginBridgeUrl = jasmine
       .createSpy('buildLoginBridgeUrl')
       .and.returnValue('/auth/login?intent=duplicate-share&shareToken=share-view-1&redirectTo=%2Fshared%2Fshare-view-1');
@@ -151,11 +150,13 @@ describe('Task shared entry flow', () => {
           useValue: {
             isLoggedIn: jasmine.createSpy('isLoggedIn').and.returnValue(false),
             buildLoginBridgeUrl,
-            beginMiloLogin
           }
         }
       ]
     }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigateByUrl').and.resolveTo(true);
 
     const fixture = TestBed.createComponent(TaskSharedViewPageComponent);
     fixture.detectChanges();
@@ -174,7 +175,7 @@ describe('Task shared entry flow', () => {
       shareToken: 'share-view-1',
       redirectTo: '/shared/share-view-1'
     });
-    expect(beginMiloLogin).toHaveBeenCalledWith(
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
       '/auth/login?intent=duplicate-share&shareToken=share-view-1&redirectTo=%2Fshared%2Fshare-view-1'
     );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Ti reindirizzo al login');
@@ -213,8 +214,8 @@ describe('Task shared entry flow', () => {
           useValue: {
             acceptTokenHandoff,
             restoreSession,
-            beginMiloLogin: jasmine.createSpy('beginMiloLogin'),
-            buildLoginBridgeUrl: jasmine.createSpy('buildLoginBridgeUrl')
+            buildLoginBridgeUrl: jasmine.createSpy('buildLoginBridgeUrl'),
+            buildRegisterUrl: jasmine.createSpy('buildRegisterUrl').and.returnValue('/auth/register')
           }
         }
       ]
@@ -271,8 +272,8 @@ describe('Task shared entry flow', () => {
           useValue: {
             acceptTokenHandoff: jasmine.createSpy('acceptTokenHandoff'),
             restoreSession: jasmine.createSpy('restoreSession').and.resolveTo(restoredUser),
-            beginMiloLogin: jasmine.createSpy('beginMiloLogin'),
-            buildLoginBridgeUrl: jasmine.createSpy('buildLoginBridgeUrl')
+            buildLoginBridgeUrl: jasmine.createSpy('buildLoginBridgeUrl'),
+            buildRegisterUrl: jasmine.createSpy('buildRegisterUrl').and.returnValue('/auth/register')
           }
         }
       ]
