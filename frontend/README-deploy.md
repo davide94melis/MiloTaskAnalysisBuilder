@@ -94,6 +94,25 @@ Editor behavior in Phase 5:
 
 The frontend should treat `mediaId` and `storageKey` as the stable saved identifiers. The returned image URL is a usable authenticated preview, not a permanent public asset URL.
 
+## Phase 6 Frontend Contract
+
+Phase 6 extends the existing library and editor routes with family-aware variant management while keeping the authoring surface explicit.
+
+The frontend now expects:
+
+- library cards to include `variantRole`, family root metadata, and family counts for visible labeling
+- `GET /api/tasks/{taskId}` to include the same family fields plus `relatedVariants` for the editor side panel
+- `POST /api/tasks` variant creation requests to use `variantSourceTaskId` and required `supportLevel`
+
+Editor behavior in Phase 6:
+
+- the task editor shows a compact `Variant family` panel with current role, base-task context, and sibling navigation
+- `Crea variante` remains an explicit action that opens the new copied task after prompting for support level
+- sibling navigation is informational and navigational only; it does not imply comparison, versioning, or collaboration tools
+- variant editing still respects the same explicit save boundary already used for Phase 5 media and step authoring
+
+The frontend must keep present-mode and sharing concerns out of this route. Guided playback belongs to Phase 7, and public/share-safe access belongs to Phase 8.
+
 ## Deployment Checklist
 
 1. Set `API_URL` for the Task Builder backend.
@@ -104,4 +123,4 @@ The frontend should treat `mediaId` and `storageKey` as the stable saved identif
 
 ## Scope Reminder
 
-Phase 5 makes the task route a real mixed-media authoring surface, but it still does not include Phase 7 present-mode playback UI or Phase 8 public sharing/public media exposure.
+Phase 6 makes the task route family-aware for support variants, but it still does not include Phase 7 present-mode playback UI or Phase 8 public sharing/public media exposure.

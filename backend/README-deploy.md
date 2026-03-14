@@ -82,6 +82,23 @@ Phase 5 duplication behavior copies:
 
 This is the intended v1 boundary. Physical object cloning, public asset exposure, and share-safe media authorization remain Phase 8 concerns.
 
+## Phase 6 API Contract
+
+Phase 6 adds duplication-based support variants without changing the Phase 5 media boundary.
+
+- `POST /api/tasks` now accepts `variantSourceTaskId` with required `supportLevel` to create a new family member from an accessible saved task
+- `GET /api/tasks` card payloads expose `variantFamilyId`, `variantRootTaskId`, `variantRootTitle`, `variantRole`, and `variantCount`
+- `GET /api/tasks/{taskId}` detail payloads expose the same family metadata plus `relatedVariants` for editor-side navigation
+- `POST /api/tasks/{taskId}/duplicate` stays generic and does not set family metadata
+
+Variant creation must continue to:
+
+- copy ordered steps exactly as the generic duplicate flow does
+- reuse saved step media metadata and storage keys instead of cloning image objects
+- preserve support-level labeling as the primary variant distinguisher
+
+Do not treat Phase 6 as a versioning system. Present-mode rules remain Phase 7 work, and public-sharing/media rules remain Phase 8 work.
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -93,4 +110,4 @@ This is the intended v1 boundary. Physical object cloning, public asset exposure
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 5 adds authenticated media upload and save/reload fidelity on the existing aggregate, but it still does not include Phase 7 present-mode UI behavior or Phase 8 public media access.
+This backend does not implement local login, registration, or shared Milo entities. Phase 6 adds family-aware variant metadata on the existing aggregate while preserving the Phase 5 media-copy boundary, but it still does not include Phase 7 present-mode UI behavior or Phase 8 public media access.

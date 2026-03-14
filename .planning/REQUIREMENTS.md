@@ -40,9 +40,9 @@
 
 ### Support Variants
 
-- [ ] **SUPP-01**: User can create multiple versions of the same task analysis for different support levels.
-- [ ] **SUPP-02**: User can duplicate an existing task analysis as the starting point for a simpler or more autonomous variant.
-- [ ] **SUPP-03**: User can distinguish variants through support-level metadata and visible labeling in the library.
+- [x] **SUPP-01**: User can create multiple versions of the same task analysis for different support levels.
+- [x] **SUPP-02**: User can duplicate an existing task analysis as the starting point for a simpler or more autonomous variant.
+- [x] **SUPP-03**: User can distinguish variants through support-level metadata and visible labeling in the library and editor.
 
 ### Present Mode
 
@@ -148,9 +148,9 @@
 | STEP-06 | Phase 4 | Complete |
 | STEP-07 | Phase 4 | Complete |
 | STEP-08 | Phase 3 | Complete |
-| SUPP-01 | Phase 6 | Pending |
-| SUPP-02 | Phase 6 | Pending |
-| SUPP-03 | Phase 6 | Pending |
+| SUPP-01 | Phase 6 | Complete |
+| SUPP-02 | Phase 6 | Complete |
+| SUPP-03 | Phase 6 | Complete |
 | PRES-01 | Phase 7 | Pending |
 | PRES-02 | Phase 7 | Pending |
 | PRES-03 | Phase 7 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-14 after Phase 5 Plan 05-05 completion*
+*Last updated: 2026-03-14 after Phase 6 Plan 06-04 completion*

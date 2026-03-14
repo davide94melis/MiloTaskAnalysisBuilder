@@ -178,3 +178,27 @@ Each saved step now round-trips this nested shape:
 - Phase 5 does **not** implement Phase 7 guided present-mode flow, completion controls, or session behavior
 - Phase 5 does **not** expose public or unauthenticated media access; that remains Phase 8 work
 - Public asset rules, share-safe authorization, and any public media URLs stay deferred until sharing is designed explicitly
+
+## Phase 6 Support Variants Contract
+
+Phase 6 keeps variants deliberately narrow: they are duplication-based task families for different support levels, not version history, collaboration, or assignment workflows.
+
+### Backend and frontend contract added in Phase 6
+
+- `taskbuilder.task_analysis.variant_family_id` anchors each family on the original base task
+- `POST /api/tasks` accepts `variantSourceTaskId` plus required `supportLevel` to create an explicit variant copy
+- `GET /api/tasks` and `GET /api/tasks/{taskId}` now return family-aware metadata such as `variantRole`, root references, family counts, and related variants for navigation
+- `POST /api/tasks/{taskId}/duplicate` remains the generic copy flow and does not implicitly join a family
+
+### Variant-family behavior
+
+- support level remains the primary visible differentiator across the library and editor
+- base tasks and variants stay user-owned copies with explicit save boundaries
+- variant creation reuses the existing Phase 5 step and media copy boundary, including saved symbol and image descriptors
+- editor family navigation is informational and navigational only; it does not add diffing, approval, merge, or collaboration semantics
+
+### Boundary with later phases
+
+- Phase 6 does **not** implement Phase 7 guided present mode beyond the existing saved-preview proof
+- Phase 6 does **not** implement Phase 8 sharing, public links, or public media access
+- Phase 6 does **not** introduce version-control style history, conflict resolution, or multi-user ownership

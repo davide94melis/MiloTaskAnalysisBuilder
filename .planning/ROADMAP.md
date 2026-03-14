@@ -13,7 +13,7 @@
 | 3 | Complete | 2026-03-13 |
 | 4 | Complete | 2026-03-13 |
 | 5 | Complete | 2026-03-14 |
-| 6 | In Progress | 2026-03-14 |
+| 6 | Complete | 2026-03-14 |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -186,10 +186,13 @@ Next up: plan Phase 6 for support variants on top of the now-stable media duplic
 
 ## Phase 6 Next
 
-In progress on 2026-03-14. Summaries:
+Completed on 2026-03-14. Summaries:
 
 - `.planning/phases/06-support-variants/06-01-SUMMARY.md`
 - `.planning/phases/06-support-variants/06-02-SUMMARY.md`
 - `.planning/phases/06-support-variants/06-03-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-04-SUMMARY.md`
 
-Next up: execute `06-04` to add the editor family panel, sibling navigation, and final verification closure on top of the now-complete backend and library variant flow.
+Phase 6 now closes with library and editor family visibility, explicit create-variant actions, and family-aware detail payloads that preserve the Phase 5 media-copy boundary.
+
+Next up: plan and execute Phase 7 guided present mode on top of the saved-task and variant-family contracts.

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T01:38:07Z"
+last_updated: "2026-03-14T01:53:17.815Z"
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 6 library UI now exposes family-aware cards and explicit variant creation. Ready for the editor family panel and final variant-flow closure in 06-04.
+**Current focus:** Phase 6 is complete. The repo is ready to build guided present mode on top of the now-stable saved-task, media, and support-variant family contracts.
 
 ## Status
 
@@ -39,6 +39,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 6 Plan 06-01 executed and verified
 - Phase 6 Plan 06-02 executed and verified
 - Phase 6 Plan 06-03 executed and verified
+- Phase 6 Plan 06-04 executed and verified
 
 ## Active Milestone
 
@@ -46,7 +47,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-execute-phase 06-support-variants`
+- `$gsd-plan-phase 07-guided-present-mode`
 
 ## Recent Decisions
 
@@ -64,6 +65,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Variant creation resolves the family root from `source.variantFamilyId ?? source.id` and reuses the exact Phase 5 step/media copy boundary without cloning files.
 - Library cards now keep `supportLevel` as the dominant label, with standalone/root/variant badges and family counts as secondary cues.
 - The library's `Create variant` action stays explicit beside generic duplicate and uses the backend `POST /api/tasks` variant request contract directly.
+- Task detail responses now populate root-family metadata and `relatedVariants` so the editor route can render sibling navigation without reconstructing families client-side.
+- The editor route now shows a compact family panel with root/variant labeling, sibling navigation, and an explicit create-variant action that preserves the existing save boundary.
+- Phase 6 support variants remain duplication-based task families; guided present mode and sharing are still deferred to Phases 7 and 8.
 
 ## Constraints To Preserve
 
@@ -75,5 +79,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 06-03-PLAN.md
+- Stopped at: Completed 06-04-PLAN.md
 - Resume file: None
