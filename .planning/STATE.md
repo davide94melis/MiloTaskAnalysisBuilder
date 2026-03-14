@@ -5,7 +5,7 @@ milestone_name: milestone
 status: in_progress
 last_updated: "2026-03-14T11:29:00.000Z"
 progress:
-  total_phases: 10
+  total_phases: 12
   completed_phases: 10
   total_plans: 33
   completed_plans: 33
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 10 PDF export and UX polish are complete. The repo now covers the full v1 loop from Milo SSO through authoring, preview, guided present, safe sharing, minimal session tracking, and browser-print export.
+**Current focus:** V1 product scope is complete. Optional cleanup phases 11 and 12 are now planned to close milestone audit debt before archive.
 
 ## Status
 
@@ -55,14 +55,17 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 10 Plan 10-01 executed and verified
 - Phase 10 Plan 10-02 executed and verified
 - Phase 10 Plan 10-03 executed and verified
+- Phase 11 planned for planning and validation cleanup
+- Phase 12 planned for manual validation and test hygiene
 
 ## Active Milestone
 
 - V1 MVP complete with Milo SSO, task authoring, present mode, sharing, basic tracking, and PDF export
+- Optional post-audit cleanup phases queued before milestone archive
 
 ## Next Command
 
-- `$gsd-audit-milestone`
+- `$gsd-plan-phase 11`
 
 ## Recent Decisions
 
@@ -116,6 +119,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Export is now discoverable from both the editor and the saved preview flow and follows the same saved-only boundary as preview, present, and share.
 - The final polish pass aligns dashboard, library, task cards, present mode, shared view, and the authenticated shell with clearer Milo/Symwriter-compatible hierarchy and action language.
 - Public share surfaces remain safe DTO consumers after the Phase 10 polish pass and still do not expose owner-only export or metadata.
+- Milestone audit found no blocker gaps but did find cleanup debt: requirement checklist drift, missing Phase 07/08 validation artifacts, skipped manual walkthroughs, and persistent non-blocking test warnings.
+- Two optional cleanup phases were added after Phase 10 so that archive-quality planning hygiene and manual closure evidence can be handled without reopening v1 product scope.
 
 ## Constraints To Preserve
 
@@ -127,5 +132,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed Phase 10
+- Stopped at: Planned optional cleanup phases 11 and 12
 - Resume file: None

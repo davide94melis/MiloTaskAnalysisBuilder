@@ -2,7 +2,7 @@
 
 ## Proposed Roadmap
 
-**10 phases** | **47 requirements mapped** | All v1 requirements covered
+**12 phases** | **47 requirements mapped** | All v1 requirements covered
 
 ## Progress
 
@@ -18,6 +18,8 @@
 | 8 | Complete | 2026-03-14 |
 | 9 | Complete | 2026-03-14 |
 | 10 | Complete | 2026-03-14 |
+| 11 | Planned | |
+| 12 | Planned | |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -31,6 +33,8 @@
 | 8 | Safe Sharing And Public Access | Enable public links and duplication while protecting private data and assets. | SHAR-01, SHAR-02, SHAR-03, SHAR-04, SHAR-05, MEDI-03 | 4 |
 | 9 | Minimal Session Tracking | Record basic session completions and expose simple usage history to authenticated users. | SESS-01, SESS-02, SESS-03 | 3 |
 | 10 | PDF Export And UX Polish | Deliver print-ready export and align the whole app with Milo/Symwriter visual standards. | EXPT-01, EXPT-02, EXPT-03, UX-01, UX-03 | 4 |
+| 11 | Milestone Planning Cleanup | Reconcile audit-detected planning drift and restore milestone validation hygiene. | None | 3 |
+| 12 | Manual Validation And Test Hygiene | Close non-blocking manual validation debt and reduce persistent test noise before archive. | None | 3 |
 
 ## Phase Details
 
@@ -151,6 +155,28 @@ Success criteria:
 3. Core workflows feel visually and interaction-wise compatible with Milo and Symwriter.
 4. Create, edit, present, share, and export flows are understandable without training-heavy UI.
 
+### Phase 11: Milestone Planning Cleanup
+
+Goal: Reconcile audit-detected planning drift and restore milestone validation hygiene before archiving.
+
+Requirements: None
+
+Success criteria:
+1. Planning artifacts are internally consistent across audit, roadmap, state, summaries, and requirement checklists.
+2. Missing validation artifacts for Phase 07 and Phase 08 are restored or explicitly resolved.
+3. The milestone can be re-audited without documentation drift findings.
+
+### Phase 12: Manual Validation And Test Hygiene
+
+Goal: Close non-blocking manual validation debt and reduce persistent test noise before milestone archive.
+
+Requirements: None
+
+Success criteria:
+1. Manual browser walkthroughs for shared flows, session history, and export print output are executed and recorded.
+2. Known non-blocking frontend/backend test warnings are either reduced or explicitly documented as accepted debt.
+3. Final milestone closure evidence includes manual UAT notes instead of automation-only signoff.
+
 ## Sequencing Logic
 
 - The roadmap starts with identity because Milo SSO is a hard prerequisite.
@@ -258,4 +284,20 @@ Phase 10 closes v1 with an authenticated browser-print export route, export entr
 
 The final Phase 10 contract remains intentionally narrow: export is still browser-print based, public anonymous export is still deferred, and no deeper redesign or backend PDF pipeline was pulled into v1.
 
-Next up: audit and close the v1 milestone.
+Next up: execute optional cleanup phases if you want to remove audit debt before closing the milestone.
+
+## Phase 11 Next
+
+Planned on 2026-03-14 from milestone audit debt.
+
+This optional cleanup phase exists to fix planning drift rather than add product scope. It should align requirement checklists, summary metadata expectations, and the missing Phase 07 and Phase 08 validation artifacts so the milestone audit can pass cleanly without documentation warnings.
+
+Next up: plan Phase 11 before any milestone re-audit if you want to remove audit process debt.
+
+## Phase 12 Next
+
+Planned on 2026-03-14 from milestone audit debt.
+
+This optional cleanup phase exists to close manual validation debt and persistent test-noise findings without changing the shipped v1 feature scope. It should record shared-flow, session-history, and export print walkthroughs and decide whether current warning noise is acceptable or should be reduced.
+
+Next up: plan Phase 12 after Phase 11 if you want a cleaner milestone closure before archive.
