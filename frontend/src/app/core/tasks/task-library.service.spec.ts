@@ -83,12 +83,67 @@ describe('TaskLibraryService', () => {
       stepCount: 6,
       lastUpdatedAt: '2026-03-13T10:15:30Z',
       authorName: 'teacher@example.com',
-      sourceTaskId: 'tpl-1'
+      sourceTaskId: 'tpl-1',
+      variantFamilyId: null,
+      variantRootTaskId: null,
+      variantRootTitle: null,
+      variantRole: 'standalone',
+      variantCount: 1
     });
   });
 
-  it('loads a task detail payload for the editor route', () => {
-    service.getTaskDetail('task-1').subscribe();
+  it('posts explicit variant creation requests through the task shell API', () => {
+    service
+      .createVariant('task-root', {
+        supportLevel: 'Autonomo',
+        title: 'Lavarsi le mani'
+      })
+      .subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      title: 'Lavarsi le mani',
+      variantSourceTaskId: 'task-root',
+      supportLevel: 'Autonomo'
+    });
+    request.flush({
+      id: 'task-variant',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      contextLabel: 'Bagno',
+      targetLabel: 'Bambino',
+      supportLevel: 'Autonomo',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 6,
+      lastUpdatedAt: '2026-03-14T09:15:30Z',
+      authorName: 'teacher@example.com',
+      sourceTaskId: 'task-root',
+      variantFamilyId: 'task-root',
+      variantRootTaskId: 'task-root',
+      variantRootTitle: 'Lavarsi le mani',
+      variantRole: 'variant',
+      variantCount: 2
+    });
+  });
+
+  it('loads the saved task-detail contract used by both editor reload and authenticated preview', () => {
+    let response:
+      | {
+          steps: Array<{
+            visualSupport: {
+              text: string | null;
+              symbol: { key: string } | null;
+              image: { mediaId: string; url: string } | null;
+            };
+          }>;
+        }
+      | undefined;
+
+    service.getTaskDetail('task-1').subscribe((value) => {
+      response = value;
+    });
 
     const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1');
     expect(request.request.method).toBe('GET');
@@ -110,6 +165,11 @@ describe('TaskLibraryService', () => {
       lastUpdatedAt: '2026-03-13T10:15:30Z',
       authorName: 'teacher@example.com',
       sourceTaskId: null,
+      variantFamilyId: 'task-root',
+      variantRootTaskId: 'task-root',
+      variantRootTitle: 'Lavarsi le mani',
+      variantRole: 'root',
+      variantCount: 3,
       steps: [
         {
           id: 'step-1',
@@ -119,10 +179,50 @@ describe('TaskLibraryService', () => {
           required: true,
           supportGuidance: 'Prompt verbale',
           reinforcementNotes: 'Bravo',
-          estimatedMinutes: 1
+          estimatedMinutes: 1,
+          visualSupport: {
+            text: 'Apri',
+            symbol: {
+              library: 'symwriter',
+              key: 'tap',
+              label: 'Rubinetto'
+            },
+            image: null
+          }
+        },
+        {
+          id: 'step-2',
+          position: 2,
+          title: 'Prendi il sapone',
+          description: 'Usa il dispenser.',
+          required: false,
+          supportGuidance: '',
+          reinforcementNotes: '',
+          estimatedMinutes: 2,
+          visualSupport: {
+            text: 'Sapone',
+            symbol: null,
+            image: {
+              mediaId: 'media-2',
+              storageKey: 'tasks/task-1/media-2.png',
+              fileName: 'sapone.png',
+              mimeType: 'image/png',
+              fileSizeBytes: 2048,
+              width: 512,
+              height: 512,
+              altText: 'Dispenser del sapone',
+              url: '/api/tasks/task-1/media/media-2/content'
+            }
+          }
         }
       ]
     });
+
+    expect(response?.steps[0].visualSupport.text).toBe('Apri');
+    expect(response?.steps[0].visualSupport.symbol?.key).toBe('tap');
+    expect(response?.steps[0].visualSupport.image).toBeNull();
+    expect(response?.steps[1].visualSupport.image?.mediaId).toBe('media-2');
+    expect(response?.steps[1].visualSupport.image?.url).toBe('/api/tasks/task-1/media/media-2/content');
   });
 
   it('saves task detail metadata and ordered step drafts', () => {
@@ -147,7 +247,22 @@ describe('TaskLibraryService', () => {
             required: false,
             supportGuidance: 'Modello visivo',
             reinforcementNotes: '',
-            estimatedMinutes: 2
+            estimatedMinutes: 2,
+            visualSupport: {
+              text: 'Sapone',
+              symbol: null,
+              image: {
+                mediaId: 'media-2',
+                storageKey: 'tasks/task-1/media-2.png',
+                fileName: 'sapone.png',
+                mimeType: 'image/png',
+                fileSizeBytes: 2048,
+                width: 512,
+                height: 512,
+                altText: 'Dispenser del sapone',
+                url: '/api/tasks/task-1/media/media-2/content'
+              }
+            }
           },
           {
             id: 'step-1',
@@ -157,7 +272,16 @@ describe('TaskLibraryService', () => {
             required: true,
             supportGuidance: 'Prompt verbale',
             reinforcementNotes: 'Bravo',
-            estimatedMinutes: 1
+            estimatedMinutes: 1,
+            visualSupport: {
+              text: 'Apri',
+              symbol: {
+                library: 'symwriter',
+                key: 'tap',
+                label: 'Rubinetto'
+              },
+              image: null
+            }
           }
         ]
       })
@@ -168,6 +292,8 @@ describe('TaskLibraryService', () => {
     expect(request.request.body.steps.map((step: { id: string }) => step.id)).toEqual(['step-2', 'step-1']);
     expect(request.request.body.environmentLabel).toBe('Bagno di casa');
     expect(request.request.body.steps[0].supportGuidance).toBe('Modello visivo');
+    expect(request.request.body.steps[0].visualSupport.image.mediaId).toBe('media-2');
+    expect(request.request.body.steps[1].visualSupport.symbol.key).toBe('tap');
     request.flush({
       id: 'task-1',
       title: 'Lavarsi le mani',
@@ -186,6 +312,11 @@ describe('TaskLibraryService', () => {
       lastUpdatedAt: '2026-03-13T11:10:00Z',
       authorName: 'teacher@example.com',
       sourceTaskId: null,
+      variantFamilyId: null,
+      variantRootTaskId: null,
+      variantRootTitle: null,
+      variantRole: 'standalone',
+      variantCount: 1,
       steps: [
         {
           id: 'step-2',
@@ -195,7 +326,22 @@ describe('TaskLibraryService', () => {
           required: false,
           supportGuidance: 'Modello visivo',
           reinforcementNotes: '',
-          estimatedMinutes: 2
+          estimatedMinutes: 2,
+          visualSupport: {
+            text: 'Sapone',
+            symbol: null,
+            image: {
+              mediaId: 'media-2',
+              storageKey: 'tasks/task-1/media-2.png',
+              fileName: 'sapone.png',
+              mimeType: 'image/png',
+              fileSizeBytes: 2048,
+              width: 512,
+              height: 512,
+              altText: 'Dispenser del sapone',
+              url: '/api/tasks/task-1/media/media-2/content'
+            }
+          }
         },
         {
           id: 'step-1',
@@ -205,9 +351,146 @@ describe('TaskLibraryService', () => {
           required: true,
           supportGuidance: 'Prompt verbale',
           reinforcementNotes: 'Bravo',
-          estimatedMinutes: 1
+          estimatedMinutes: 1,
+          visualSupport: {
+            text: 'Apri',
+            symbol: {
+              library: 'symwriter',
+              key: 'tap',
+              label: 'Rubinetto'
+            },
+            image: null
+          }
         }
       ]
+    });
+  });
+
+  it('uploads task-scoped media with multipart form data', () => {
+    const file = new File(['image-bytes'], 'rubinetto.png', { type: 'image/png' });
+
+    service.uploadTaskMedia('task-1', file).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/media/uploads');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body instanceof FormData).toBeTrue();
+    expect((request.request.body as FormData).get('file')).toBe(file);
+    request.flush({
+      mediaId: 'media-1',
+      taskId: 'task-1',
+      fileName: 'rubinetto.png',
+      mimeType: 'image/png',
+      fileSizeBytes: 11,
+      width: 640,
+      height: 480,
+      storageKey: 'tasks/task-1/media-1.png',
+      altText: null,
+      url: '/api/tasks/task-1/media/media-1/content'
+    });
+  });
+
+  it('loads the public shared task contract through the anonymous share route', () => {
+    service.getPublicTaskShare('share-view-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-view-1');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      taskId: 'task-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      description: 'Sequenza pubblica e salvata.',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-14T10:00:00Z',
+      steps: []
+    });
+  });
+
+  it('loads the public guided-present contract through the anonymous present route', () => {
+    service.getPublicPresentTaskShare('share-present-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-present-1/present');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      taskId: 'task-1',
+      title: 'Lavarsi le mani',
+      stepCount: 2,
+      steps: []
+    });
+  });
+
+  it('creates a minimal owner session for a completed authenticated run', () => {
+    service.createTaskSession('task-1', { stepCount: 7, completed: true }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/sessions');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ stepCount: 7, completed: true });
+    request.flush({
+      id: 'session-1',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 7,
+      completed: true,
+      completedAt: '2026-03-14T10:20:00Z'
+    });
+  });
+
+  it('loads authenticated task session history through the task-scoped endpoint', () => {
+    service.listTaskSessions('task-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/sessions');
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'session-1',
+        taskId: 'task-1',
+        ownerId: 'owner-1',
+        shareId: null,
+        accessContext: 'owner_present',
+        stepCount: 7,
+        completed: true,
+        completedAt: '2026-03-14T10:20:00Z'
+      }
+    ]);
+  });
+
+  it('creates a minimal shared-present session through the public share endpoint', () => {
+    service.createPublicPresentTaskSession('share-present-1', { stepCount: 7, completed: true }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-present-1/sessions');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ stepCount: 7, completed: true });
+    request.flush({
+      id: 'session-shared-1',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: 'share-1',
+      accessContext: 'shared_present',
+      stepCount: 7,
+      completed: true,
+      completedAt: '2026-03-14T10:25:00Z'
+    });
+  });
+
+  it('duplicates a shared task through the authenticated import route', () => {
+    service.duplicateTaskFromShare('share-view-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-view-1/duplicate');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({
+      id: 'task-copy-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      contextLabel: 'Bagno',
+      targetLabel: '',
+      supportLevel: 'Guidato',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-14T10:10:00Z',
+      authorName: 'teacher@example.com'
     });
   });
 });

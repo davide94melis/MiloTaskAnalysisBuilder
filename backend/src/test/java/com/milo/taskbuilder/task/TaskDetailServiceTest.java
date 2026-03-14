@@ -259,6 +259,147 @@ class TaskDetailServiceTest {
                         UUID.fromString("33333333-3333-3333-3333-333333333333"),
                         UUID.fromString("44444444-4444-4444-4444-444444444444")
                 );
+        assertThat(response.variantRole()).isEqualTo("standalone");
+        assertThat(response.relatedVariants()).isEmpty();
+    }
+
+    @Test
+    void returnsFamilyMetadataAndSiblingNavigationForVariantDetails() {
+        UUID ownerId = UUID.randomUUID();
+        UUID rootTaskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID currentTaskId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID siblingTaskId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        TaskShellEntity currentTask = task(currentTaskId, ownerId);
+        currentTask.setTitle("Lavarsi le mani");
+        currentTask.setSupportLevel("Visivo");
+        currentTask.setVariantFamilyId(rootTaskId);
+
+        TaskShellEntity rootTask = task(rootTaskId, ownerId);
+        rootTask.setTitle("Lavarsi le mani");
+        rootTask.setSupportLevel("Guidato");
+
+        TaskShellEntity siblingTask = task(siblingTaskId, ownerId);
+        siblingTask.setTitle("Lavarsi le mani");
+        siblingTask.setSupportLevel("Autonomo");
+        siblingTask.setVariantFamilyId(rootTaskId);
+
+        TaskAnalysisStepEntity step = step(currentTaskId, UUID.fromString("33333333-3333-3333-3333-333333333333"), 1, "Primo passo");
+        step.setVisualText("Bagna");
+
+        when(taskShellRepository.findByIdAndOwnerId(currentTaskId, ownerId)).thenReturn(Optional.of(currentTask));
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(currentTaskId)).thenReturn(List.of(step));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(currentTaskId)).thenReturn(List.of());
+        when(taskShellRepository.findByIdIn(List.of(rootTaskId))).thenReturn(List.of(rootTask));
+        when(taskShellRepository.findByVariantFamilyIdIn(List.of(rootTaskId))).thenReturn(List.of(currentTask, siblingTask));
+
+        TaskDetailResponse response = taskDetailService.getTaskDetail(currentTaskId, ownerId);
+
+        assertThat(response.variantFamilyId()).isEqualTo(rootTaskId);
+        assertThat(response.variantRootTaskId()).isEqualTo(rootTaskId);
+        assertThat(response.variantRootTitle()).isEqualTo("Lavarsi le mani");
+        assertThat(response.variantRole()).isEqualTo("variant");
+        assertThat(response.variantCount()).isEqualTo(3);
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::id)
+                .containsExactly(rootTaskId, siblingTaskId);
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::variantRole)
+                .containsExactly("root", "variant");
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::supportLevel)
+                .containsExactly("Guidato", "Autonomo");
+    }
+
+    @Test
+    void preservesMediaAssociationWhenExistingStepsAreReordered() {
+        UUID ownerId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        UUID firstStepId = UUID.fromString("99999999-1111-1111-1111-111111111111");
+        UUID secondStepId = UUID.fromString("99999999-2222-2222-2222-222222222222");
+        UUID mediaId = UUID.fromString("99999999-3333-3333-3333-333333333333");
+        TaskShellEntity task = task(taskId, ownerId);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                "Lavarsi le mani",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "private",
+                List.of(
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                secondStepId,
+                                1,
+                                "Secondo passo",
+                                "Chiudi l'acqua",
+                                true,
+                                null,
+                                null,
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest("Chiudi", null, null)
+                        ),
+                        new UpdateTaskRequest.UpdateTaskStepRequest(
+                                firstStepId,
+                                2,
+                                "Primo passo",
+                                "Apri l'acqua",
+                                true,
+                                null,
+                                null,
+                                1,
+                                new UpdateTaskRequest.VisualSupportRequest(
+                                        "Apri",
+                                        null,
+                                        new UpdateTaskRequest.StepImageRequest(
+                                                mediaId,
+                                                "task-a/image-1.png",
+                                                "step-1.png",
+                                                "image/png",
+                                                321L,
+                                                320,
+                                                240,
+                                                "Rubinetto aperto",
+                                                "/api/tasks/%s/media/%s/content".formatted(taskId, mediaId)
+                                        )
+                                )
+                        )
+                )
+        );
+
+        TaskAnalysisStepEntity reorderedFirst = step(taskId, secondStepId, 1, "Secondo passo");
+        reorderedFirst.setVisualText("Chiudi");
+        TaskAnalysisStepEntity reorderedSecond = step(taskId, firstStepId, 2, "Primo passo");
+        reorderedSecond.setVisualText("Apri");
+
+        TaskAnalysisStepMediaEntity uploadedImage = media(
+                taskId,
+                mediaId,
+                firstStepId,
+                "task-a/image-1.png",
+                "step-1.png",
+                "Rubinetto aperto"
+        );
+
+        when(taskShellRepository.findByIdAndOwnerId(taskId, ownerId)).thenReturn(Optional.of(task));
+        when(taskShellRepository.save(task)).thenReturn(task);
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId))
+                .thenReturn(List.of(reorderedFirst, reorderedSecond));
+        when(taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(mediaId, taskId))
+                .thenReturn(Optional.of(uploadedImage));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId))
+                .thenReturn(List.of(uploadedImage));
+        when(taskMediaStorageService.buildAccessUrl(taskId, mediaId))
+                .thenReturn("/api/tasks/%s/media/%s/content".formatted(taskId, mediaId));
+
+        TaskDetailResponse response = taskDetailService.updateTask(taskId, ownerId, request);
+
+        assertThat(response.steps()).extracting(TaskDetailResponse.TaskStepDetail::id)
+                .containsExactly(secondStepId, firstStepId);
+        assertThat(response.steps().get(1).visualSupport().image().mediaId()).isEqualTo(mediaId);
+        assertThat(uploadedImage.getTaskAnalysisStepId()).isEqualTo(firstStepId);
+        verify(taskAnalysisStepMediaRepository).save(uploadedImage);
     }
 
     @Test

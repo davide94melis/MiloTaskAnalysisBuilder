@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - AUTH-01
+  - AUTH-02
+  - AUTH-03
+---
+
 # Plan 01-03 Summary
 
 ## What Was Built
@@ -31,3 +38,4 @@
 ## Deviations
 
 - The worker delivered the planned tests and docs, but the orchestrator completed the missing Angular test tooling in `frontend/package.json` so the specs could run successfully in this greenfield repo.
+

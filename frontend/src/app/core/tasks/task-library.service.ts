@@ -2,13 +2,21 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppConfigService } from '../config/app-config.service';
-import { TaskDetailRecord, UpdateTaskDetailRequest } from './task-detail.models';
+import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
+  CreateTaskSessionRequest,
+  CreateTaskShareRequest,
+  PublicTaskPresentRecord,
   CreateTaskShellRequest,
+  CreateTaskVariantRequest,
+  PublicTaskShareRecord,
   TaskCardRecord,
   TaskDashboardSummary,
   TaskLibraryFilters,
-  TaskLibraryResponse
+  TaskLibraryResponse,
+  TaskSessionSummaryRecord,
+  TaskShareMode,
+  TaskShareSummaryRecord
 } from './task-library.models';
 
 @Injectable({ providedIn: 'root' })
@@ -56,11 +64,68 @@ export class TaskLibraryService {
     return this.http.put<TaskDetailRecord>(`${this.tasksUrl}/${taskId}`, request);
   }
 
+  uploadTaskMedia(taskId: string, file: File): Observable<TaskMediaUploadRecord> {
+    const payload = new FormData();
+    payload.append('file', file);
+    return this.http.post<TaskMediaUploadRecord>(`${this.tasksUrl}/${taskId}/media/uploads`, payload);
+  }
+
   createDraft(request: CreateTaskShellRequest = {}): Observable<TaskCardRecord> {
     return this.http.post<TaskCardRecord>(this.tasksUrl, request);
   }
 
   duplicateTask(taskId: string): Observable<TaskCardRecord> {
     return this.http.post<TaskCardRecord>(`${this.tasksUrl}/${taskId}/duplicate`, {});
+  }
+
+  createVariant(taskId: string, request: CreateTaskVariantRequest): Observable<TaskCardRecord> {
+    return this.http.post<TaskCardRecord>(this.tasksUrl, {
+      title: request.title,
+      variantSourceTaskId: taskId,
+      supportLevel: request.supportLevel
+    });
+  }
+
+  listTaskShares(taskId: string): Observable<TaskShareSummaryRecord[]> {
+    return this.http.get<TaskShareSummaryRecord[]>(`${this.tasksUrl}/${taskId}/shares`);
+  }
+
+  createTaskShare(taskId: string, request: CreateTaskShareRequest): Observable<TaskShareSummaryRecord> {
+    return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares`, request);
+  }
+
+  createTaskSession(taskId: string, request: CreateTaskSessionRequest): Observable<TaskSessionSummaryRecord> {
+    return this.http.post<TaskSessionSummaryRecord>(`${this.tasksUrl}/${taskId}/sessions`, request);
+  }
+
+  listTaskSessions(taskId: string): Observable<TaskSessionSummaryRecord[]> {
+    return this.http.get<TaskSessionSummaryRecord[]>(`${this.tasksUrl}/${taskId}/sessions`);
+  }
+
+  regenerateTaskShare(taskId: string, mode: TaskShareMode): Observable<TaskShareSummaryRecord> {
+    return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares/${mode}/regenerate`, {});
+  }
+
+  revokeTaskShare(taskId: string, shareId: string): Observable<TaskShareSummaryRecord> {
+    return this.http.delete<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares/${shareId}`);
+  }
+
+  getPublicTaskShare(token: string): Observable<PublicTaskShareRecord> {
+    return this.http.get<PublicTaskShareRecord>(`${this.config.apiUrl}/public/shares/${token}`);
+  }
+
+  getPublicPresentTaskShare(token: string): Observable<PublicTaskPresentRecord> {
+    return this.http.get<PublicTaskPresentRecord>(`${this.config.apiUrl}/public/shares/${token}/present`);
+  }
+
+  createPublicPresentTaskSession(
+    token: string,
+    request: CreateTaskSessionRequest
+  ): Observable<TaskSessionSummaryRecord> {
+    return this.http.post<TaskSessionSummaryRecord>(`${this.config.apiUrl}/public/shares/${token}/sessions`, request);
+  }
+
+  duplicateTaskFromShare(token: string): Observable<TaskCardRecord> {
+    return this.http.post<TaskCardRecord>(`${this.config.apiUrl}/public/shares/${token}/duplicate`, {});
   }
 }

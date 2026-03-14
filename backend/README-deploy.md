@@ -63,6 +63,56 @@ Phase 4 expands the step payload on the existing task-detail aggregate instead o
 
 The `taskbuilder.task_analysis_step` table now stores the non-media authoring fields needed for Phase 4. Media-related fields are still deferred.
 
+## Phase 5 API Contract
+
+Phase 5 keeps media persistence inside the authenticated task aggregate while splitting binary upload onto a dedicated endpoint.
+
+- `POST /api/tasks/{taskId}/media/uploads` accepts authenticated multipart image upload and returns the saved media descriptor needed by the editor draft
+- `GET /api/tasks/{taskId}` returns each ordered step with `visualSupport.text`, `visualSupport.symbol`, and `visualSupport.image`
+- `PUT /api/tasks/{taskId}` persists the full ordered step array, including text, symbol references, and uploaded image references
+- `GET /api/tasks/{taskId}/media/{mediaId}/content` resolves authenticated media bytes for saved image descriptors
+
+Saved image descriptors must persist stable identifiers such as `mediaId` and `storageKey`. Do not treat returned content URLs as durable storage values.
+
+Phase 5 duplication behavior copies:
+
+- visual text
+- symbol library/key/label references
+- saved media metadata rows pointing at the same storage object
+
+This is the intended v1 boundary. Physical object cloning, public asset exposure, and share-safe media authorization remain Phase 8 concerns.
+
+## Phase 6 API Contract
+
+Phase 6 adds duplication-based support variants without changing the Phase 5 media boundary.
+
+- `POST /api/tasks` now accepts `variantSourceTaskId` with required `supportLevel` to create a new family member from an accessible saved task
+- `GET /api/tasks` card payloads expose `variantFamilyId`, `variantRootTaskId`, `variantRootTitle`, `variantRole`, and `variantCount`
+- `GET /api/tasks/{taskId}` detail payloads expose the same family metadata plus `relatedVariants` for editor-side navigation
+- `POST /api/tasks/{taskId}/duplicate` stays generic and does not set family metadata
+
+Variant creation must continue to:
+
+- copy ordered steps exactly as the generic duplicate flow does
+- reuse saved step media metadata and storage keys instead of cloning image objects
+- preserve support-level labeling as the primary variant distinguisher
+
+Do not treat Phase 6 as a versioning system. Present-mode rules remain Phase 7 work, and public-sharing/media rules remain Phase 8 work.
+
+## Phase 7 API Contract
+
+Phase 7 intentionally reuses the authenticated task-detail aggregate as the backend input for guided present mode.
+
+- `GET /api/tasks/{taskId}` remains the only backend read contract required for authenticated preview and guided present playback
+- the response must continue to include ordered `steps`, saved `visualSupport`, and family metadata such as `variantRole`, `variantRootTaskId`, and `relatedVariants`
+- no dedicated present-mode endpoint was added because Phase 7 keeps session state local to the frontend
+
+Backend boundaries preserved in Phase 7:
+
+- draft editor media is still excluded from playback until the task is saved through `PUT /api/tasks/{taskId}`
+- no public asset URLs or anonymous read paths were introduced; that remains Phase 8 work
+- no persisted completion/session writes were introduced; that remains Phase 9 work
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -74,4 +124,60 @@ The `taskbuilder.task_analysis_step` table now stores the non-media authoring fi
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 4 adds full non-media step authoring on the existing aggregate, but still does not include symbol/image/media workflows.
+This backend does not implement local login, registration, or shared Milo entities. Phase 7 keeps guided playback on the existing authenticated task-detail contract, while public media access still belongs to Phase 8 and persisted session tracking still belongs to Phase 9.
+
+## Phase 8 Backend Contract
+
+Phase 8 introduces a separate public-share boundary instead of relaxing the owner task-detail API.
+
+The backend now exposes:
+
+- authenticated owner share-management routes under `POST/GET/DELETE /api/tasks/{taskId}/shares...`
+- anonymous safe read routes:
+  - `GET /api/public/shares/{token}`
+  - `GET /api/public/shares/{token}/present`
+  - `GET /api/public/shares/{token}/media/{mediaId}/content`
+- authenticated duplicate-from-share route:
+  - `POST /api/public/shares/{token}/duplicate`
+
+Backend rules in Phase 8:
+
+- owner task detail on `GET /api/tasks/{taskId}` remains authenticated and is not reused as the public DTO
+- public responses must expose only the safe fields required for public view or public present
+- public media bytes are served only after the share token resolves to an active share and the media still belongs to a currently attached persisted step
+- revoking a share invalidates the public token without changing the private authored task
+- duplicate-from-share always creates a new private recipient-owned draft and does not publish or transfer ownership
+
+The backend must still defer persisted present-mode/session tracking to Phase 9 and must not introduce generic public asset URLs in v1.
+
+## Phase 9 Backend Contract
+
+Phase 9 adds a narrow `task_session` domain for minimal completion records only.
+
+The backend now exposes:
+
+- `POST /api/tasks/{taskId}/sessions`
+  - authenticated owner completion write for the current owned task
+- `GET /api/tasks/{taskId}/sessions`
+  - authenticated owner-only session history for that task
+- `POST /api/public/shares/{token}/sessions`
+  - anonymous minimal completion write allowed only for active `present` shares
+
+Persisted session rows store only:
+
+- `task_analysis_id`
+- `owner_id`
+- optional `task_share_id`
+- `access_context`
+- `step_count`
+- `completed`
+- `completed_at`
+
+Backend rules in Phase 9:
+
+- shared-present writes resolve the active share and attribute the session to the task owner
+- public callers can write a minimal shared-present completion but cannot read history
+- `view` shares, revoked shares, and invalid tokens cannot create sessions
+- owner history remains authenticated and owner-scoped only
+
+The backend must still defer per-step telemetry, prompt/help-level capture, timings, analytics, and clinical reporting beyond v1.

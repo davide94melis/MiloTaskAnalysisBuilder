@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MiloAuthService } from '../core/auth/milo-auth.service';
 
 @Component({
@@ -17,6 +17,11 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
             <p class="shell__subtitle">
               Organizza task analysis chiare, riapribili e pronte da condividere con il team educativo.
             </p>
+          </div>
+          <div class="shell__product-tags" aria-label="Punti chiave prodotto">
+            <span>Editor visuale</span>
+            <span>Present mode</span>
+            <span>Export PDF</span>
           </div>
         </div>
 
@@ -45,6 +50,18 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
           <a routerLink="/library" routerLinkActive="is-active">Libreria</a>
           <a routerLink="/tasks/new" routerLinkActive="is-active">Nuova scheda</a>
         </nav>
+
+        <section class="shell__section-header" aria-label="Orientamento workspace">
+          <div>
+            <p class="shell__section-eyebrow">Workspace operativo</p>
+            <strong>{{ currentSection().title }}</strong>
+            <p class="shell__section-copy">{{ currentSection().description }}</p>
+          </div>
+          <div class="shell__section-meta">
+            <span class="shell__section-badge">{{ currentSection().tag }}</span>
+            <small>{{ currentUrl() }}</small>
+          </div>
+        </section>
 
         <section class="shell__content">
           <router-outlet />
@@ -81,6 +98,27 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
       .shell__brand {
         display: grid;
         gap: 0.35rem;
+      }
+
+      .shell__product-tags {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-top: 0.4rem;
+      }
+
+      .shell__product-tags span,
+      .shell__section-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2rem;
+        padding: 0 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        color: #31566b;
+        box-shadow: 0 10px 18px rgba(17, 65, 91, 0.06);
       }
 
       .shell__eyebrow {
@@ -171,6 +209,38 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         flex-wrap: wrap;
       }
 
+      .shell__section-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.95rem 1.1rem;
+        border-radius: 1.35rem;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(17, 65, 91, 0.1);
+      }
+
+      .shell__section-copy,
+      .shell__section-meta small {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.45;
+      }
+
+      .shell__section-meta {
+        display: grid;
+        gap: 0.35rem;
+        justify-items: end;
+      }
+
+      .shell__section-eyebrow {
+        margin: 0 0 0.18rem;
+        color: #7c5f3b;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
       .shell__nav a {
         padding: 0.82rem 1.05rem;
         border-radius: 999px;
@@ -207,6 +277,15 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
           width: 100%;
           justify-content: space-between;
         }
+
+        .shell__section-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .shell__section-meta {
+          justify-items: start;
+        }
       }
     `
   ],
@@ -215,11 +294,18 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
 export class MainLayoutComponent {
   private readonly auth = inject(MiloAuthService);
   private readonly router = inject(Router);
+  protected readonly currentUrl = signal(this.router.url || '/dashboard');
 
   protected readonly user = computed(() => this.auth.currentUser());
+  protected readonly currentSection = computed(() => this.describeSection(this.currentUrl()));
 
   constructor() {
     void this.auth.restoreSession();
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects);
+      }
+    });
   }
 
   protected initials(value: string): string {
@@ -234,5 +320,61 @@ export class MainLayoutComponent {
   logout(): void {
     this.auth.logout();
     void this.router.navigateByUrl('/auth/login');
+  }
+
+  private describeSection(url: string): { title: string; description: string; tag: string } {
+    if (url.startsWith('/dashboard')) {
+      return {
+        title: 'Dashboard operativa',
+        description: 'Raccoglie i percorsi principali per creare, riprendere, presentare e stampare task salvate.',
+        tag: 'Dashboard'
+      };
+    }
+
+    if (url.startsWith('/library')) {
+      return {
+        title: 'Libreria task',
+        description: 'Aiuta a ritrovare varianti, task recenti e contenuti pronti da aprire nell editor.',
+        tag: 'Libreria'
+      };
+    }
+
+    if (url.includes('/preview')) {
+      return {
+        title: 'Anteprima salvata',
+        description: 'Verifica la resa della task salvata prima di presentarla o esportarla in PDF.',
+        tag: 'Anteprima'
+      };
+    }
+
+    if (url.includes('/present')) {
+      return {
+        title: 'Modalita guidata',
+        description: 'Usa la task salvata in un contesto di esecuzione guidata per il bambino.',
+        tag: 'Presenta'
+      };
+    }
+
+    if (url.includes('/export')) {
+      return {
+        title: 'Export PDF',
+        description: 'Prepara un documento stampabile dalla stessa versione salvata usata in anteprima e presentazione.',
+        tag: 'Export'
+      };
+    }
+
+    if (url.startsWith('/tasks/new') || /^\/tasks\/[^/]+$/.test(url)) {
+      return {
+        title: 'Editor task',
+        description: 'Qui salvi la task e controlli le azioni collegate: anteprima, presentazione, condivisione ed export.',
+        tag: 'Editor'
+      };
+    }
+
+    return {
+      title: 'Milo Task Analysis Builder',
+      description: 'Una superficie unica per organizzare, verificare, presentare, condividere ed esportare task analysis.',
+      tag: 'App'
+    };
   }
 }

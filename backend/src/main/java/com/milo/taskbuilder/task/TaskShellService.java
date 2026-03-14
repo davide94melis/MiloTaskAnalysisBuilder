@@ -10,7 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -20,15 +26,18 @@ public class TaskShellService {
 
     private final TaskShellRepository repository;
     private final TaskAnalysisStepRepository taskAnalysisStepRepository;
+    private final TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository;
     private final TaskShellMapper mapper;
 
     public TaskShellService(
             TaskShellRepository repository,
             TaskAnalysisStepRepository taskAnalysisStepRepository,
+            TaskAnalysisStepMediaRepository taskAnalysisStepMediaRepository,
             TaskShellMapper mapper
     ) {
         this.repository = repository;
         this.taskAnalysisStepRepository = taskAnalysisStepRepository;
+        this.taskAnalysisStepMediaRepository = taskAnalysisStepMediaRepository;
         this.mapper = mapper;
     }
 
@@ -43,7 +52,24 @@ public class TaskShellService {
             copySteps(draft.getSourceTaskId(), savedDraft.getId());
         }
 
-        return mapper.toCard(savedDraft);
+        return toCard(savedDraft, ownerId);
+    }
+
+    @Transactional
+    public TaskCardResponse createVariant(UUID sourceTaskId, UUID ownerId, String ownerEmail, CreateTaskRequest request) {
+        String supportLevel = normalize(request.supportLevel());
+        if (supportLevel == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Support level is required for variant creation");
+        }
+
+        TaskShellEntity variant = duplicateAccessibleTask(sourceTaskId, ownerId, ownerEmail, request.title());
+        UUID familyRootId = resolveFamilyRootId(variant.getSourceTaskId(), ownerId);
+        variant.setVariantFamilyId(familyRootId);
+        variant.setSupportLevel(supportLevel);
+
+        TaskShellEntity savedVariant = repository.save(variant);
+        copySteps(variant.getSourceTaskId(), savedVariant.getId());
+        return toCard(savedVariant, ownerId);
     }
 
     @Transactional(readOnly = true)
@@ -59,9 +85,7 @@ public class TaskShellService {
                         normalize(filter.search())
                 );
 
-        List<TaskCardResponse> items = entities.stream()
-                .map(mapper::toCard)
-                .toList();
+        List<TaskCardResponse> items = toCards(entities, ownerId);
 
         TaskLibraryFilterOptionsResponse availableFilters = new TaskLibraryFilterOptionsResponse(
                 distinctSorted(entities.stream().map(TaskShellEntity::getCategory).toList()),
@@ -77,18 +101,16 @@ public class TaskShellService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(UUID ownerId) {
-        List<TaskCardResponse> drafts = repository.findRecentDrafts(ownerId).stream()
+        List<TaskShellEntity> drafts = repository.findRecentDrafts(ownerId).stream()
                 .limit(5)
-                .map(mapper::toCard)
                 .toList();
-        List<TaskCardResponse> templates = repository.findTemplates().stream()
+        List<TaskShellEntity> templates = repository.findTemplates().stream()
                 .limit(3)
-                .map(mapper::toCard)
                 .toList();
 
         return new DashboardResponse(
-                drafts,
-                templates,
+                toCards(drafts, ownerId),
+                toCards(templates, null),
                 new DashboardResponse.DashboardStats(
                         Math.toIntExact(repository.countByOwnerIdAndStatus(ownerId, TaskShellStatus.DRAFT)),
                         Math.toIntExact(repository.countByStatus(TaskShellStatus.TEMPLATE)),
@@ -99,16 +121,14 @@ public class TaskShellService {
 
     @Transactional(readOnly = true)
     public List<TaskCardResponse> listTemplates() {
-        return repository.findTemplates().stream()
-                .map(mapper::toCard)
-                .toList();
+        return toCards(repository.findTemplates(), null);
     }
 
     @Transactional(readOnly = true)
     public TaskCardResponse reopenDraft(UUID taskId, UUID ownerId) {
         TaskShellEntity task = repository.findByIdAndOwnerId(taskId, ownerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Draft not found"));
-        return mapper.toCard(task);
+        return toCard(task, ownerId);
     }
 
     @Transactional
@@ -116,7 +136,15 @@ public class TaskShellService {
         TaskShellEntity copy = duplicateAccessibleTask(sourceTaskId, ownerId, ownerEmail, null);
         TaskShellEntity savedCopy = repository.save(copy);
         copySteps(copy.getSourceTaskId(), savedCopy.getId());
-        return mapper.toCard(savedCopy);
+        return toCard(savedCopy, ownerId);
+    }
+
+    @Transactional
+    public TaskCardResponse duplicateSharedTask(TaskShellEntity source, UUID ownerId, String ownerEmail) {
+        TaskShellEntity copy = duplicateTask(source, ownerId, ownerEmail, null);
+        TaskShellEntity savedCopy = repository.save(copy);
+        copySteps(copy.getSourceTaskId(), savedCopy.getId());
+        return toCard(savedCopy, ownerId);
     }
 
     private TaskShellEntity newDraft(UUID ownerId, String ownerEmail, String requestedTitle) {
@@ -133,7 +161,10 @@ public class TaskShellService {
     private TaskShellEntity duplicateAccessibleTask(UUID sourceTaskId, UUID ownerId, String ownerEmail, String requestedTitle) {
         TaskShellEntity source = repository.findAccessibleById(sourceTaskId, ownerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task source not found"));
+        return duplicateTask(source, ownerId, ownerEmail, requestedTitle);
+    }
 
+    private TaskShellEntity duplicateTask(TaskShellEntity source, UUID ownerId, String ownerEmail, String requestedTitle) {
         TaskShellEntity copy = new TaskShellEntity();
         copy.setOwnerId(ownerId);
         copy.setSourceTaskId(source.getId());
@@ -153,6 +184,12 @@ public class TaskShellService {
         return copy;
     }
 
+    private UUID resolveFamilyRootId(UUID sourceTaskId, UUID ownerId) {
+        TaskShellEntity source = repository.findAccessibleById(sourceTaskId, ownerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task source not found"));
+        return source.getVariantFamilyId() == null ? source.getId() : source.getVariantFamilyId();
+    }
+
     private void copySteps(UUID sourceTaskId, UUID destinationTaskId) {
         if (sourceTaskId == null) {
             return;
@@ -165,6 +202,7 @@ public class TaskShellService {
             return;
         }
 
+        Map<UUID, List<TaskAnalysisStepMediaEntity>> sourceMediaByStepId = mediaByStepId(sourceTaskId);
         List<TaskAnalysisStepEntity> copiedSteps = sourceSteps.stream()
                 .map(sourceStep -> {
                     TaskAnalysisStepEntity copiedStep = new TaskAnalysisStepEntity();
@@ -176,11 +214,140 @@ public class TaskShellService {
                     copiedStep.setSupportGuidance(sourceStep.getSupportGuidance());
                     copiedStep.setReinforcementNotes(sourceStep.getReinforcementNotes());
                     copiedStep.setEstimatedMinutes(sourceStep.getEstimatedMinutes());
+                    copiedStep.setVisualText(sourceStep.getVisualText());
+                    copiedStep.setSymbolLibrary(sourceStep.getSymbolLibrary());
+                    copiedStep.setSymbolKey(sourceStep.getSymbolKey());
+                    copiedStep.setSymbolLabel(sourceStep.getSymbolLabel());
                     return copiedStep;
                 })
                 .toList();
 
-        taskAnalysisStepRepository.saveAll(copiedSteps);
+        List<TaskAnalysisStepEntity> savedSteps = taskAnalysisStepRepository.saveAll(copiedSteps);
+        copyStepMedia(destinationTaskId, sourceSteps, savedSteps, sourceMediaByStepId);
+    }
+
+    private Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId(UUID taskId) {
+        Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId = new HashMap<>();
+        for (TaskAnalysisStepMediaEntity media :
+                taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(taskId)) {
+            if (media.getTaskAnalysisStepId() == null) {
+                continue;
+            }
+            mediaByStepId.computeIfAbsent(media.getTaskAnalysisStepId(), ignored -> new ArrayList<>()).add(media);
+        }
+        return mediaByStepId;
+    }
+
+    private void copyStepMedia(
+            UUID destinationTaskId,
+            List<TaskAnalysisStepEntity> sourceSteps,
+            List<TaskAnalysisStepEntity> savedSteps,
+            Map<UUID, List<TaskAnalysisStepMediaEntity>> sourceMediaByStepId
+    ) {
+        List<TaskAnalysisStepMediaEntity> copiedMedia = new ArrayList<>();
+        for (int index = 0; index < savedSteps.size(); index++) {
+            TaskAnalysisStepEntity sourceStep = sourceSteps.get(index);
+            TaskAnalysisStepEntity savedStep = savedSteps.get(index);
+            for (TaskAnalysisStepMediaEntity sourceMedia :
+                    sourceMediaByStepId.getOrDefault(sourceStep.getId(), List.of())) {
+                TaskAnalysisStepMediaEntity copied = new TaskAnalysisStepMediaEntity();
+                copied.setTaskAnalysisId(destinationTaskId);
+                copied.setTaskAnalysisStepId(savedStep.getId());
+                copied.setKind(sourceMedia.getKind());
+                copied.setStorageProvider(sourceMedia.getStorageProvider());
+                copied.setStorageBucket(sourceMedia.getStorageBucket());
+                copied.setStorageKey(sourceMedia.getStorageKey());
+                copied.setFileName(sourceMedia.getFileName());
+                copied.setMimeType(sourceMedia.getMimeType());
+                copied.setFileSizeBytes(sourceMedia.getFileSizeBytes());
+                copied.setWidth(sourceMedia.getWidth());
+                copied.setHeight(sourceMedia.getHeight());
+                copied.setAltText(sourceMedia.getAltText());
+                copiedMedia.add(copied);
+            }
+        }
+
+        if (!copiedMedia.isEmpty()) {
+            taskAnalysisStepMediaRepository.saveAll(copiedMedia);
+        }
+    }
+
+    private TaskCardResponse toCard(TaskShellEntity entity, UUID ownerId) {
+        return mapper.toCard(entity, familyMetadataByTaskId(List.of(entity), ownerId).get(entity.getId()));
+    }
+
+    private List<TaskCardResponse> toCards(List<TaskShellEntity> entities, UUID ownerId) {
+        Map<UUID, TaskShellMapper.FamilyMetadata> familyMetadataByTaskId = familyMetadataByTaskId(entities, ownerId);
+        return entities.stream()
+                .map(entity -> mapper.toCard(entity, familyMetadataByTaskId.get(entity.getId())))
+                .toList();
+    }
+
+    private Map<UUID, TaskShellMapper.FamilyMetadata> familyMetadataByTaskId(List<TaskShellEntity> entities, UUID ownerId) {
+        if (entities.isEmpty()) {
+            return Map.of();
+        }
+
+        LinkedHashSet<UUID> rootIds = new LinkedHashSet<>();
+        for (TaskShellEntity entity : entities) {
+            rootIds.add(entity.getVariantFamilyId() == null ? entity.getId() : entity.getVariantFamilyId());
+        }
+
+        Map<UUID, TaskShellEntity> rootById = new HashMap<>();
+        for (TaskShellEntity root : filterAccessible(repository.findByIdIn(List.copyOf(rootIds)), ownerId)) {
+            rootById.put(root.getId(), root);
+        }
+
+        Map<UUID, List<TaskShellEntity>> variantsByRootId = new HashMap<>();
+        for (TaskShellEntity variant : filterAccessible(repository.findByVariantFamilyIdIn(List.copyOf(rootIds)), ownerId)) {
+            variantsByRootId.computeIfAbsent(variant.getVariantFamilyId(), ignored -> new ArrayList<>()).add(variant);
+        }
+
+        Map<UUID, TaskShellMapper.FamilyMetadata> metadataByTaskId = new HashMap<>();
+        for (TaskShellEntity entity : entities) {
+            UUID rootId = entity.getVariantFamilyId();
+            if (rootId != null) {
+                TaskShellEntity root = rootById.get(rootId);
+                int variantCount = variantsByRootId.getOrDefault(rootId, List.of()).size() + (root == null ? 0 : 1);
+                metadataByTaskId.put(entity.getId(), new TaskShellMapper.FamilyMetadata(
+                        entity.getVariantFamilyId(),
+                        rootId,
+                        root == null ? null : root.getTitle(),
+                        "variant",
+                        variantCount
+                ));
+                continue;
+            }
+
+            int variantCount = variantsByRootId.getOrDefault(entity.getId(), List.of()).size() + 1;
+            if (variantCount > 1) {
+                metadataByTaskId.put(entity.getId(), new TaskShellMapper.FamilyMetadata(
+                        null,
+                        entity.getId(),
+                        entity.getTitle(),
+                        "root",
+                        variantCount
+                ));
+                continue;
+            }
+
+            metadataByTaskId.put(entity.getId(), TaskShellMapper.FamilyMetadata.standalone());
+        }
+
+        return metadataByTaskId;
+    }
+
+    private List<TaskShellEntity> filterAccessible(Collection<TaskShellEntity> tasks, UUID ownerId) {
+        return tasks.stream()
+                .filter(task -> hasLibraryAccess(task, ownerId))
+                .toList();
+    }
+
+    private boolean hasLibraryAccess(TaskShellEntity task, UUID ownerId) {
+        if (task.getStatus() == TaskShellStatus.TEMPLATE) {
+            return true;
+        }
+        return ownerId != null && Objects.equals(task.getOwnerId(), ownerId);
     }
 
     private String normalize(String value) {

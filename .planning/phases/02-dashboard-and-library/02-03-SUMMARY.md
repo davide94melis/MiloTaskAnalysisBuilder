@@ -1,3 +1,14 @@
+---
+requirements-completed:
+  - LIBR-01
+  - LIBR-02
+  - LIBR-03
+  - LIBR-04
+  - LIBR-05
+  - LIBR-06
+  - UX-02
+---
+
 # Phase 02 Plan 02-03 Summary
 
 ## Outcome
@@ -30,3 +41,4 @@ This plan locks in the cross-stack expectations that later phases will build on:
 
 - Phase 2 remains intentionally limited to library-ready task shells. Rich metadata persistence and the true editor still belong to Phase 3.
 - Backend verification emits Mockito/JDK dynamic-agent warnings, but the suite is green and no phase behavior is blocked.
+

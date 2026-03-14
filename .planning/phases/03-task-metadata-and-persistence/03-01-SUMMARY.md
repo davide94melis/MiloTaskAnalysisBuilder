@@ -1,3 +1,12 @@
+---
+requirements-completed:
+  - META-01
+  - META-02
+  - META-03
+  - META-04
+  - STEP-08
+---
+
 # Phase 03 Plan 03-01 Summary
 
 ## Outcome
@@ -32,3 +41,4 @@ Template duplication now carries forward the richer metadata and any persisted s
 - Phase 2 card/list/dashboard contracts remain unchanged; the detail payload is isolated in `TaskDetailResponse`.
 - `GET /api/tasks/{taskId}` now serves the full detail payload directly, and `PUT /api/tasks/{taskId}` persists metadata plus ordered step drafts for authenticated owners.
 - Ordered step drafts are stored in `taskbuilder.task_analysis_step` with explicit `position`, keeping Phase 3 persistence minimal and Phase 4-ready without introducing full authoring operations yet.
+

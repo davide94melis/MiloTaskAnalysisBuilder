@@ -2,7 +2,7 @@
 
 ## Proposed Roadmap
 
-**10 phases** | **47 requirements mapped** | All v1 requirements covered
+**12 phases** | **47 requirements mapped** | All v1 requirements covered
 
 ## Progress
 
@@ -12,7 +12,14 @@
 | 2 | Complete | 2026-03-13 |
 | 3 | Complete | 2026-03-13 |
 | 4 | Complete | 2026-03-13 |
-| 5 | In Progress | 1/3 plans complete |
+| 5 | Complete | 2026-03-14 |
+| 6 | Complete | 2026-03-14 |
+| 7 | Complete | 2026-03-14 |
+| 8 | Complete | 2026-03-14 |
+| 9 | Complete | 2026-03-14 |
+| 10 | Complete | 2026-03-14 |
+| 11 | Complete | 2026-03-14 |
+| 12 | Planned | |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -26,6 +33,8 @@
 | 8 | Safe Sharing And Public Access | Enable public links and duplication while protecting private data and assets. | SHAR-01, SHAR-02, SHAR-03, SHAR-04, SHAR-05, MEDI-03 | 4 |
 | 9 | Minimal Session Tracking | Record basic session completions and expose simple usage history to authenticated users. | SESS-01, SESS-02, SESS-03 | 3 |
 | 10 | PDF Export And UX Polish | Deliver print-ready export and align the whole app with Milo/Symwriter visual standards. | EXPT-01, EXPT-02, EXPT-03, UX-01, UX-03 | 4 |
+| 11 | Milestone Planning Cleanup | Reconcile audit-detected planning drift and restore milestone validation hygiene. | None | 3 |
+| 12 | Manual Validation And Test Hygiene | Close non-blocking manual validation debt and reduce persistent test noise before archive. | None | 3 |
 
 ## Phase Details
 
@@ -146,6 +155,28 @@ Success criteria:
 3. Core workflows feel visually and interaction-wise compatible with Milo and Symwriter.
 4. Create, edit, present, share, and export flows are understandable without training-heavy UI.
 
+### Phase 11: Milestone Planning Cleanup
+
+Goal: Reconcile audit-detected planning drift and restore milestone validation hygiene before archiving.
+
+Requirements: None
+
+Success criteria:
+1. Planning artifacts are internally consistent across audit, roadmap, state, summaries, and requirement checklists.
+2. Missing validation artifacts for Phase 07 and Phase 08 are restored or explicitly resolved.
+3. The milestone can be re-audited without documentation drift findings.
+
+### Phase 12: Manual Validation And Test Hygiene
+
+Goal: Close non-blocking manual validation debt and reduce persistent test noise before milestone archive.
+
+Requirements: None
+
+Success criteria:
+1. Manual browser walkthroughs for shared flows, session history, and export print output are executed and recorded.
+2. Known non-blocking frontend/backend test warnings are either reduced or explicitly documented as accepted debt.
+3. Final milestone closure evidence includes manual UAT notes instead of automation-only signoff.
+
 ## Sequencing Logic
 
 - The roadmap starts with identity because Milo SSO is a hard prerequisite.
@@ -173,5 +204,104 @@ Completed on 2026-03-13. Verification passed in `.planning/phases/04-core-step-a
 
 ## Phase 5 Next
 
-Plan `05-01` completed on 2026-03-13 in `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md`.
-Next up: continue Phase 5 execution with plans `05-02` and `05-03`.
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md`
+- `.planning/phases/05-media-support-pipeline/05-02-SUMMARY.md`
+- `.planning/phases/05-media-support-pipeline/05-03-SUMMARY.md`
+- `.planning/phases/05-media-support-pipeline/05-04-SUMMARY.md`
+- `.planning/phases/05-media-support-pipeline/05-05-SUMMARY.md`
+
+Next up: plan Phase 6 for support variants on top of the now-stable media duplication boundary and the authenticated preview proof. Phase 7 still owns guided present mode behavior, and Phase 8 still owns any public media access surface.
+
+## Phase 6 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/06-support-variants/06-01-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-02-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-03-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-04-SUMMARY.md`
+
+Phase 6 now closes with library and editor family visibility, explicit create-variant actions, and family-aware detail payloads that preserve the Phase 5 media-copy boundary.
+
+Next up: plan and execute Phase 7 guided present mode on top of the saved-task and variant-family contracts.
+
+## Phase 7 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/07-guided-present-mode/07-01-SUMMARY.md`
+- `.planning/phases/07-guided-present-mode/07-02-SUMMARY.md`
+- `.planning/phases/07-guided-present-mode/07-03-SUMMARY.md`
+- `.planning/phases/07-guided-present-mode/07-04-SUMMARY.md`
+
+Phase 7 now closes with the authenticated guided-present route, responsive child-facing present surface, local-only in-session flow, and editor launch actions that preserve the saved-only media boundary for the currently opened task or variant.
+
+The final Phase 7 contract remains intentionally narrow: preview is still a proof surface, public sharing/public media stay in Phase 8, and persisted session tracking stays in Phase 9.
+
+Next up: plan Phase 8 safe sharing and public access on top of the now-stable saved-task present-mode surface.
+
+## Phase 8 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/08-safe-sharing-and-public-access/08-01-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-02-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-03-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-04-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-05-SUMMARY.md`
+
+Phase 8 now closes with owner-managed share links, anonymous public view and public present routes, share-token-scoped media delivery, explicit authenticated duplicate-from-share handoff, and verification evidence that private owner fields stay out of the public surface.
+
+The final Phase 8 contract remains intentionally narrow: public access is token-scoped and safe DTO based, while persisted session tracking and analytics still stay in Phase 9.
+
+Next up: plan Phase 9 minimal session tracking on top of the now-stable present and share surfaces.
+
+## Phase 9 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/09-minimal-session-tracking/09-01-SUMMARY.md`
+- `.planning/phases/09-minimal-session-tracking/09-02-SUMMARY.md`
+- `.planning/phases/09-minimal-session-tracking/09-03-SUMMARY.md`
+
+Phase 9 now closes with owner and shared minimal completion writes, authenticated task-level session history, non-blocking write-once present-mode persistence, and verification evidence that public present links can attribute sessions without exposing history.
+
+The final Phase 9 contract remains intentionally narrow: there is still no per-step telemetry, help-level capture, timings, analytics dashboard, or clinical reporting layer.
+
+Next up: plan Phase 10 PDF export and UX polish on top of the now-complete v1 create, present, share, and minimal tracking loop.
+
+## Phase 10 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/10-pdf-export-and-ux-polish/10-01-SUMMARY.md`
+- `.planning/phases/10-pdf-export-and-ux-polish/10-02-SUMMARY.md`
+- `.planning/phases/10-pdf-export-and-ux-polish/10-03-SUMMARY.md`
+
+Phase 10 closes v1 with an authenticated browser-print export route, export entry points from the editor and preview flows, and a final Milo/Symwriter-compatible polish pass across dashboard, library, present, shared view, and the app shell.
+
+The final Phase 10 contract remains intentionally narrow: export is still browser-print based, public anonymous export is still deferred, and no deeper redesign or backend PDF pipeline was pulled into v1.
+
+Next up: execute optional cleanup phases if you want to remove audit debt before closing the milestone.
+
+## Phase 11 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/11-milestone-planning-cleanup/11-01-SUMMARY.md`
+- `.planning/phases/11-milestone-planning-cleanup/11-02-SUMMARY.md`
+- `.planning/phases/11-milestone-planning-cleanup/11-03-SUMMARY.md`
+
+Phase 11 closed the planning-only audit debt by aligning requirement checklists, backfilling `requirements-completed` summary metadata, and restoring the missing Phase 07 and Phase 08 validation artifacts.
+
+Next up: Phase 12 if you want to close manual validation debt and test-noise findings before the final milestone archive.
+
+## Phase 12 Next
+
+Planned on 2026-03-14 from milestone audit debt.
+
+This optional cleanup phase exists to close manual validation debt and persistent test-noise findings without changing the shipped v1 feature scope. It should record shared-flow, session-history, and export print walkthroughs and decide whether current warning noise is acceptable or should be reduced.
+
+Next up: plan Phase 12 after Phase 11 if you want a cleaner milestone closure before archive.

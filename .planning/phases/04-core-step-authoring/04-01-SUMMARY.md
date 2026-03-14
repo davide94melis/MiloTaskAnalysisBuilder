@@ -1,3 +1,12 @@
+---
+requirements-completed:
+  - STEP-01
+  - STEP-02
+  - STEP-05
+  - STEP-06
+  - STEP-07
+---
+
 # Phase 04 Plan 04-01 Summary
 
 ## Outcome
@@ -26,3 +35,4 @@ Expanded the backend step contract from Phase 3 reorder-only persistence into a 
 
 - The backend stayed on the existing task-detail aggregate and did not add separate step CRUD endpoints.
 - Media fields were intentionally not introduced in the entity or API contract.
+

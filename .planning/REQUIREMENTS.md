@@ -40,50 +40,50 @@
 
 ### Support Variants
 
-- [ ] **SUPP-01**: User can create multiple versions of the same task analysis for different support levels.
-- [ ] **SUPP-02**: User can duplicate an existing task analysis as the starting point for a simpler or more autonomous variant.
-- [ ] **SUPP-03**: User can distinguish variants through support-level metadata and visible labeling in the library.
+- [x] **SUPP-01**: User can create multiple versions of the same task analysis for different support levels.
+- [x] **SUPP-02**: User can duplicate an existing task analysis as the starting point for a simpler or more autonomous variant.
+- [x] **SUPP-03**: User can distinguish variants through support-level metadata and visible labeling in the library and editor.
 
 ### Present Mode
 
-- [ ] **PRES-01**: User can launch a task analysis in a clean step-by-step present mode from inside the app.
-- [ ] **PRES-02**: Present mode displays one current step clearly with large visual content and minimal distractions.
-- [ ] **PRES-03**: User can move forward and backward between steps during present mode.
-- [ ] **PRES-04**: User can mark the current step as completed using a large low-friction action.
-- [ ] **PRES-05**: When the final step is completed, the app shows a clear task-completed state.
-- [ ] **PRES-06**: Present mode works well on tablet, phone, and desktop screen sizes.
+- [x] **PRES-01**: User can launch a task analysis in a clean step-by-step present mode from inside the app.
+- [x] **PRES-02**: Present mode displays one current step clearly with large visual content and minimal distractions.
+- [x] **PRES-03**: User can move forward and backward between steps during present mode.
+- [x] **PRES-04**: User can mark the current step as completed using a large low-friction action.
+- [x] **PRES-05**: When the final step is completed, the app shows a clear task-completed state.
+- [x] **PRES-06**: Present mode works well on tablet, phone, and desktop screen sizes.
 
 ### Sharing
 
-- [ ] **SHAR-01**: User can generate a public view link for a task analysis.
-- [ ] **SHAR-02**: User can generate a public interactive link that opens the task directly in present mode.
-- [ ] **SHAR-03**: Public links can be opened without requiring user authentication.
-- [ ] **SHAR-04**: Public access is limited to only the task data and assets intentionally exposed for sharing.
-- [ ] **SHAR-05**: User can duplicate a shared task analysis into their own authenticated space.
+- [x] **SHAR-01**: User can generate a public view link for a task analysis.
+- [x] **SHAR-02**: User can generate a public interactive link that opens the task directly in present mode.
+- [x] **SHAR-03**: Public links can be opened without requiring user authentication.
+- [x] **SHAR-04**: Public access is limited to only the task data and assets intentionally exposed for sharing.
+- [x] **SHAR-05**: User can duplicate a shared task analysis into their own authenticated space.
 
 ### Media
 
 - [x] **MEDI-01**: User can upload or attach images/photos for task steps.
 - [x] **MEDI-02**: Uploaded media is delivered reliably in both editor and present mode.
-- [ ] **MEDI-03**: Publicly shared tasks expose only the media required by that shared task.
+- [x] **MEDI-03**: Publicly shared tasks expose only the media required by that shared task.
 
 ### Session Tracking
 
-- [ ] **SESS-01**: When a task is completed in present mode, the app can save a minimal completion session record.
-- [ ] **SESS-02**: A session record stores task ID, user or access context, completion date, step count, and completed status.
-- [ ] **SESS-03**: Authenticated users can see at least a basic history or count of completed task sessions for their tasks.
+- [x] **SESS-01**: When a task is completed in present mode, the app can save a minimal completion session record.
+- [x] **SESS-02**: A session record stores task ID, user or access context, completion date, step count, and completed status.
+- [x] **SESS-03**: Authenticated users can see at least a basic history or count of completed task sessions for their tasks.
 
 ### Export
 
-- [ ] **EXPT-01**: User can export a task analysis to printable PDF.
-- [ ] **EXPT-02**: Export preserves step order, text, and visual supports in a print-friendly layout.
-- [ ] **EXPT-03**: Export can be used for practical real-world materials rather than only on-screen viewing.
+- [x] **EXPT-01**: User can export a task analysis to printable PDF.
+- [x] **EXPT-02**: Export preserves step order, text, and visual supports in a print-friendly layout.
+- [x] **EXPT-03**: Export can be used for practical real-world materials rather than only on-screen viewing.
 
 ### UX Foundation
 
-- [ ] **UX-01**: The application uses a visual language compatible with Milo and Symwriter.
+- [x] **UX-01**: The application uses a visual language compatible with Milo and Symwriter.
 - [x] **UX-02**: The dashboard feels operational and reassuring rather than technical or developer-oriented.
-- [ ] **UX-03**: Core workflows for create, edit, present, share, and export are understandable without training-heavy UI.
+- [x] **UX-03**: Core workflows for create, edit, present, share, and export are understandable without training-heavy UI.
 
 ## v2 Requirements
 
@@ -148,32 +148,32 @@
 | STEP-06 | Phase 4 | Complete |
 | STEP-07 | Phase 4 | Complete |
 | STEP-08 | Phase 3 | Complete |
-| SUPP-01 | Phase 6 | Pending |
-| SUPP-02 | Phase 6 | Pending |
-| SUPP-03 | Phase 6 | Pending |
-| PRES-01 | Phase 7 | Pending |
-| PRES-02 | Phase 7 | Pending |
-| PRES-03 | Phase 7 | Pending |
-| PRES-04 | Phase 7 | Pending |
-| PRES-05 | Phase 7 | Pending |
-| PRES-06 | Phase 7 | Pending |
-| SHAR-01 | Phase 8 | Pending |
-| SHAR-02 | Phase 8 | Pending |
-| SHAR-03 | Phase 8 | Pending |
-| SHAR-04 | Phase 8 | Pending |
-| SHAR-05 | Phase 8 | Pending |
+| SUPP-01 | Phase 6 | Complete |
+| SUPP-02 | Phase 6 | Complete |
+| SUPP-03 | Phase 6 | Complete |
+| PRES-01 | Phase 7 | Complete |
+| PRES-02 | Phase 7 | Complete |
+| PRES-03 | Phase 7 | Complete |
+| PRES-04 | Phase 7 | Complete |
+| PRES-05 | Phase 7 | Complete |
+| PRES-06 | Phase 7 | Complete |
+| SHAR-01 | Phase 8 | Complete |
+| SHAR-02 | Phase 8 | Complete |
+| SHAR-03 | Phase 8 | Complete |
+| SHAR-04 | Phase 8 | Complete |
+| SHAR-05 | Phase 8 | Complete |
 | MEDI-01 | Phase 5 | Complete |
 | MEDI-02 | Phase 5 | Complete |
-| MEDI-03 | Phase 8 | Pending |
-| SESS-01 | Phase 9 | Pending |
-| SESS-02 | Phase 9 | Pending |
-| SESS-03 | Phase 9 | Pending |
-| EXPT-01 | Phase 10 | Pending |
-| EXPT-02 | Phase 10 | Pending |
-| EXPT-03 | Phase 10 | Pending |
-| UX-01 | Phase 10 | Pending |
+| MEDI-03 | Phase 8 | Complete |
+| SESS-01 | Phase 9 | Complete |
+| SESS-02 | Phase 9 | Complete |
+| SESS-03 | Phase 9 | Complete |
+| EXPT-01 | Phase 10 | Complete |
+| EXPT-02 | Phase 10 | Complete |
+| EXPT-03 | Phase 10 | Complete |
+| UX-01 | Phase 10 | Complete |
 | UX-02 | Phase 2 | Complete |
-| UX-03 | Phase 10 | Pending |
+| UX-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 47 total
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after Phase 5 Plan 05-01 completion*
+*Last updated: 2026-03-14 after Phase 9 completion*

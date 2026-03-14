@@ -3,6 +3,7 @@ package com.milo.taskbuilder.auth;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -29,6 +30,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/public/shares/*",
+                                "/api/public/shares/*/present",
+                                "/api/public/shares/*/media/*/content")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/public/shares/*/sessions")
+                        .permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )

@@ -85,6 +85,19 @@ public class TaskMediaStorageService {
     @Transactional(readOnly = true)
     public StoredTaskMediaContent loadOwnedMedia(UUID taskId, UUID mediaId, UUID ownerId) {
         ensureOwnedTask(taskId, ownerId);
+        return loadStoredMedia(taskId, mediaId);
+    }
+
+    @Transactional(readOnly = true)
+    public StoredTaskMediaContent loadSharedMedia(UUID taskId, UUID mediaId) {
+        return loadStoredMedia(taskId, mediaId);
+    }
+
+    public String buildPublicAccessUrl(String shareToken, UUID mediaId) {
+        return "/api/public/shares/%s/media/%s/content".formatted(shareToken, mediaId);
+    }
+
+    private StoredTaskMediaContent loadStoredMedia(UUID taskId, UUID mediaId) {
         TaskAnalysisStepMediaEntity media = taskAnalysisStepMediaRepository.findByIdAndTaskAnalysisId(mediaId, taskId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Media not found"));
 

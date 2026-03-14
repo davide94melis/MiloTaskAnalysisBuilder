@@ -1,3 +1,9 @@
+---
+requirements-completed:
+  - AUTH-01
+  - AUTH-03
+---
+
 # Plan 01-01 Summary
 
 ## What Was Built
@@ -26,3 +32,4 @@
 ## Deviations
 
 - Added `TaskBuilderApplication.java` to make the backend runnable, since the initial worker output had only the auth/module files and no Spring Boot entrypoint.
+

@@ -14,16 +14,16 @@ import { TaskCardComponent } from '../library/task-card.component';
     <section class="hero">
       <div>
         <p class="hero__eyebrow">Dashboard operativa</p>
-        <h2>Apri una bozza, duplica un template e riparti da dove eri.</h2>
+        <h2>Nuova task, bozze recenti e template pronti nello stesso punto di partenza.</h2>
         <p class="hero__copy">
-          La home mostra le task che usi davvero: bozze recenti, template pronti
-          e scorciatoie chiare per preparare il lavoro quotidiano.
+          La home mette davanti le azioni che usi davvero: crea una task, riapri il lavoro aperto o parti da un
+          template gia pronto senza cercare tra troppe opzioni.
         </p>
       </div>
 
       <div class="hero__actions">
-        <button type="button" class="hero__primary" (click)="createTask()">Nuova task</button>
-        <a routerLink="/library">Apri libreria</a>
+        <button type="button" class="hero__primary" (click)="createTask()">Crea nuova task</button>
+        <a routerLink="/library">Vai alla libreria</a>
       </div>
     </section>
 
@@ -48,7 +48,7 @@ import { TaskCardComponent } from '../library/task-card.component';
           <p class="section__eyebrow">Riprendi il lavoro</p>
           <h3>Bozze recenti</h3>
         </div>
-        <a routerLink="/library">Vedi tutto</a>
+        <a routerLink="/library">Apri tutta la libreria</a>
       </header>
 
       <div class="grid" *ngIf="vm.recentDrafts.length; else noDrafts">
@@ -66,6 +66,7 @@ import { TaskCardComponent } from '../library/task-card.component';
         <div>
           <p class="section__eyebrow">Template pronti</p>
           <h3>Partenze consigliate</h3>
+          <p class="section__copy">Duplicali nel tuo spazio e adattali al contesto reale del bambino.</p>
         </div>
       </header>
 
@@ -205,6 +206,11 @@ import { TaskCardComponent } from '../library/task-card.component';
         gap: 1rem;
         align-items: end;
         margin-bottom: 1rem;
+      }
+
+      .section__copy {
+        margin-top: 0.35rem;
+        color: #4b5563;
       }
 
       .section__header a {
