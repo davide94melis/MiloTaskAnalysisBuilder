@@ -25,6 +25,9 @@ public class TaskShellEntity {
     @Column(name = "source_task_id")
     private UUID sourceTaskId;
 
+    @Column(name = "variant_family_id")
+    private UUID variantFamilyId;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -109,6 +112,14 @@ public class TaskShellEntity {
 
     public void setSourceTaskId(UUID sourceTaskId) {
         this.sourceTaskId = sourceTaskId;
+    }
+
+    public UUID getVariantFamilyId() {
+        return variantFamilyId;
+    }
+
+    public void setVariantFamilyId(UUID variantFamilyId) {
+        this.variantFamilyId = variantFamilyId;
     }
 
     public String getTitle() {
