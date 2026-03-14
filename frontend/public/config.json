@@ -1,4 +1,4 @@
 {
-  "apiUrl": "https://milotaskanalysisbuilder.onrender.com/api",
-  "miloApiUrl": "https://milo-zolp.onrender.com/api"
+  "apiUrl": "http://localhost:8080/api",
+  "miloApiUrl": "http://localhost:8081/api"
 }
