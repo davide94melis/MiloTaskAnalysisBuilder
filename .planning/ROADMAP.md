@@ -204,7 +204,10 @@ Completed on 2026-03-14. Summaries:
 - `.planning/phases/07-guided-present-mode/07-01-SUMMARY.md`
 - `.planning/phases/07-guided-present-mode/07-02-SUMMARY.md`
 - `.planning/phases/07-guided-present-mode/07-03-SUMMARY.md`
+- `.planning/phases/07-guided-present-mode/07-04-SUMMARY.md`
 
-Phase 7 now has the authenticated guided-present route, a responsive child-facing present surface, and a complete local-only in-session flow with clear back/next/complete controls and an explicit completed-task state.
+Phase 7 now closes with the authenticated guided-present route, responsive child-facing present surface, local-only in-session flow, and editor launch actions that preserve the saved-only media boundary for the currently opened task or variant.
+
+The final Phase 7 contract remains intentionally narrow: preview is still a proof surface, public sharing/public media stay in Phase 8, and persisted session tracking stays in Phase 9.
 
 Next up: plan Phase 8 safe sharing and public access on top of the now-stable saved-task present-mode surface.

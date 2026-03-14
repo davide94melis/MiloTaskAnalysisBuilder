@@ -60,7 +60,7 @@ class TaskDetailControllerIntegrationTest {
     private com.milo.taskbuilder.user.TaskBuilderUserService taskBuilderUserService;
 
     @Test
-    void returnsTaskDetailForAuthenticatedUser() throws Exception {
+    void returnsTaskDetailContractForAuthenticatedGuidedPresentMode() throws Exception {
         TaskBuilderPrincipal principal = principal();
         TaskDetailResponse detail = detailResponse();
 
@@ -69,19 +69,40 @@ class TaskDetailControllerIntegrationTest {
         mockMvc.perform(get("/api/tasks/{taskId}", detail.id()).principal(authentication(principal)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(detail.id().toString()))
+                .andExpect(jsonPath("$.title").value(detail.title()))
+                .andExpect(jsonPath("$.supportLevel").value(detail.supportLevel()))
                 .andExpect(jsonPath("$.description").value(detail.description()))
                 .andExpect(jsonPath("$.environmentLabel").value(detail.environmentLabel()))
                 .andExpect(jsonPath("$.variantRole").value("variant"))
                 .andExpect(jsonPath("$.variantRootTitle").value("Lavarsi le mani"))
+                .andExpect(jsonPath("$.variantRootTaskId").value("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
+                .andExpect(jsonPath("$.relatedVariants.length()").value(2))
+                .andExpect(jsonPath("$.relatedVariants[0].id").value("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
                 .andExpect(jsonPath("$.relatedVariants[0].variantRole").value("root"))
+                .andExpect(jsonPath("$.relatedVariants[1].id").value("cccccccc-cccc-cccc-cccc-cccccccccccc"))
                 .andExpect(jsonPath("$.relatedVariants[1].supportLevel").value("Autonomo"))
+                .andExpect(jsonPath("$.steps.length()").value(2))
+                .andExpect(jsonPath("$.steps[0].id").value("11111111-1111-1111-1111-111111111111"))
+                .andExpect(jsonPath("$.steps[0].position").value(1))
                 .andExpect(jsonPath("$.steps[0].title").value("Apri l'acqua"))
+                .andExpect(jsonPath("$.steps[0].description").value("Aprire il rubinetto"))
                 .andExpect(jsonPath("$.steps[0].required").value(true))
                 .andExpect(jsonPath("$.steps[0].supportGuidance").value("Indicazione verbale breve"))
+                .andExpect(jsonPath("$.steps[0].reinforcementNotes").value("Lode immediata"))
+                .andExpect(jsonPath("$.steps[0].estimatedMinutes").value(1))
                 .andExpect(jsonPath("$.steps[0].visualSupport.text").value("Apri"))
+                .andExpect(jsonPath("$.steps[0].visualSupport.image.storageKey").value("task-1/image-1.png"))
                 .andExpect(jsonPath("$.steps[0].visualSupport.image.mediaId")
                         .value("aaaaaaaa-1111-1111-1111-111111111111"))
-                .andExpect(jsonPath("$.steps[1].position").value(2));
+                .andExpect(jsonPath("$.steps[0].visualSupport.image.url")
+                        .value("/api/tasks/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/media/aaaaaaaa-1111-1111-1111-111111111111/content"))
+                .andExpect(jsonPath("$.steps[1].id").value("22222222-2222-2222-2222-222222222222"))
+                .andExpect(jsonPath("$.steps[1].position").value(2))
+                .andExpect(jsonPath("$.steps[1].required").value(false))
+                .andExpect(jsonPath("$.steps[1].visualSupport.text").value("Insapona"))
+                .andExpect(jsonPath("$.steps[1].visualSupport.symbol.key").value("soap"))
+                .andExpect(jsonPath("$.steps[1].visualSupport.symbol.label").value("Sapone"))
+                .andExpect(jsonPath("$.steps[1].visualSupport.image").doesNotExist());
     }
 
     @Test

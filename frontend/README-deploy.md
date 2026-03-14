@@ -113,6 +113,24 @@ Editor behavior in Phase 6:
 
 The frontend must keep present-mode and sharing concerns out of this route. Guided playback belongs to Phase 7, and public/share-safe access belongs to Phase 8.
 
+## Phase 7 Frontend Contract
+
+Phase 7 adds the authenticated guided playback surface on top of the saved-task contract established in Phases 5 and 6.
+
+The frontend now expects:
+
+- `/tasks/:taskId/present` to load the same saved `GET /api/tasks/{taskId}` payload already used by preview
+- editor actions to launch preview and guided present only for the currently opened saved task or variant
+- pending draft media to keep both launch actions blocked until the user saves the task
+
+Present-mode behavior in Phase 7:
+
+- guided present stays inside the authenticated app and never reads editor-local draft state
+- the current variant opens directly in present mode without family switching controls
+- session progress is local-only and resets on route load or restart
+
+The frontend must still defer public links/public media to Phase 8 and persisted session tracking to Phase 9.
+
 ## Deployment Checklist
 
 1. Set `API_URL` for the Task Builder backend.
@@ -123,4 +141,4 @@ The frontend must keep present-mode and sharing concerns out of this route. Guid
 
 ## Scope Reminder
 
-Phase 6 makes the task route family-aware for support variants, but it still does not include Phase 7 present-mode playback UI or Phase 8 public sharing/public media exposure.
+Phase 7 adds authenticated guided playback, but public sharing/public media still remain Phase 8 work and persisted session tracking still remains Phase 9 work.

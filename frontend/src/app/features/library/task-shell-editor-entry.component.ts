@@ -89,6 +89,10 @@ type TaskMetadataFormGroup = FormGroup<{
             <p class="entry__hint">
               L anteprima playback apre sempre l ultima versione salvata, fuori dalla superficie di authoring.
             </p>
+            <p class="entry__hint">
+              La modalita guidata presenta la task o variante attualmente aperta esattamente come risulta nell ultimo
+              salvataggio.
+            </p>
           </section>
 
           <section class="entry__panel">
@@ -98,10 +102,18 @@ type TaskMetadataFormGroup = FormGroup<{
               <button
                 type="button"
                 class="entry__ghost"
-                [disabled]="saving() || !canOpenPreview()"
+                [disabled]="saving() || !canLaunchSavedPlayback()"
                 (click)="openPreview()"
               >
                 Apri anteprima playback
+              </button>
+              <button
+                type="button"
+                class="entry__ghost"
+                [disabled]="saving() || !canLaunchSavedPlayback()"
+                (click)="openPresentMode()"
+              >
+                Avvia modalita guidata
               </button>
               <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
                 Duplica task
@@ -109,7 +121,7 @@ type TaskMetadataFormGroup = FormGroup<{
               <a routerLink="/library">Torna alla libreria</a>
             </div>
             <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
-              Salva prima la task per includere nell anteprima le immagini ancora in bozza.
+              Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.
             </p>
           </section>
 
@@ -498,12 +510,26 @@ export class TaskShellEditorEntryComponent {
 
   protected async openPreview(): Promise<void> {
     const currentTask = this.task();
-    if (!currentTask || this.saving() || !this.canOpenPreview()) {
+    if (!currentTask || this.saving() || !this.canLaunchSavedPlayback()) {
       return;
     }
 
     this.saveNotice.set('Anteprima aperta sulla versione salvata della task.');
     await this.router.navigate(['/tasks', currentTask.id, 'preview']);
+  }
+
+  protected async openPresentMode(): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.saving() || !this.canLaunchSavedPlayback()) {
+      return;
+    }
+
+    const launchSubject =
+      currentTask.variantRole === 'variant'
+        ? 'Modalita guidata aperta sulla variante salvata corrente.'
+        : 'Modalita guidata aperta sulla versione salvata della task.';
+    this.saveNotice.set(launchSubject);
+    await this.router.navigate(['/tasks', currentTask.id, 'present']);
   }
 
   private async loadTask(taskId: string | null): Promise<void> {
@@ -597,7 +623,7 @@ export class TaskShellEditorEntryComponent {
       }));
   }
 
-  protected canOpenPreview(): boolean {
+  protected canLaunchSavedPlayback(): boolean {
     return Boolean(this.task()?.id) && !this.hasPendingDraftMedia();
   }
 

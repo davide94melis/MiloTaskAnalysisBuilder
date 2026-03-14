@@ -46,12 +46,12 @@
 
 ### Present Mode
 
-- [ ] **PRES-01**: User can launch a task analysis in a clean step-by-step present mode from inside the app.
-- [ ] **PRES-02**: Present mode displays one current step clearly with large visual content and minimal distractions.
-- [ ] **PRES-03**: User can move forward and backward between steps during present mode.
-- [ ] **PRES-04**: User can mark the current step as completed using a large low-friction action.
-- [ ] **PRES-05**: When the final step is completed, the app shows a clear task-completed state.
-- [ ] **PRES-06**: Present mode works well on tablet, phone, and desktop screen sizes.
+- [x] **PRES-01**: User can launch a task analysis in a clean step-by-step present mode from inside the app.
+- [x] **PRES-02**: Present mode displays one current step clearly with large visual content and minimal distractions.
+- [x] **PRES-03**: User can move forward and backward between steps during present mode.
+- [x] **PRES-04**: User can mark the current step as completed using a large low-friction action.
+- [x] **PRES-05**: When the final step is completed, the app shows a clear task-completed state.
+- [x] **PRES-06**: Present mode works well on tablet, phone, and desktop screen sizes.
 
 ### Sharing
 
@@ -151,12 +151,12 @@
 | SUPP-01 | Phase 6 | Complete |
 | SUPP-02 | Phase 6 | Complete |
 | SUPP-03 | Phase 6 | Complete |
-| PRES-01 | Phase 7 | Pending |
-| PRES-02 | Phase 7 | Pending |
-| PRES-03 | Phase 7 | Pending |
-| PRES-04 | Phase 7 | Pending |
-| PRES-05 | Phase 7 | Pending |
-| PRES-06 | Phase 7 | Pending |
+| PRES-01 | Phase 7 | Complete |
+| PRES-02 | Phase 7 | Complete |
+| PRES-03 | Phase 7 | Complete |
+| PRES-04 | Phase 7 | Complete |
+| PRES-05 | Phase 7 | Complete |
+| PRES-06 | Phase 7 | Complete |
 | SHAR-01 | Phase 8 | Pending |
 | SHAR-02 | Phase 8 | Pending |
 | SHAR-03 | Phase 8 | Pending |

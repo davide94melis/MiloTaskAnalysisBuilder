@@ -99,6 +99,20 @@ Variant creation must continue to:
 
 Do not treat Phase 6 as a versioning system. Present-mode rules remain Phase 7 work, and public-sharing/media rules remain Phase 8 work.
 
+## Phase 7 API Contract
+
+Phase 7 intentionally reuses the authenticated task-detail aggregate as the backend input for guided present mode.
+
+- `GET /api/tasks/{taskId}` remains the only backend read contract required for authenticated preview and guided present playback
+- the response must continue to include ordered `steps`, saved `visualSupport`, and family metadata such as `variantRole`, `variantRootTaskId`, and `relatedVariants`
+- no dedicated present-mode endpoint was added because Phase 7 keeps session state local to the frontend
+
+Backend boundaries preserved in Phase 7:
+
+- draft editor media is still excluded from playback until the task is saved through `PUT /api/tasks/{taskId}`
+- no public asset URLs or anonymous read paths were introduced; that remains Phase 8 work
+- no persisted completion/session writes were introduced; that remains Phase 9 work
+
 ## Deployment Checklist
 
 1. Provision the Postgres/Supabase database with the `taskbuilder` schema available.
@@ -110,4 +124,4 @@ Do not treat Phase 6 as a versioning system. Present-mode rules remain Phase 7 w
 
 ## Scope Reminder
 
-This backend does not implement local login, registration, or shared Milo entities. Phase 6 adds family-aware variant metadata on the existing aggregate while preserving the Phase 5 media-copy boundary, but it still does not include Phase 7 present-mode UI behavior or Phase 8 public media access.
+This backend does not implement local login, registration, or shared Milo entities. Phase 7 keeps guided playback on the existing authenticated task-detail contract, while public media access still belongs to Phase 8 and persisted session tracking still belongs to Phase 9.

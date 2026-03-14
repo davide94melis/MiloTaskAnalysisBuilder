@@ -13,6 +13,7 @@ import {
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
+import { TaskGuidedPresentPageComponent } from '../present/task-guided-present-page.component';
 import { TaskPlaybackPreviewPageComponent } from '../present/task-playback-preview-page.component';
 
 describe('TaskShellEditorEntryComponent', () => {
@@ -105,11 +106,13 @@ describe('TaskShellEditorEntryComponent', () => {
     ]
   };
 
-  it('registers the authenticated preview route outside the editor path', () => {
+  it('registers the authenticated preview and present routes outside the editor path', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
     const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
+    const presentRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/present');
 
     expect(previewRoute?.component).toBe(TaskPlaybackPreviewPageComponent);
+    expect(presentRoute?.component).toBe(TaskGuidedPresentPageComponent);
   });
 
   it('loads detail data, retains draft upload state, and saves backend-aligned mixed visual support payloads', async () => {
@@ -350,7 +353,7 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-new'], { replaceUrl: true });
   });
 
-  it('opens playback preview only for the saved task payload and blocks launch while media is pending persistence', async () => {
+  it('opens playback surfaces only for the saved task payload and blocks launch while media is pending persistence', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
 
@@ -419,9 +422,16 @@ describe('TaskShellEditorEntryComponent', () => {
     let previewButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Apri anteprima playback'
     ) as HTMLButtonElement | undefined;
+    let presentButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
+    ) as HTMLButtonElement | undefined;
     expect(previewButton?.disabled).toBeTrue();
-    expect(host.textContent).toContain('Salva prima la task per includere nell anteprima le immagini ancora in bozza.');
+    expect(presentButton?.disabled).toBeTrue();
+    expect(host.textContent).toContain(
+      'Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.'
+    );
     previewButton?.click();
+    presentButton?.click();
     expect(router.navigate).not.toHaveBeenCalled();
 
     stepsList.stepsChange.emit([
@@ -436,7 +446,11 @@ describe('TaskShellEditorEntryComponent', () => {
     previewButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Apri anteprima playback'
     ) as HTMLButtonElement | undefined;
+    presentButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
+    ) as HTMLButtonElement | undefined;
     expect(previewButton?.disabled).toBeFalse();
+    expect(presentButton?.disabled).toBeFalse();
 
     previewButton?.click();
     await fixture.whenStable();
@@ -445,6 +459,75 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'preview']);
     expect(getTaskDetail).toHaveBeenCalledTimes(1);
     expect(host.textContent).toContain('Anteprima aperta sulla versione salvata della task.');
+
+    presentButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'present']);
+    expect(host.textContent).toContain('Modalita guidata aperta sulla versione salvata della task.');
+  });
+
+  it('launches guided present mode for the currently opened saved variant only', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-2' }));
+    const variantTask: TaskDetailRecord = {
+      ...baseTask,
+      id: 'task-2',
+      supportLevel: 'Visivo',
+      variantRole: 'variant',
+      sourceTaskId: 'task-1',
+      variantRootTaskId: 'task-1',
+      variantRootTitle: 'Lavarsi le mani'
+    };
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(variantTask));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const presentButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
+    ) as HTMLButtonElement | undefined;
+
+    expect(presentButton?.disabled).toBeFalse();
+
+    presentButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-2', 'present']);
+    expect(router.navigate).not.toHaveBeenCalledWith(['/tasks', 'task-1', 'present']);
+    expect(getTaskDetail).toHaveBeenCalledTimes(1);
+    expect(host.textContent).toContain('Modalita guidata aperta sulla variante salvata corrente.');
   });
 
   it('renders family context, opens sibling navigation, and creates a new variant from the editor', async () => {

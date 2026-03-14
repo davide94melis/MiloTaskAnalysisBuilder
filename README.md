@@ -202,3 +202,26 @@ Phase 6 keeps variants deliberately narrow: they are duplication-based task fami
 - Phase 6 does **not** implement Phase 7 guided present mode beyond the existing saved-preview proof
 - Phase 6 does **not** implement Phase 8 sharing, public links, or public media access
 - Phase 6 does **not** introduce version-control style history, conflict resolution, or multi-user ownership
+
+## Phase 7 Guided Present Mode Contract
+
+Phase 7 turns the saved playback proof into the authenticated guided present flow while keeping the save boundary and media contract intact.
+
+### Authenticated launch surfaces
+
+- The editor now exposes `/tasks/:taskId/present` for the currently opened saved task or variant.
+- `/tasks/:taskId/preview` remains available as a proof-oriented playback surface for verification outside the editor.
+- Both launch actions read `GET /api/tasks/{taskId}` again and present only the persisted task detail payload.
+- Draft media that is still pending persistence remains blocked from both preview and guided present launch until the user saves the task.
+
+### Present-mode behavior
+
+- Guided present mode is authenticated only and uses the existing task-detail contract plus authenticated media URLs from Phase 5.
+- The route renders the current task or current variant only; it does not add family switching or cross-variant playback controls.
+- Session progress stays local to the browser for Phase 7, including current step position, completed steps, and restart behavior.
+
+### Boundary with later phases
+
+- Phase 7 does **not** introduce public links, anonymous access, or share-safe public media URLs; those remain Phase 8 work.
+- Phase 7 does **not** persist completion history, session records, timestamps, or facilitator analytics; those remain Phase 9 work.
+- Phase 7 does **not** change the explicit `PUT /api/tasks/{taskId}` save boundary for steps or media.

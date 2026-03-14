@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T03:15:00.000Z"
+last_updated: "2026-03-14T04:10:00.000Z"
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 25
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 7 guided present mode is in progress. The repo now has the authenticated present-route foundation and can iterate on layout, controls, and launch integration on top of the saved-task contract.
+**Current focus:** Phase 8 safe sharing and public access is next. Phase 7 guided present mode is complete, including editor launch integration on top of the saved-task contract.
 
 ## Status
 
@@ -43,6 +43,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 7 Plan 07-01 executed and verified
 - Phase 7 Plan 07-02 executed and verified
 - Phase 7 Plan 07-03 executed and verified
+- Phase 7 Plan 07-04 executed and verified
 
 ## Active Milestone
 
@@ -78,6 +79,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Present mode continues to render only saved `visualSupport` content and keeps facilitator guidance hidden by default behind an explicit secondary toggle.
 - Guided present mode now keeps back and next available while deriving one primary action from local session state, including intentional behavior when revisiting completed steps.
 - Completing the last saved step now consistently transitions into an explicit local completed-task state for both one-step and multi-step tasks.
+- The editor now launches preview and guided present mode only for the currently opened saved task or variant, and pending draft media continues to block both launch surfaces until the task is saved.
+- Phase 7 closes without family-switching playback, public sharing, public media URLs, or persisted session tracking.
 
 ## Constraints To Preserve
 
@@ -89,5 +92,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 07-03-PLAN.md
+- Stopped at: Completed 07-04-PLAN.md
 - Resume file: None
