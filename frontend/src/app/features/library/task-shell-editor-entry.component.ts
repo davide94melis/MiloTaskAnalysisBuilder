@@ -12,7 +12,7 @@ import {
   createIdleUploadState
 } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
-import { TaskShareMode, TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
+import { TaskSessionSummaryRecord, TaskShareMode, TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
 import { TaskMetadataFormComponent } from './task-metadata-form.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 
@@ -124,6 +124,38 @@ type TaskMetadataFormGroup = FormGroup<{
             <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
               Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.
             </p>
+          </section>
+
+          <section class="entry__panel" *ngIf="task() as currentTask">
+            <div class="entry__share-header">
+              <div>
+                <p class="entry__panel-label">Storico sessioni</p>
+                <strong>Completamenti minimi della task corrente</strong>
+              </div>
+              <span class="entry__share-state" *ngIf="sessionHistoryLoading()">Aggiornamento storico...</span>
+            </div>
+            <p>
+              Lo storico mostra solo il totale completamenti e le 5 sessioni piu recenti della task aperta, senza
+              analytics o filtri.
+            </p>
+            <p *ngIf="sessionHistoryError()" class="entry__error">{{ sessionHistoryError() }}</p>
+
+            <ng-container *ngIf="!sessionHistoryError()">
+              <div class="entry__history-total">
+                <span class="entry__history-total-label">Totale completamenti</span>
+                <strong>{{ currentTaskSessionCount() }}</strong>
+              </div>
+
+              <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">
+                Nessuna sessione completata registrata per questa task.
+              </p>
+
+              <article class="entry__history-item" *ngFor="let session of recentSessions()">
+                <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                <span>{{ accessContextLabel(session) }}</span>
+                <small>{{ session.stepCount }} step completati</small>
+              </article>
+            </ng-container>
           </section>
 
           <section class="entry__panel" *ngIf="task() as currentTask">
@@ -434,6 +466,21 @@ type TaskMetadataFormGroup = FormGroup<{
         border: 1px solid rgba(17, 65, 91, 0.12);
       }
 
+      .entry__history-total,
+      .entry__history-item {
+        display: grid;
+        gap: 0.35rem;
+        padding: 0.95rem;
+        border-radius: 1.2rem;
+        background: rgba(247, 250, 252, 0.96);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+      }
+
+      .entry__history-total-label,
+      .entry__history-item small {
+        color: #6b7280;
+      }
+
       .entry__share-card-copy,
       .entry__share-actions {
         display: grid;
@@ -568,6 +615,9 @@ export class TaskShellEditorEntryComponent {
   protected readonly saveNotice = signal('');
   protected readonly savedAt = signal<string | null>(null);
   protected readonly shares = signal<TaskShareSummaryRecord[]>([]);
+  protected readonly sessionHistory = signal<TaskSessionSummaryRecord[]>([]);
+  protected readonly sessionHistoryLoading = signal(false);
+  protected readonly sessionHistoryError = signal('');
   protected readonly shareLoading = signal(false);
   protected readonly shareError = signal('');
   protected readonly shareNotice = signal('');
@@ -699,6 +749,7 @@ export class TaskShellEditorEntryComponent {
     this.patchEditor(detail);
     this.savedAt.set(detail.lastUpdatedAt);
     await this.refreshShares(detail.id);
+    await this.refreshSessionHistory(detail.id);
   }
 
   private patchEditor(detail: TaskDetailRecord): void {
@@ -787,6 +838,18 @@ export class TaskShellEditorEntryComponent {
 
   protected shareForMode(mode: TaskShareMode): TaskShareSummaryRecord | null {
     return this.shares().find((share) => share.mode === mode && share.active) ?? null;
+  }
+
+  protected currentTaskSessionCount(): number {
+    return this.sessionHistory().length;
+  }
+
+  protected recentSessions(): TaskSessionSummaryRecord[] {
+    return this.sessionHistory().slice(0, 5);
+  }
+
+  protected accessContextLabel(session: TaskSessionSummaryRecord): string {
+    return session.accessContext === 'shared_present' ? 'Link condiviso' : 'Modalita guidata autenticata';
   }
 
   protected shareModeLabel(mode: TaskShareMode): string {
@@ -943,6 +1006,21 @@ export class TaskShellEditorEntryComponent {
       this.shareError.set('Impossibile aggiornare i link pubblici della task.');
     } finally {
       this.shareLoading.set(false);
+    }
+  }
+
+  private async refreshSessionHistory(taskId: string): Promise<void> {
+    this.sessionHistoryLoading.set(true);
+    this.sessionHistoryError.set('');
+
+    try {
+      const sessions = await firstValueFrom(this.taskLibrary.listTaskSessions(taskId));
+      this.sessionHistory.set(sessions);
+    } catch {
+      this.sessionHistory.set([]);
+      this.sessionHistoryError.set('Impossibile aggiornare lo storico sessioni della task.');
+    } finally {
+      this.sessionHistoryLoading.set(false);
     }
   }
 

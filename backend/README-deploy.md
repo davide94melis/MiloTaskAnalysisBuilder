@@ -149,3 +149,35 @@ Backend rules in Phase 8:
 - duplicate-from-share always creates a new private recipient-owned draft and does not publish or transfer ownership
 
 The backend must still defer persisted present-mode/session tracking to Phase 9 and must not introduce generic public asset URLs in v1.
+
+## Phase 9 Backend Contract
+
+Phase 9 adds a narrow `task_session` domain for minimal completion records only.
+
+The backend now exposes:
+
+- `POST /api/tasks/{taskId}/sessions`
+  - authenticated owner completion write for the current owned task
+- `GET /api/tasks/{taskId}/sessions`
+  - authenticated owner-only session history for that task
+- `POST /api/public/shares/{token}/sessions`
+  - anonymous minimal completion write allowed only for active `present` shares
+
+Persisted session rows store only:
+
+- `task_analysis_id`
+- `owner_id`
+- optional `task_share_id`
+- `access_context`
+- `step_count`
+- `completed`
+- `completed_at`
+
+Backend rules in Phase 9:
+
+- shared-present writes resolve the active share and attribute the session to the task owner
+- public callers can write a minimal shared-present completion but cannot read history
+- `view` shares, revoked shares, and invalid tokens cannot create sessions
+- owner history remains authenticated and owner-scoped only
+
+The backend must still defer per-step telemetry, prompt/help-level capture, timings, analytics, and clinical reporting beyond v1.

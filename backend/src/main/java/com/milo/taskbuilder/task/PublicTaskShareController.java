@@ -2,17 +2,21 @@ package com.milo.taskbuilder.task;
 
 import com.milo.taskbuilder.auth.TaskBuilderPrincipal;
 import com.milo.taskbuilder.library.dto.TaskCardResponse;
+import com.milo.taskbuilder.task.dto.CreateTaskSessionRequest;
 import com.milo.taskbuilder.task.dto.PublicSharedPresentResponse;
 import com.milo.taskbuilder.task.dto.PublicSharedTaskResponse;
+import com.milo.taskbuilder.task.dto.TaskSessionSummaryResponse;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,9 +27,14 @@ import java.util.UUID;
 public class PublicTaskShareController {
 
     private final PublicTaskShareService publicTaskShareService;
+    private final ObjectProvider<TaskSessionService> taskSessionServiceProvider;
 
-    public PublicTaskShareController(PublicTaskShareService publicTaskShareService) {
+    public PublicTaskShareController(
+            PublicTaskShareService publicTaskShareService,
+            ObjectProvider<TaskSessionService> taskSessionServiceProvider
+    ) {
         this.publicTaskShareService = publicTaskShareService;
+        this.taskSessionServiceProvider = taskSessionServiceProvider;
     }
 
     @GetMapping("/{token}")
@@ -68,6 +77,16 @@ public class PublicTaskShareController {
         TaskCardResponse duplicated =
                 publicTaskShareService.duplicateSharedTask(token, principal.getLocalUserId(), principal.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(duplicated);
+    }
+
+    @PostMapping("/{token}/sessions")
+    public ResponseEntity<TaskSessionSummaryResponse> createSharedPresentSession(
+            @PathVariable String token,
+            @RequestBody(required = false) CreateTaskSessionRequest request
+    ) {
+        TaskSessionSummaryResponse created = taskSessionServiceProvider.getObject()
+                .createSharedPresentSession(token, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     private TaskBuilderPrincipal principal(Authentication authentication) {

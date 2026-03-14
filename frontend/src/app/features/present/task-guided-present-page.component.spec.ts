@@ -224,6 +224,18 @@ describe('TaskGuidedPresentPageComponent', () => {
 
   it('loads saved detail, initializes local session state, and resets it when the route changes', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-7' }));
+    const createTaskSession = jasmine.createSpy('createTaskSession').and.returnValue(
+      of({
+        id: 'session-owner-1',
+        taskId: 'task-8',
+        ownerId: 'owner-1',
+        shareId: null,
+        accessContext: 'owner_present',
+        stepCount: 1,
+        completed: true,
+        completedAt: '2026-03-14T09:10:00Z'
+      })
+    );
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.callFake((taskId: string) => {
       if (taskId === 'task-8') {
         return of(oneStepTask);
@@ -246,7 +258,8 @@ describe('TaskGuidedPresentPageComponent', () => {
         {
           provide: TaskLibraryService,
           useValue: {
-            getTaskDetail
+            getTaskDetail,
+            createTaskSession
           }
         }
       ]
@@ -327,11 +340,13 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.primaryActionLabel()).toBe('Completa task');
 
     primaryButton()?.click();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.completedStepIndexes()).toEqual([0]);
     expect(component.isSessionComplete()).toBeTrue();
     expect(host.textContent).toContain('Sequenza conclusa');
+    expect(createTaskSession).toHaveBeenCalledWith('task-8', { stepCount: 1, completed: true });
   });
 
   it('renders text-only, symbol-only, image-only, and empty saved supports from the persisted contract', async () => {
@@ -562,9 +577,20 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(host.textContent).not.toContain('Rinforzo');
   });
 
-  it('keeps session state local and offers restart without persisted writes', async () => {
-    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-8' }));
-    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(oneStepTask));
+  it('persists shared present completion through the public share session route', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ token: 'share-present-1' }));
+    const createPublicPresentTaskSession = jasmine.createSpy('createPublicPresentTaskSession').and.returnValue(
+      of({
+        id: 'session-shared-1',
+        taskId: 'shared-task-1',
+        ownerId: 'owner-1',
+        shareId: 'share-1',
+        accessContext: 'shared_present',
+        stepCount: 1,
+        completed: true,
+        completedAt: '2026-03-14T09:30:00Z'
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [TaskGuidedPresentPageComponent],
@@ -580,7 +606,110 @@ describe('TaskGuidedPresentPageComponent', () => {
         {
           provide: TaskLibraryService,
           useValue: {
-            getTaskDetail
+            getTaskDetail: jasmine.createSpy('getTaskDetail'),
+            getPublicPresentTaskShare: jasmine.createSpy('getPublicPresentTaskShare').and.returnValue(of(sharedPresentTask)),
+            createPublicPresentTaskSession
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const completeTaskButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+      button.textContent?.includes('Completa task')
+    );
+
+    completeTaskButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(createPublicPresentTaskSession).toHaveBeenCalledWith('share-present-1', { stepCount: 1, completed: true });
+    expect(host.textContent).toContain('La sessione minima del link condiviso e stata registrata.');
+  });
+
+  it('keeps the completed state visible when minimal session persistence fails', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-8' }));
+    const createTaskSession = jasmine
+      .createSpy('createTaskSession')
+      .and.returnValue(throwError(() => new Error('write failed')));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(oneStepTask)),
+            createTaskSession
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const completeTaskButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+      button.textContent?.includes('Completa task')
+    );
+
+    completeTaskButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(createTaskSession).toHaveBeenCalledWith('task-8', { stepCount: 1, completed: true });
+    expect(host.textContent).toContain('Sequenza conclusa');
+    expect(host.textContent).toContain('Il salvataggio minimo della sessione non e riuscito.');
+  });
+
+  it('persists one owner session per completed run and allows a new write after restart', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-8' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(oneStepTask));
+    const createTaskSession = jasmine.createSpy('createTaskSession').and.returnValue(
+      of({
+        id: 'session-owner-1',
+        taskId: 'task-8',
+        ownerId: 'owner-1',
+        shareId: null,
+        accessContext: 'owner_present',
+        stepCount: 1,
+        completed: true,
+        completedAt: '2026-03-14T09:20:00Z'
+      })
+    );
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            createTaskSession
           }
         }
       ]
@@ -605,11 +734,14 @@ describe('TaskGuidedPresentPageComponent', () => {
       button.textContent?.includes('Completa task')
     );
     completeTaskButton?.click();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.completedStepIndexes()).toEqual([0]);
     expect(component.isSessionComplete()).toBeTrue();
     expect(getTaskDetail).toHaveBeenCalledTimes(1);
+    expect(createTaskSession).toHaveBeenCalledTimes(1);
+    expect(host.textContent).toContain('La sessione minima di questa task e stata registrata.');
 
     const restartButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
       button.textContent?.includes('Ricomincia la sessione')
@@ -621,6 +753,16 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.isSessionComplete()).toBeFalse();
     expect(getTaskDetail).toHaveBeenCalledTimes(1);
     expect(router.navigate).not.toHaveBeenCalled();
+
+    const completeAgainButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+      button.textContent?.includes('Completa task')
+    );
+    completeAgainButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.isSessionComplete()).toBeTrue();
+    expect(createTaskSession).toHaveBeenCalledTimes(2);
   });
 
   it('lets users revisit completed steps without duplicating completion state', async () => {

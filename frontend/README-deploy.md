@@ -162,3 +162,22 @@ Frontend behavior in Phase 8:
 - public media URLs are share-token scoped and should be treated as runtime view URLs, not as durable public storage identifiers
 
 The frontend must still defer persisted session tracking to Phase 9.
+
+## Phase 9 Frontend Contract
+
+Phase 9 closes the v1 execution loop by saving one minimal completion record per finished run and exposing a small owner-only history surface.
+
+The frontend now expects:
+
+- `POST /api/tasks/{taskId}/sessions` for authenticated guided-present completions
+- `POST /api/public/shares/{token}/sessions` for anonymous completions coming from active shared-present links
+- `GET /api/tasks/{taskId}/sessions` for authenticated owner-only session history on the current task
+
+Frontend behavior in Phase 9:
+
+- guided present still reaches the completed state immediately; persistence is non-blocking
+- owner and shared present use different write routes but the same once-per-run guard
+- restarting a completed run allows a second minimal session write on the next full completion
+- the authenticated editor shows only the total completion count plus the 5 most recent sessions for the opened task
+
+The frontend must still defer analytics, charts, per-step telemetry, timings, and clinical tracking beyond v1.

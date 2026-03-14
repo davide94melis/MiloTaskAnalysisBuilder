@@ -11,7 +11,7 @@ import {
   createIdleUploadState
 } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
-import { TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
+import { TaskSessionSummaryRecord, TaskShareSummaryRecord } from '../../core/tasks/task-library.models';
 import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.component';
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 import { TaskGuidedPresentPageComponent } from '../present/task-guided-present-page.component';
@@ -131,6 +131,69 @@ describe('TaskShellEditorEntryComponent', () => {
     revokedAt: null
   };
 
+  const recentSessions: TaskSessionSummaryRecord[] = [
+    {
+      id: 'session-1',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:40:00Z'
+    },
+    {
+      id: 'session-2',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: 'share-present',
+      accessContext: 'shared_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:35:00Z'
+    },
+    {
+      id: 'session-3',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:30:00Z'
+    },
+    {
+      id: 'session-4',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:25:00Z'
+    },
+    {
+      id: 'session-5',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:20:00Z'
+    },
+    {
+      id: 'session-6',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 2,
+      completed: true,
+      completedAt: '2026-03-14T09:15:00Z'
+    }
+  ];
+
   it('registers the authenticated preview and present routes outside the editor path', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
     const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
@@ -226,6 +289,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask,
             listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
@@ -364,6 +428,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail: jasmine.createSpy('getTaskDetail'),
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
@@ -407,6 +472,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
@@ -535,6 +601,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
@@ -571,6 +638,101 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(host.textContent).toContain('Modalita guidata aperta sulla variante salvata corrente.');
   });
 
+  it('shows total completions and the 5 most recent sessions for the opened task only', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
+    const listTaskSessions = jasmine.createSpy('listTaskSessions').and.returnValue(of(recentSessions));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions,
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const historyItems = host.querySelectorAll('.entry__history-item');
+
+    expect(listTaskSessions).toHaveBeenCalledWith('task-1');
+    expect(host.textContent).toContain('Storico sessioni');
+    expect(host.textContent).toContain('Totale completamenti');
+    expect(host.textContent).toContain('6');
+    expect(historyItems.length).toBe(5);
+    expect(host.textContent).toContain('Modalita guidata autenticata');
+    expect(host.textContent).toContain('Link condiviso');
+    expect(host.textContent).not.toContain('Nessuna sessione completata registrata per questa task.');
+  });
+
+  it('renders the empty history state when the current task has no recorded sessions', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask)),
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Totale completamenti');
+    expect(host.textContent).toContain('0');
+    expect(host.textContent).toContain('Nessuna sessione completata registrata per questa task.');
+  });
+
   it('renders family context, opens sibling navigation, and creates a new variant from the editor', async () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
@@ -601,6 +763,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
@@ -651,6 +814,7 @@ describe('TaskShellEditorEntryComponent', () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
     const listTaskShares = jasmine.createSpy('listTaskShares').and.returnValue(of([viewShare, presentShare]));
+    const listTaskSessions = jasmine.createSpy('listTaskSessions').and.returnValue(of([]));
     const regenerateTaskShare = jasmine.createSpy('regenerateTaskShare').and.returnValue(
       of({
         ...presentShare,
@@ -685,6 +849,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares,
+            listTaskSessions,
             createTaskShare: jasmine.createSpy('createTaskShare'),
             regenerateTaskShare,
             revokeTaskShare,
@@ -755,6 +920,7 @@ describe('TaskShellEditorEntryComponent', () => {
     const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
     const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
     const listTaskShares = jasmine.createSpy('listTaskShares').and.returnValue(of([viewShare]));
+    const listTaskSessions = jasmine.createSpy('listTaskSessions').and.returnValue(of([]));
     const createTaskShare = jasmine.createSpy('createTaskShare').and.returnValue(of(presentShare));
 
     await TestBed.configureTestingModule({
@@ -774,6 +940,7 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             listTaskShares,
+            listTaskSessions,
             createTaskShare,
             regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
             revokeTaskShare: jasmine.createSpy('revokeTaskShare'),

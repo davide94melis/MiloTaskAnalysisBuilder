@@ -418,6 +418,61 @@ describe('TaskLibraryService', () => {
     });
   });
 
+  it('creates a minimal owner session for a completed authenticated run', () => {
+    service.createTaskSession('task-1', { stepCount: 7, completed: true }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/sessions');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ stepCount: 7, completed: true });
+    request.flush({
+      id: 'session-1',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: null,
+      accessContext: 'owner_present',
+      stepCount: 7,
+      completed: true,
+      completedAt: '2026-03-14T10:20:00Z'
+    });
+  });
+
+  it('loads authenticated task session history through the task-scoped endpoint', () => {
+    service.listTaskSessions('task-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/tasks/task-1/sessions');
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'session-1',
+        taskId: 'task-1',
+        ownerId: 'owner-1',
+        shareId: null,
+        accessContext: 'owner_present',
+        stepCount: 7,
+        completed: true,
+        completedAt: '2026-03-14T10:20:00Z'
+      }
+    ]);
+  });
+
+  it('creates a minimal shared-present session through the public share endpoint', () => {
+    service.createPublicPresentTaskSession('share-present-1', { stepCount: 7, completed: true }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-present-1/sessions');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ stepCount: 7, completed: true });
+    request.flush({
+      id: 'session-shared-1',
+      taskId: 'task-1',
+      ownerId: 'owner-1',
+      shareId: 'share-1',
+      accessContext: 'shared_present',
+      stepCount: 7,
+      completed: true,
+      completedAt: '2026-03-14T10:25:00Z'
+    });
+  });
+
   it('duplicates a shared task through the authenticated import route', () => {
     service.duplicateTaskFromShare('share-view-1').subscribe();
 

@@ -1,6 +1,6 @@
 # Milo Task Analysis Builder
 
-Milo Task Analysis Builder is a Milo ecosystem web app for creating and delivering visual task analyses. Phase 1 establishes only the Milo-backed authentication boundary; task authoring, sharing, tracking, and present mode arrive in later phases.
+Milo Task Analysis Builder is a Milo ecosystem web app for creating, presenting, sharing, and minimally tracking visual task analyses. The repo now covers the v1 loop from Milo-backed access through authoring, guided present mode, safe public sharing, and minimal completion history.
 
 ## Phase 1 Auth Contract
 
@@ -262,3 +262,52 @@ Phase 8 adds owner-managed public links without weakening the authenticated edit
 
 - Phase 8 still does **not** persist session completions, per-step tracking, or analytics; that remains Phase 9 work.
 - Phase 8 still does **not** add team workspaces, assignments to children, or generic public template discovery.
+
+## Phase 9 Minimal Session Tracking Contract
+
+Phase 9 adds only the narrowest persisted completion history needed for v1 validation. It does not introduce analytics, timings, prompts-used telemetry, or per-step clinical review.
+
+### Backend routes added in Phase 9
+
+- `POST /api/tasks/{taskId}/sessions`
+  - authenticated owner completion write for guided present runs started inside the app
+- `GET /api/tasks/{taskId}/sessions`
+  - authenticated owner-only history read for the current task
+- `POST /api/public/shares/{token}/sessions`
+  - anonymous minimal completion write for active `present` share links only
+
+### Stored session boundary
+
+Each persisted session stores only:
+
+- task id
+- owner id
+- optional share id
+- access context (`owner_present` or `shared_present`)
+- step count
+- completed flag
+- completion timestamp
+
+There is still no:
+
+- per-step completion table
+- timing telemetry
+- prompt/help-level tracking
+- notes entered during execution
+- analytics dashboards
+
+### Frontend behavior in Phase 9
+
+- Guided present mode still transitions to the completed state immediately.
+- Session persistence is a non-blocking side effect after a full run completes.
+- The write happens once per completed run.
+- Restarting the run resets the guard and allows a second session to be saved on the next full completion.
+- The authenticated task editor shows only:
+  - total completion count
+  - the 5 most recent sessions for the current task
+
+### Boundary with later phases
+
+- Phase 9 still does **not** add longitudinal analytics, charts, filters, or case-management reporting.
+- Phase 9 still does **not** add student assignment, Milo global children/classes, or team collaboration.
+- Advanced per-step and clinical tracking remain deferred beyond v1.

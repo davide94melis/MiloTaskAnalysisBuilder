@@ -1,6 +1,7 @@
 export type TaskStatus = 'draft' | 'template' | 'shared';
 export type TaskVariantRole = 'standalone' | 'root' | 'variant';
 export type TaskShareMode = 'view' | 'present';
+export type TaskSessionAccessContext = 'owner_present' | 'shared_present';
 
 export interface TaskCardRecord {
   id: string;
@@ -125,6 +126,22 @@ export interface PublicTaskPresentRecord {
   title: string;
   stepCount: number;
   steps: PublicTaskShareStepRecord[];
+}
+
+export interface CreateTaskSessionRequest {
+  stepCount: number;
+  completed?: boolean;
+}
+
+export interface TaskSessionSummaryRecord {
+  id: string;
+  taskId: string;
+  ownerId: string;
+  shareId: string | null;
+  accessContext: TaskSessionAccessContext;
+  stepCount: number;
+  completed: boolean;
+  completedAt: string;
 }
 
 export const EMPTY_LIBRARY_FILTERS: TaskLibraryFilters = {

@@ -35,6 +35,9 @@ public class SecurityConfig {
                                 "/api/public/shares/*/present",
                                 "/api/public/shares/*/media/*/content")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/public/shares/*/sessions")
+                        .permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )

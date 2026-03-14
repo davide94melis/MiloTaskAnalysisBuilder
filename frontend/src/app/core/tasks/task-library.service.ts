@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { AppConfigService } from '../config/app-config.service';
 import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
+  CreateTaskSessionRequest,
   CreateTaskShareRequest,
   PublicTaskPresentRecord,
   CreateTaskShellRequest,
@@ -13,6 +14,7 @@ import {
   TaskDashboardSummary,
   TaskLibraryFilters,
   TaskLibraryResponse,
+  TaskSessionSummaryRecord,
   TaskShareMode,
   TaskShareSummaryRecord
 } from './task-library.models';
@@ -92,6 +94,14 @@ export class TaskLibraryService {
     return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares`, request);
   }
 
+  createTaskSession(taskId: string, request: CreateTaskSessionRequest): Observable<TaskSessionSummaryRecord> {
+    return this.http.post<TaskSessionSummaryRecord>(`${this.tasksUrl}/${taskId}/sessions`, request);
+  }
+
+  listTaskSessions(taskId: string): Observable<TaskSessionSummaryRecord[]> {
+    return this.http.get<TaskSessionSummaryRecord[]>(`${this.tasksUrl}/${taskId}/sessions`);
+  }
+
   regenerateTaskShare(taskId: string, mode: TaskShareMode): Observable<TaskShareSummaryRecord> {
     return this.http.post<TaskShareSummaryRecord>(`${this.tasksUrl}/${taskId}/shares/${mode}/regenerate`, {});
   }
@@ -106,6 +116,13 @@ export class TaskLibraryService {
 
   getPublicPresentTaskShare(token: string): Observable<PublicTaskPresentRecord> {
     return this.http.get<PublicTaskPresentRecord>(`${this.config.apiUrl}/public/shares/${token}/present`);
+  }
+
+  createPublicPresentTaskSession(
+    token: string,
+    request: CreateTaskSessionRequest
+  ): Observable<TaskSessionSummaryRecord> {
+    return this.http.post<TaskSessionSummaryRecord>(`${this.config.apiUrl}/public/shares/${token}/sessions`, request);
   }
 
   duplicateTaskFromShare(token: string): Observable<TaskCardRecord> {

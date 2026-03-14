@@ -540,6 +540,8 @@ export class TaskGuidedPresentPageComponent {
   protected readonly showAdultGuidance = signal(false);
   protected readonly viewport = signal<PresentViewport>(this.resolveViewport());
   protected readonly activeToken = signal<string | null>(null);
+  protected readonly sessionSaveState = signal<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  protected readonly hasPersistedCurrentRun = signal(false);
 
   protected readonly savedSteps = computed(() =>
     [...(this.task()?.steps ?? [])].sort((left, right) => left.position - right.position)
@@ -625,13 +627,12 @@ export class TaskGuidedPresentPageComponent {
     }
 
     const currentIndex = this.currentStepIndex();
-    this.completedStepIndexes.update((indexes) => {
-      if (indexes.includes(currentIndex)) {
-        return indexes;
-      }
+    const nextCompletedIndexes = [...this.completedStepIndexes(), currentIndex].sort((left, right) => left - right);
+    this.completedStepIndexes.set(nextCompletedIndexes);
 
-      return [...indexes, currentIndex].sort((left, right) => left - right);
-    });
+    if (nextCompletedIndexes.length === this.savedSteps().length) {
+      void this.persistCompletedSession();
+    }
 
     if (!this.isLastStep()) {
       this.currentStepIndex.set(currentIndex + 1);
@@ -640,9 +641,7 @@ export class TaskGuidedPresentPageComponent {
   }
 
   protected restartSession(): void {
-    this.currentStepIndex.set(0);
-    this.completedStepIndexes.set([]);
-    this.syncAdultGuidanceVisibility(true);
+    this.resetSessionState();
   }
 
   protected toggleAdultGuidance(): void {
@@ -674,7 +673,7 @@ export class TaskGuidedPresentPageComponent {
       return 'Uno step alla volta, partendo dal link condiviso salvato, senza mostrare editor o controlli di gestione.';
     }
 
-    return 'Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione o registrare sessioni persistenti.';
+    return 'Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione. Al completamento salvo una sessione minima non bloccante.';
   }
 
   protected loadingCopy(): string {
@@ -692,9 +691,24 @@ export class TaskGuidedPresentPageComponent {
   }
 
   protected completionCopy(): string {
-    return this.isSharedContext()
-      ? 'Tutti gli step condivisi risultano completati in questa sessione locale. Nessun dato viene salvato sul link pubblico.'
-      : 'Tutti gli step salvati risultano completati in questa sessione locale. Nessun dato e stato salvato fuori dal browser.';
+    switch (this.sessionSaveState()) {
+      case 'saving':
+        return this.isSharedContext()
+          ? 'Tutti gli step condivisi risultano completati. Sto registrando la sessione minima del link condiviso.'
+          : 'Tutti gli step salvati risultano completati. Sto registrando la sessione minima di questa task.';
+      case 'saved':
+        return this.isSharedContext()
+          ? 'Tutti gli step condivisi risultano completati. La sessione minima del link condiviso e stata registrata.'
+          : 'Tutti gli step salvati risultano completati. La sessione minima di questa task e stata registrata.';
+      case 'error':
+        return this.isSharedContext()
+          ? 'Tutti gli step condivisi risultano completati. Il salvataggio minimo della sessione condivisa non e riuscito.'
+          : 'Tutti gli step salvati risultano completati. Il salvataggio minimo della sessione non e riuscito.';
+      default:
+        return this.isSharedContext()
+          ? 'Tutti gli step condivisi risultano completati. La registrazione minima della sessione parte automaticamente al termine.'
+          : 'Tutti gli step salvati risultano completati. La registrazione minima della sessione parte automaticamente al termine.';
+    }
   }
 
   protected fallbackLink(): string[] {
@@ -712,6 +726,49 @@ export class TaskGuidedPresentPageComponent {
 
   private isSharedContext(): boolean {
     return this.task()?.source === 'shared' || Boolean(this.activeToken());
+  }
+
+  private async persistCompletedSession(): Promise<void> {
+    const currentTask = this.task();
+    const shareToken = currentTask?.shareToken ?? this.activeToken();
+    const stepCount = this.savedSteps().length;
+
+    if (!currentTask || !stepCount || this.hasPersistedCurrentRun()) {
+      return;
+    }
+
+    this.sessionSaveState.set('saving');
+
+    try {
+      if (currentTask.source === 'shared' && shareToken) {
+        await firstValueFrom(
+          this.taskLibrary.createPublicPresentTaskSession(shareToken, {
+            stepCount,
+            completed: true
+          })
+        );
+      } else {
+        await firstValueFrom(
+          this.taskLibrary.createTaskSession(currentTask.id, {
+            stepCount,
+            completed: true
+          })
+        );
+      }
+
+      this.hasPersistedCurrentRun.set(true);
+      this.sessionSaveState.set('saved');
+    } catch {
+      this.sessionSaveState.set('error');
+    }
+  }
+
+  private resetSessionState(): void {
+    this.currentStepIndex.set(0);
+    this.completedStepIndexes.set([]);
+    this.showAdultGuidance.set(false);
+    this.hasPersistedCurrentRun.set(false);
+    this.sessionSaveState.set('idle');
   }
 
   private hasAdultGuidance(step: TaskStepDraftRecord): boolean {
@@ -747,7 +804,7 @@ export class TaskGuidedPresentPageComponent {
     this.loadError.set('');
     this.task.set(null);
     this.activeToken.set(token);
-    this.restartSession();
+    this.resetSessionState();
     this.viewport.set(this.resolveViewport());
 
     if (!taskId && !token) {
