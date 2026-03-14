@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -85,8 +86,21 @@ public class TaskLibraryController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        CreateTaskRequest payload = request == null ? new CreateTaskRequest(null, null) : request;
-        TaskCardResponse created = taskShellService.createDraft(
+        CreateTaskRequest payload = request == null ? new CreateTaskRequest(null, null, null, null) : request;
+        if (payload.isVariantCreation()) {
+            if (payload.supportLevel() == null || payload.supportLevel().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Support level is required for variant creation");
+            }
+        }
+
+        TaskCardResponse created = payload.isVariantCreation()
+                ? taskShellService.createVariant(
+                payload.variantSourceTaskId(),
+                principal.getLocalUserId(),
+                principal.getEmail(),
+                payload
+        )
+                : taskShellService.createDraft(
                 principal.getLocalUserId(),
                 principal.getEmail(),
                 payload
