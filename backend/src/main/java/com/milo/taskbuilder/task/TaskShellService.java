@@ -55,6 +55,23 @@ public class TaskShellService {
         return toCard(savedDraft, ownerId);
     }
 
+    @Transactional
+    public TaskCardResponse createVariant(UUID sourceTaskId, UUID ownerId, String ownerEmail, CreateTaskRequest request) {
+        String supportLevel = normalize(request.supportLevel());
+        if (supportLevel == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Support level is required for variant creation");
+        }
+
+        TaskShellEntity variant = duplicateAccessibleTask(sourceTaskId, ownerId, ownerEmail, request.title());
+        UUID familyRootId = resolveFamilyRootId(variant.getSourceTaskId(), ownerId);
+        variant.setVariantFamilyId(familyRootId);
+        variant.setSupportLevel(supportLevel);
+
+        TaskShellEntity savedVariant = repository.save(variant);
+        copySteps(variant.getSourceTaskId(), savedVariant.getId());
+        return toCard(savedVariant, ownerId);
+    }
+
     @Transactional(readOnly = true)
     public TaskLibraryResponse listLibrary(UUID ownerId, TaskLibraryFilter filter) {
         List<TaskShellEntity> entities = repository.findLibraryCards(
@@ -154,6 +171,12 @@ public class TaskShellService {
         copy.setStepCount(source.getStepCount());
         copy.setAuthorName(ownerEmail);
         return copy;
+    }
+
+    private UUID resolveFamilyRootId(UUID sourceTaskId, UUID ownerId) {
+        TaskShellEntity source = repository.findAccessibleById(sourceTaskId, ownerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task source not found"));
+        return source.getVariantFamilyId() == null ? source.getId() : source.getVariantFamilyId();
     }
 
     private void copySteps(UUID sourceTaskId, UUID destinationTaskId) {
