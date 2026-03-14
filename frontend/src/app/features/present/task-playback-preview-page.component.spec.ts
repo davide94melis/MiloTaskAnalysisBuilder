@@ -131,10 +131,16 @@ describe('TaskPlaybackPreviewPageComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('Playback proof');
+    expect(host.textContent).toContain('Anteprima salvata');
+    expect(host.textContent).toContain('prima di avviare la modalita guidata o aprire l export PDF');
     expect(host.textContent).toContain('Prendi lo zaino');
     expect(host.textContent).toContain('Zaino');
     expect(host.querySelector('textarea, input[type="text"], input[type="file"]')).toBeNull();
+
+    const links = Array.from(host.querySelectorAll<HTMLAnchorElement>('a'));
+    expect(links.map((link) => link.textContent?.trim())).toContain('Esporta PDF');
+    const exportLink = links.find((link) => link.textContent?.trim() === 'Esporta PDF');
+    expect(exportLink?.getAttribute('href')).toContain('/tasks/task-42/export');
 
     const buttons = host.querySelectorAll<HTMLButtonElement>('button');
     buttons[1].click();

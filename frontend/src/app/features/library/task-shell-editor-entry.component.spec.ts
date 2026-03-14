@@ -528,13 +528,18 @@ describe('TaskShellEditorEntryComponent', () => {
     let presentButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Avvia modalita guidata'
     ) as HTMLButtonElement | undefined;
+    let exportButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Esporta PDF'
+    ) as HTMLButtonElement | undefined;
     expect(previewButton?.disabled).toBeTrue();
     expect(presentButton?.disabled).toBeTrue();
+    expect(exportButton?.disabled).toBeTrue();
     expect(host.textContent).toContain(
-      'Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.'
+      'Salva prima la task per includere in anteprima, modalita guidata ed export le immagini ancora in bozza.'
     );
     previewButton?.click();
     presentButton?.click();
+    exportButton?.click();
     expect(router.navigate).not.toHaveBeenCalled();
 
     stepsList.stepsChange.emit([
@@ -552,8 +557,12 @@ describe('TaskShellEditorEntryComponent', () => {
     presentButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Avvia modalita guidata'
     ) as HTMLButtonElement | undefined;
+    exportButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Esporta PDF'
+    ) as HTMLButtonElement | undefined;
     expect(previewButton?.disabled).toBeFalse();
     expect(presentButton?.disabled).toBeFalse();
+    expect(exportButton?.disabled).toBeFalse();
 
     previewButton?.click();
     await fixture.whenStable();
@@ -569,6 +578,13 @@ describe('TaskShellEditorEntryComponent', () => {
 
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'present']);
     expect(host.textContent).toContain('Modalita guidata aperta sulla versione salvata della task.');
+
+    exportButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'export']);
+    expect(host.textContent).toContain('Export PDF aperto sulla versione salvata della task.');
   });
 
   it('launches guided present mode for the currently opened saved variant only', async () => {

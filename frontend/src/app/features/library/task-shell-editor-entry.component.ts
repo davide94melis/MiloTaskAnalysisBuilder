@@ -84,45 +84,79 @@ type TaskMetadataFormGroup = FormGroup<{
             <strong *ngIf="!saving() && saveNotice()">{{ saveNotice() }}</strong>
             <p *ngIf="saveError()" class="entry__error">{{ saveError() }}</p>
             <p *ngIf="!saveError()">
-              Ogni modifica agli step resta locale finche non salvi la task. Upload, simboli e testo visivo rientrano
-              nello stesso salvataggio esplicito.
+              Editor, anteprima, modalita guidata, condivisione ed export leggono sempre l ultima versione salvata
+              della task. Bozze locali e upload pendenti restano fuori finche non confermi il salvataggio.
             </p>
-            <p class="entry__hint">
-              L anteprima playback apre sempre l ultima versione salvata, fuori dalla superficie di authoring.
-            </p>
-            <p class="entry__hint">
-              La modalita guidata presenta la task o variante attualmente aperta esattamente come risulta nell ultimo
-              salvataggio.
-            </p>
+            <div class="entry__surface-list">
+              <p class="entry__hint"><strong>Anteprima:</strong> controlla la lettura salvata fuori dall authoring.</p>
+              <p class="entry__hint"><strong>Presenta:</strong> avvia l esperienza guidata della task corrente.</p>
+              <p class="entry__hint"><strong>Esporta PDF:</strong> apre il layout stampabile della stessa versione.</p>
+            </div>
           </section>
 
           <section class="entry__panel">
-            <p class="entry__panel-label">Azioni</p>
-            <div class="entry__actions">
-              <button type="submit" [disabled]="saving()">Salva task</button>
-              <button
-                type="button"
-                class="entry__ghost"
-                [disabled]="saving() || !canLaunchSavedPlayback()"
-                (click)="openPreview()"
-              >
-                Apri anteprima playback
-              </button>
-              <button
-                type="button"
-                class="entry__ghost"
-                [disabled]="saving() || !canLaunchSavedPlayback()"
-                (click)="openPresentMode()"
-              >
-                Avvia modalita guidata
-              </button>
-              <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
-                Duplica task
-              </button>
-              <a routerLink="/library">Torna alla libreria</a>
+            <div class="entry__share-header">
+              <div>
+                <p class="entry__panel-label">Azioni task salvata</p>
+                <strong>Salva prima, poi verifica, presenta, condividi o stampa.</strong>
+              </div>
+              <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
             </div>
+            <div class="entry__action-groups">
+              <article class="entry__action-group">
+                <span class="entry__action-group-label">Salvataggio</span>
+                <div class="entry__actions">
+                  <button type="submit" [disabled]="saving()">Salva task</button>
+                  <a routerLink="/library">Torna alla libreria</a>
+                </div>
+              </article>
+
+              <article class="entry__action-group">
+                <span class="entry__action-group-label">Versione salvata</span>
+                <div class="entry__actions">
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="saving() || !canLaunchSavedPlayback()"
+                    (click)="openPreview()"
+                  >
+                    Verifica anteprima
+                  </button>
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="saving() || !canLaunchSavedPlayback()"
+                    (click)="openPresentMode()"
+                  >
+                    Avvia modalita guidata
+                  </button>
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="saving() || !canLaunchSavedPlayback()"
+                    (click)="openExport()"
+                  >
+                    Esporta PDF
+                  </button>
+                </div>
+              </article>
+
+              <article class="entry__action-group">
+                <span class="entry__action-group-label">Gestione task</span>
+                <div class="entry__actions">
+                  <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
+                    Duplica task
+                  </button>
+                </div>
+              </article>
+            </div>
+            <p class="entry__panel-note">
+              Anteprima controlla la resa salvata, modalita guidata usa la task con il bambino, export PDF prepara la
+              stampa dalla stessa versione.
+            </p>
             <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
-              Salva prima la task per includere in anteprima e modalita guidata le immagini ancora in bozza.
+              Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini
+              ancora in bozza.
             </p>
           </section>
 
@@ -401,6 +435,32 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__actions {
         display: grid;
         gap: 0.7rem;
+      }
+
+      .entry__action-groups {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .entry__action-group {
+        display: grid;
+        gap: 0.6rem;
+        padding: 0.95rem;
+        border-radius: 1.2rem;
+        background: rgba(247, 250, 252, 0.96);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+      }
+
+      .entry__action-group-label {
+        color: #7c5f3b;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .entry__surface-list {
+        display: grid;
+        gap: 0.4rem;
       }
 
       .entry__actions button,
@@ -735,6 +795,16 @@ export class TaskShellEditorEntryComponent {
     await this.router.navigate(['/tasks', currentTask.id, 'present']);
   }
 
+  protected async openExport(): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.saving() || !this.canLaunchSavedPlayback()) {
+      return;
+    }
+
+    this.saveNotice.set('Export PDF aperto sulla versione salvata della task.');
+    await this.router.navigate(['/tasks', currentTask.id, 'export']);
+  }
+
   private async loadTask(taskId: string | null): Promise<void> {
     this.saveError.set('');
     this.saveNotice.set('');
@@ -834,6 +904,18 @@ export class TaskShellEditorEntryComponent {
 
   protected hasPendingDraftMedia(): boolean {
     return this.steps().some((step) => step.uploadState?.pendingPersistence);
+  }
+
+  protected savedSurfaceStateLabel(): string {
+    if (this.saving()) {
+      return 'Salvataggio in corso';
+    }
+
+    if (this.hasPendingDraftMedia()) {
+      return 'Versione salvata da aggiornare';
+    }
+
+    return 'Versione salvata pronta';
   }
 
   protected shareForMode(mode: TaskShareMode): TaskShareSummaryRecord | null {

@@ -13,19 +13,36 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
     <section class="preview" *ngIf="task() as currentTask; else pendingState">
       <header class="preview__hero">
         <div class="preview__hero-copy">
-          <p class="preview__eyebrow">Playback proof</p>
+          <p class="preview__eyebrow">Anteprima salvata</p>
           <h2>{{ currentTask.title || 'Anteprima task' }}</h2>
           <p class="preview__lead">
-            Questa schermata mostra solo la versione salvata della task, fuori dall editor, per verificare testo,
-            simboli e immagini in un contesto di lettura bambino.
+            Verifica la versione salvata della task in una lettura calma e pulita. Da qui controlli testo, simboli e
+            immagini prima di avviare la modalita guidata o aprire l export PDF.
           </p>
         </div>
 
         <div class="preview__hero-actions">
           <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
+          <a [routerLink]="['/tasks', currentTask.id, 'present']">Apri modalita guidata</a>
+          <a [routerLink]="['/tasks', currentTask.id, 'export']">Esporta PDF</a>
           <span>{{ currentStepIndex() + 1 }} / {{ savedSteps().length }} step</span>
         </div>
       </header>
+
+      <section class="preview__workflow">
+        <article>
+          <span>Anteprima</span>
+          <strong>Controlla ordine, testo, simboli e immagini salvate.</strong>
+        </article>
+        <article>
+          <span>Presenta</span>
+          <strong>Usa la stessa versione salvata in una superficie guidata per il bambino.</strong>
+        </article>
+        <article>
+          <span>Export PDF</span>
+          <strong>Prepara un documento stampabile dalla stessa task salvata.</strong>
+        </article>
+      </section>
 
       <section class="preview__summary">
         <article>
@@ -124,6 +141,7 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
       }
 
       .preview__hero,
+      .preview__workflow,
       .preview__summary,
       .preview__step,
       .preview__nav,
@@ -188,6 +206,9 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
 
       .preview__hero-actions a,
       .preview__nav button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 2.85rem;
         border-radius: 999px;
         padding: 0 1rem;
@@ -214,6 +235,13 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
         gap: 0.8rem;
       }
 
+      .preview__workflow {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 0.8rem;
+      }
+
+      .preview__workflow article,
       .preview__summary article,
       .preview__text-card,
       .preview__symbol-card,
