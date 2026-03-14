@@ -259,6 +259,53 @@ class TaskDetailServiceTest {
                         UUID.fromString("33333333-3333-3333-3333-333333333333"),
                         UUID.fromString("44444444-4444-4444-4444-444444444444")
                 );
+        assertThat(response.variantRole()).isEqualTo("standalone");
+        assertThat(response.relatedVariants()).isEmpty();
+    }
+
+    @Test
+    void returnsFamilyMetadataAndSiblingNavigationForVariantDetails() {
+        UUID ownerId = UUID.randomUUID();
+        UUID rootTaskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID currentTaskId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID siblingTaskId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        TaskShellEntity currentTask = task(currentTaskId, ownerId);
+        currentTask.setTitle("Lavarsi le mani");
+        currentTask.setSupportLevel("Visivo");
+        currentTask.setVariantFamilyId(rootTaskId);
+
+        TaskShellEntity rootTask = task(rootTaskId, ownerId);
+        rootTask.setTitle("Lavarsi le mani");
+        rootTask.setSupportLevel("Guidato");
+
+        TaskShellEntity siblingTask = task(siblingTaskId, ownerId);
+        siblingTask.setTitle("Lavarsi le mani");
+        siblingTask.setSupportLevel("Autonomo");
+        siblingTask.setVariantFamilyId(rootTaskId);
+
+        TaskAnalysisStepEntity step = step(currentTaskId, UUID.fromString("33333333-3333-3333-3333-333333333333"), 1, "Primo passo");
+        step.setVisualText("Bagna");
+
+        when(taskShellRepository.findByIdAndOwnerId(currentTaskId, ownerId)).thenReturn(Optional.of(currentTask));
+        when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(currentTaskId)).thenReturn(List.of(step));
+        when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(currentTaskId)).thenReturn(List.of());
+        when(taskShellRepository.findByIdIn(List.of(rootTaskId))).thenReturn(List.of(rootTask));
+        when(taskShellRepository.findByVariantFamilyIdIn(List.of(rootTaskId))).thenReturn(List.of(currentTask, siblingTask));
+
+        TaskDetailResponse response = taskDetailService.getTaskDetail(currentTaskId, ownerId);
+
+        assertThat(response.variantFamilyId()).isEqualTo(rootTaskId);
+        assertThat(response.variantRootTaskId()).isEqualTo(rootTaskId);
+        assertThat(response.variantRootTitle()).isEqualTo("Lavarsi le mani");
+        assertThat(response.variantRole()).isEqualTo("variant");
+        assertThat(response.variantCount()).isEqualTo(3);
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::id)
+                .containsExactly(rootTaskId, siblingTaskId);
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::variantRole)
+                .containsExactly("root", "variant");
+        assertThat(response.relatedVariants()).extracting(TaskDetailResponse.RelatedVariantSummary::supportLevel)
+                .containsExactly("Guidato", "Autonomo");
     }
 
     @Test

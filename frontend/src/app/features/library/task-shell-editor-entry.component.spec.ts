@@ -34,6 +34,27 @@ describe('TaskShellEditorEntryComponent', () => {
     lastUpdatedAt: '2026-03-13T10:15:30Z',
     authorName: 'teacher@example.com',
     sourceTaskId: null,
+    variantFamilyId: 'task-1',
+    variantRootTaskId: 'task-1',
+    variantRootTitle: 'Lavarsi le mani',
+    variantRole: 'root',
+    variantCount: 3,
+    relatedVariants: [
+      {
+        id: 'task-2',
+        title: 'Lavarsi le mani',
+        supportLevel: 'Visivo',
+        variantRole: 'variant',
+        lastUpdatedAt: '2026-03-13T10:30:00Z'
+      },
+      {
+        id: 'task-3',
+        title: 'Lavarsi le mani',
+        supportLevel: 'Autonomo',
+        variantRole: 'variant',
+        lastUpdatedAt: '2026-03-13T10:45:00Z'
+      }
+    ],
     steps: [
       {
         id: 'step-1',
@@ -177,7 +198,8 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask,
             createDraft: jasmine.createSpy('createDraft'),
-            duplicateTask: jasmine.createSpy('duplicateTask')
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
           }
         }
       ]
@@ -310,7 +332,8 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail: jasmine.createSpy('getTaskDetail'),
             updateTask: jasmine.createSpy('updateTask'),
             createDraft,
-            duplicateTask: jasmine.createSpy('duplicateTask')
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
           }
         }
       ]
@@ -348,7 +371,8 @@ describe('TaskShellEditorEntryComponent', () => {
             getTaskDetail,
             updateTask: jasmine.createSpy('updateTask'),
             createDraft: jasmine.createSpy('createDraft'),
-            duplicateTask: jasmine.createSpy('duplicateTask')
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
           }
         }
       ]
@@ -421,5 +445,77 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-1', 'preview']);
     expect(getTaskDetail).toHaveBeenCalledTimes(1);
     expect(host.textContent).toContain('Anteprima aperta sulla versione salvata della task.');
+  });
+
+  it('renders family context, opens sibling navigation, and creates a new variant from the editor', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+    const getTaskDetail = jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask));
+    const createVariant = jasmine.createSpy('createVariant').and.returnValue(
+      of({
+        ...baseTask,
+        id: 'task-4',
+        supportLevel: 'Supportato',
+        variantRole: 'variant',
+        sourceTaskId: 'task-1'
+      })
+    );
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail,
+            updateTask: jasmine.createSpy('updateTask'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+    spyOn(window, 'prompt').and.returnValue('Supportato');
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Famiglia varianti');
+    expect(host.textContent).toContain('Task base');
+    expect(host.textContent).toContain('3 task nella famiglia');
+    expect(host.textContent).toContain('Variante · Visivo');
+
+    const familyButtons = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).filter((button) =>
+      button.textContent?.includes('Visivo')
+    );
+    familyButtons[0].click();
+    await fixture.whenStable();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-2']);
+
+    const createVariantButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+      button.textContent?.includes('Crea variante da questa task')
+    );
+    createVariantButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(createVariant).toHaveBeenCalledWith('task-1', { supportLevel: 'Supportato' });
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-4']);
+    expect(host.textContent).toContain('Variante creata. Apertura della nuova task in corso.');
   });
 });

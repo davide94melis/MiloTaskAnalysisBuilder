@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,15 @@ public class TaskDetailService {
     public TaskDetailResponse getTaskDetail(UUID taskId, UUID ownerId) {
         TaskShellEntity task = findOwnedTask(taskId, ownerId);
         List<TaskAnalysisStepEntity> steps = taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(taskId);
-        return taskDetailMapper.toResponse(task, steps, mediaByStepId(taskId), taskMediaStorageService::buildAccessUrl);
+        FamilyContext familyContext = familyContext(task, ownerId);
+        return taskDetailMapper.toResponse(
+                task,
+                steps,
+                mediaByStepId(taskId),
+                taskMediaStorageService::buildAccessUrl,
+                familyContext.metadata(),
+                familyContext.relatedVariants()
+        );
     }
 
     @Transactional
@@ -53,11 +62,14 @@ public class TaskDetailService {
         task.setStepCount(persistedSteps.size());
 
         TaskShellEntity savedTask = taskShellRepository.save(task);
+        FamilyContext familyContext = familyContext(savedTask, ownerId);
         return taskDetailMapper.toResponse(
                 savedTask,
                 persistedSteps,
                 mediaByStepId(taskId),
-                taskMediaStorageService::buildAccessUrl
+                taskMediaStorageService::buildAccessUrl,
+                familyContext.metadata(),
+                familyContext.relatedVariants()
         );
     }
 
@@ -174,6 +186,80 @@ public class TaskDetailService {
         return mediaByStepId;
     }
 
+    private FamilyContext familyContext(TaskShellEntity task, UUID ownerId) {
+        UUID rootId = task.getVariantFamilyId() == null ? task.getId() : task.getVariantFamilyId();
+        TaskShellEntity root = safeList(taskShellRepository.findByIdIn(List.of(rootId))).stream()
+                .filter(candidate -> Objects.equals(candidate.getId(), rootId))
+                .findFirst()
+                .orElse(null);
+
+        List<TaskShellEntity> variants = safeList(taskShellRepository.findByVariantFamilyIdIn(List.of(rootId))).stream()
+                .filter(candidate -> Objects.equals(candidate.getOwnerId(), ownerId))
+                .sorted(Comparator
+                        .comparing((TaskShellEntity candidate) -> normalize(candidate.getSupportLevel()),
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                        .thenComparing(candidate -> normalize(candidate.getTitle()),
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                        .thenComparing(TaskShellEntity::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+
+        if (task.getVariantFamilyId() != null) {
+            int variantCount = variants.size() + (root == null ? 0 : 1);
+            List<TaskDetailResponse.RelatedVariantSummary> relatedVariants = new ArrayList<>();
+            if (root != null && !Objects.equals(root.getId(), task.getId())) {
+                relatedVariants.add(toRelatedVariant(root, "root"));
+            }
+            for (TaskShellEntity variant : variants) {
+                if (!Objects.equals(variant.getId(), task.getId())) {
+                    relatedVariants.add(toRelatedVariant(variant, "variant"));
+                }
+            }
+            return new FamilyContext(
+                    new TaskShellMapper.FamilyMetadata(
+                            task.getVariantFamilyId(),
+                            rootId,
+                            root == null ? null : root.getTitle(),
+                            "variant",
+                            variantCount
+                    ),
+                    relatedVariants
+            );
+        }
+
+        if (!variants.isEmpty()) {
+            List<TaskDetailResponse.RelatedVariantSummary> relatedVariants = variants.stream()
+                    .filter(variant -> !Objects.equals(variant.getId(), task.getId()))
+                    .map(variant -> toRelatedVariant(variant, "variant"))
+                    .toList();
+            return new FamilyContext(
+                    new TaskShellMapper.FamilyMetadata(
+                            null,
+                            task.getId(),
+                            task.getTitle(),
+                            "root",
+                            variants.size() + 1
+                    ),
+                    relatedVariants
+            );
+        }
+
+        return new FamilyContext(TaskShellMapper.FamilyMetadata.standalone(), List.of());
+    }
+
+    private TaskDetailResponse.RelatedVariantSummary toRelatedVariant(TaskShellEntity task, String variantRole) {
+        return new TaskDetailResponse.RelatedVariantSummary(
+                task.getId(),
+                task.getTitle(),
+                task.getSupportLevel(),
+                variantRole,
+                task.getUpdatedAt()
+        );
+    }
+
+    private <T> List<T> safeList(List<T> values) {
+        return values == null ? List.of() : values;
+    }
+
     private boolean defaultRequired(Boolean required) {
         return !Objects.equals(required, Boolean.FALSE);
     }
@@ -213,5 +299,11 @@ public class TaskDetailService {
             return null;
         }
         return value.trim();
+    }
+
+    private record FamilyContext(
+            TaskShellMapper.FamilyMetadata metadata,
+            List<TaskDetailResponse.RelatedVariantSummary> relatedVariants
+    ) {
     }
 }

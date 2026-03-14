@@ -222,6 +222,9 @@ class TaskLibraryControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reopened.id().toString()))
                 .andExpect(jsonPath("$.title").value(reopened.title()))
+                .andExpect(jsonPath("$.variantRole").value("root"))
+                .andExpect(jsonPath("$.variantCount").value(2))
+                .andExpect(jsonPath("$.relatedVariants[0].variantRole").value("variant"))
                 .andExpect(jsonPath("$.steps[0].title").value("Apri il rubinetto"));
     }
 
@@ -283,6 +286,20 @@ class TaskLibraryControllerIntegrationTest {
                 2,
                 authorName,
                 null,
+                null,
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                title,
+                "root",
+                2,
+                List.of(
+                        new TaskDetailResponse.RelatedVariantSummary(
+                                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                                title,
+                                "Autonomo",
+                                "variant",
+                                Instant.parse("2026-03-13T10:25:30Z")
+                        )
+                ),
                 Instant.parse("2026-03-13T10:15:30Z"),
                 List.of(
                         new TaskDetailResponse.TaskStepDetail(

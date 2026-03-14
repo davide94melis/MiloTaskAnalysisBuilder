@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
+  RelatedVariantRecord,
   TaskDetailRecord,
   TaskStepDraftRecord,
   UpdateTaskDetailRequest,
@@ -109,6 +110,54 @@ type TaskMetadataFormGroup = FormGroup<{
             </div>
             <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
               Salva prima la task per includere nell anteprima le immagini ancora in bozza.
+            </p>
+          </section>
+
+          <section class="entry__panel" *ngIf="task() as currentTask">
+            <p class="entry__panel-label">Famiglia varianti</p>
+            <strong>{{ familyRoleLabel(currentTask) }}</strong>
+            <p>{{ familyContextCopy(currentTask) }}</p>
+
+            <dl class="entry__family-facts">
+              <div>
+                <dt>Base</dt>
+                <dd>{{ familyRootTitle(currentTask) }}</dd>
+              </div>
+              <div>
+                <dt>Supporto</dt>
+                <dd>{{ currentTask.supportLevel || 'Da definire' }}</dd>
+              </div>
+              <div>
+                <dt>Task collegate</dt>
+                <dd>{{ familyCountLabel(currentTask) }}</dd>
+              </div>
+            </dl>
+
+            <div class="entry__family-links" *ngIf="currentTask.relatedVariants?.length; else noRelatedVariants">
+              <button
+                *ngFor="let related of currentTask.relatedVariants"
+                type="button"
+                class="entry__family-link"
+                [disabled]="saving()"
+                (click)="openFamilyTask(related.id)"
+              >
+                <span>{{ related.title }}</span>
+                <small>{{ relatedVariantLabel(related) }}</small>
+              </button>
+            </div>
+
+            <ng-template #noRelatedVariants>
+              <p class="entry__hint">
+                Nessun altra task collegata per ora. La famiglia resta una copia esplicita, senza confronti o storico.
+              </p>
+            </ng-template>
+
+            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="createVariantFromCurrent()">
+              Crea variante da questa task
+            </button>
+            <p class="entry__panel-note">
+              Le varianti riusano lo stesso contenuto salvato, compresi simboli e immagini. Present mode guidato e
+              condivisione restano fasi successive.
             </p>
           </section>
         </aside>
@@ -267,6 +316,38 @@ type TaskMetadataFormGroup = FormGroup<{
         gap: 0.55rem;
       }
 
+      .entry__family-facts {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .entry__family-facts div {
+        padding: 0.75rem 0.9rem;
+        border-radius: 1rem;
+        background: rgba(247, 250, 252, 0.96);
+      }
+
+      .entry__family-links {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .entry__family-link {
+        display: grid;
+        gap: 0.18rem;
+        justify-items: start;
+        text-align: left;
+        min-height: 3rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        background: rgba(247, 250, 252, 0.96);
+        color: #11415b;
+      }
+
+      .entry__family-link small {
+        color: #6b7280;
+      }
+
       .entry__panel p {
         color: #4b5563;
         line-height: 1.5;
@@ -390,6 +471,31 @@ export class TaskShellEditorEntryComponent {
     await this.router.navigate(['/tasks', duplicated.id]);
   }
 
+  protected async createVariantFromCurrent(): Promise<void> {
+    const currentTask = this.task();
+    if (!currentTask || this.saving()) {
+      return;
+    }
+
+    const requestedSupportLevel = window.prompt(
+      `Livello di supporto per la variante di "${currentTask.title}"`,
+      currentTask.supportLevel || ''
+    );
+    const supportLevel = requestedSupportLevel?.trim();
+
+    if (!supportLevel) {
+      return;
+    }
+
+    const created = await firstValueFrom(
+      this.taskLibrary.createVariant(currentTask.id, {
+        supportLevel
+      })
+    );
+    this.saveNotice.set('Variante creata. Apertura della nuova task in corso.');
+    await this.router.navigate(['/tasks', created.id]);
+  }
+
   protected async openPreview(): Promise<void> {
     const currentTask = this.task();
     if (!currentTask || this.saving() || !this.canOpenPreview()) {
@@ -497,5 +603,49 @@ export class TaskShellEditorEntryComponent {
 
   protected hasPendingDraftMedia(): boolean {
     return this.steps().some((step) => step.uploadState?.pendingPersistence);
+  }
+
+  protected familyRoleLabel(task: TaskDetailRecord): string {
+    switch (task.variantRole ?? 'standalone') {
+      case 'root':
+        return 'Task base';
+      case 'variant':
+        return 'Variante';
+      default:
+        return 'Task singola';
+    }
+  }
+
+  protected familyContextCopy(task: TaskDetailRecord): string {
+    switch (task.variantRole ?? 'standalone') {
+      case 'root':
+        return 'Questa task e la base della famiglia. Le altre varianti restano copie esplicite con supporti diversi.';
+      case 'variant':
+        return `Questa task appartiene alla famiglia "${this.familyRootTitle(task)}" e resta navigabile senza modalita di confronto.`;
+      default:
+        return 'La task non appartiene ancora a una famiglia variante. Puoi creare una copia dedicata quando serve.';
+    }
+  }
+
+  protected familyRootTitle(task: TaskDetailRecord): string {
+    return task.variantRootTitle || task.title || 'Task corrente';
+  }
+
+  protected familyCountLabel(task: TaskDetailRecord): string {
+    const count = task.variantCount && task.variantCount > 0 ? task.variantCount : 1;
+    return count === 1 ? 'Task singola' : `${count} task nella famiglia`;
+  }
+
+  protected relatedVariantLabel(related: RelatedVariantRecord): string {
+    const roleLabel = related.variantRole === 'root' ? 'Task base' : 'Variante';
+    return `${roleLabel} · ${related.supportLevel || 'Supporto da definire'}`;
+  }
+
+  protected async openFamilyTask(taskId: string): Promise<void> {
+    if (this.saving()) {
+      return;
+    }
+
+    await this.router.navigate(['/tasks', taskId]);
   }
 }

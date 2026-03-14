@@ -71,6 +71,10 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").value(detail.id().toString()))
                 .andExpect(jsonPath("$.description").value(detail.description()))
                 .andExpect(jsonPath("$.environmentLabel").value(detail.environmentLabel()))
+                .andExpect(jsonPath("$.variantRole").value("variant"))
+                .andExpect(jsonPath("$.variantRootTitle").value("Lavarsi le mani"))
+                .andExpect(jsonPath("$.relatedVariants[0].variantRole").value("root"))
+                .andExpect(jsonPath("$.relatedVariants[1].supportLevel").value("Autonomo"))
                 .andExpect(jsonPath("$.steps[0].title").value("Apri l'acqua"))
                 .andExpect(jsonPath("$.steps[0].required").value(true))
                 .andExpect(jsonPath("$.steps[0].supportGuidance").value("Indicazione verbale breve"))
@@ -156,7 +160,9 @@ class TaskDetailControllerIntegrationTest {
                 .andExpect(jsonPath("$.steps[0].visualSupport.image.storageKey").value("task-1/image-1.png"))
                 .andExpect(jsonPath("$.steps[1].id").value("22222222-2222-2222-2222-222222222222"))
                 .andExpect(jsonPath("$.steps[1].visualSupport.symbol.key").value("soap"))
-                .andExpect(jsonPath("$.stepCount").value(2));
+                .andExpect(jsonPath("$.stepCount").value(2))
+                .andExpect(jsonPath("$.variantCount").value(3))
+                .andExpect(jsonPath("$.relatedVariants[0].title").value("Lavarsi le mani"));
 
         verify(taskDetailService).updateTask(eq(response.id()), eq(principal.getLocalUserId()), any(UpdateTaskRequest.class));
     }
@@ -240,7 +246,28 @@ class TaskDetailControllerIntegrationTest {
                 "draft",
                 2,
                 "teacher@example.com",
-                null,
+                UUID.fromString("99999999-9999-9999-9999-999999999999"),
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                "Lavarsi le mani",
+                "variant",
+                3,
+                List.of(
+                        new TaskDetailResponse.RelatedVariantSummary(
+                                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                                "Lavarsi le mani",
+                                "Guidato",
+                                "root",
+                                Instant.parse("2026-03-13T12:10:00Z")
+                        ),
+                        new TaskDetailResponse.RelatedVariantSummary(
+                                UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                                "Lavarsi le mani",
+                                "Autonomo",
+                                "variant",
+                                Instant.parse("2026-03-13T12:20:00Z")
+                        )
+                ),
                 Instant.parse("2026-03-13T12:15:00Z"),
                 List.of(
                         new TaskDetailResponse.TaskStepDetail(

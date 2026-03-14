@@ -15,8 +15,12 @@ public class TaskDetailMapper {
             TaskShellEntity task,
             List<TaskAnalysisStepEntity> steps,
             Map<UUID, List<TaskAnalysisStepMediaEntity>> mediaByStepId,
-            BiFunction<UUID, UUID, String> mediaUrlResolver
+            BiFunction<UUID, UUID, String> mediaUrlResolver,
+            TaskShellMapper.FamilyMetadata familyMetadata,
+            List<TaskDetailResponse.RelatedVariantSummary> relatedVariants
     ) {
+        TaskShellMapper.FamilyMetadata effectiveFamilyMetadata =
+                familyMetadata == null ? TaskShellMapper.FamilyMetadata.standalone() : familyMetadata;
         return new TaskDetailResponse(
                 task.getId(),
                 task.getTitle(),
@@ -34,6 +38,12 @@ public class TaskDetailMapper {
                 task.getStepCount(),
                 task.getAuthorName(),
                 task.getSourceTaskId(),
+                effectiveFamilyMetadata.variantFamilyId(),
+                effectiveFamilyMetadata.variantRootTaskId(),
+                effectiveFamilyMetadata.variantRootTitle(),
+                effectiveFamilyMetadata.variantRole(),
+                effectiveFamilyMetadata.variantCount(),
+                relatedVariants,
                 task.getUpdatedAt(),
                 steps.stream()
                         .map(step -> toStepDetail(

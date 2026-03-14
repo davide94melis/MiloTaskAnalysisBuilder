@@ -50,12 +50,21 @@ export interface TaskStepDraftRecord {
   uploadState: TaskStepUploadStateRecord | null;
 }
 
+export interface RelatedVariantRecord {
+  id: string;
+  title: string;
+  supportLevel: string;
+  variantRole: 'root' | 'variant';
+  lastUpdatedAt: string;
+}
+
 export interface TaskDetailRecord extends TaskCardRecord {
   description: string;
   educationalObjective: string;
   professionalNotes: string;
   difficultyLevel: string;
   environmentLabel: string;
+  relatedVariants?: RelatedVariantRecord[];
   steps: TaskStepDraftRecord[];
 }
 
