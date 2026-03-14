@@ -21,9 +21,79 @@ public record TaskDetailResponse(
         int stepCount,
         String authorName,
         UUID sourceTaskId,
+        UUID variantFamilyId,
+        UUID variantRootTaskId,
+        String variantRootTitle,
+        String variantRole,
+        int variantCount,
+        List<RelatedVariantSummary> relatedVariants,
         Instant lastUpdatedAt,
         List<TaskStepDetail> steps
 ) {
+
+    public TaskDetailResponse {
+        variantRole = variantRole == null || variantRole.isBlank() ? "standalone" : variantRole;
+        variantCount = variantCount <= 0 ? 1 : variantCount;
+        relatedVariants = relatedVariants == null ? List.of() : List.copyOf(relatedVariants);
+        steps = steps == null ? List.of() : List.copyOf(steps);
+    }
+
+    public TaskDetailResponse(
+            UUID id,
+            String title,
+            String category,
+            String description,
+            String educationalObjective,
+            String professionalNotes,
+            String contextLabel,
+            String targetLabel,
+            String supportLevel,
+            String difficultyLevel,
+            String environmentLabel,
+            String visibility,
+            String status,
+            int stepCount,
+            String authorName,
+            UUID sourceTaskId,
+            Instant lastUpdatedAt,
+            List<TaskStepDetail> steps
+    ) {
+        this(
+                id,
+                title,
+                category,
+                description,
+                educationalObjective,
+                professionalNotes,
+                contextLabel,
+                targetLabel,
+                supportLevel,
+                difficultyLevel,
+                environmentLabel,
+                visibility,
+                status,
+                stepCount,
+                authorName,
+                sourceTaskId,
+                null,
+                null,
+                null,
+                "standalone",
+                1,
+                List.of(),
+                lastUpdatedAt,
+                steps
+        );
+    }
+
+    public record RelatedVariantSummary(
+            UUID id,
+            String title,
+            String supportLevel,
+            String variantRole,
+            Instant lastUpdatedAt
+    ) {
+    }
 
     public record TaskStepDetail(
             UUID id,

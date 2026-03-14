@@ -57,6 +57,10 @@ public interface TaskShellRepository extends JpaRepository<TaskShellEntity, UUID
             """)
     List<TaskShellEntity> findTemplates();
 
+    List<TaskShellEntity> findByIdIn(List<UUID> ids);
+
+    List<TaskShellEntity> findByVariantFamilyIdIn(List<UUID> variantFamilyIds);
+
     Optional<TaskShellEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
 
     long countByOwnerIdAndStatus(UUID ownerId, TaskShellStatus status);

@@ -1,6 +1,7 @@
 package com.milo.taskbuilder.task;
 
 import com.milo.taskbuilder.library.dto.TaskCardResponse;
+import com.milo.taskbuilder.library.dto.TaskLibraryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,11 +42,13 @@ class TaskShellServiceTest {
     @Test
     void duplicateCopiesExpandedStepFieldsAndMediaReferences() {
         UUID ownerId = UUID.randomUUID();
+        UUID familyRootId = UUID.randomUUID();
         UUID sourceTaskId = UUID.randomUUID();
         TaskShellEntity sourceTask = new TaskShellEntity();
         sourceTask.setId(sourceTaskId);
         sourceTask.setOwnerId(ownerId);
         sourceTask.setTitle("Lavarsi le mani");
+        sourceTask.setVariantFamilyId(familyRootId);
         sourceTask.setStatus(TaskShellStatus.DRAFT);
         sourceTask.setVisibility(TaskShellVisibility.PRIVATE);
         sourceTask.setAuthorName("teacher@example.com");
@@ -87,6 +91,15 @@ class TaskShellServiceTest {
             saved.setId(UUID.fromString("22222222-2222-2222-2222-222222222222"));
             return saved;
         });
+        when(repository.findByIdIn(List.of(UUID.fromString("22222222-2222-2222-2222-222222222222"))))
+                .thenReturn(List.of(task(
+                        UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                        ownerId,
+                        "Lavarsi le mani",
+                        "Guidato"
+                )));
+        when(repository.findByVariantFamilyIdIn(List.of(UUID.fromString("22222222-2222-2222-2222-222222222222"))))
+                .thenReturn(List.of());
         when(taskAnalysisStepRepository.findByTaskAnalysisIdOrderByPositionAscIdAsc(sourceTaskId))
                 .thenReturn(List.of(sourceStep));
         when(taskAnalysisStepMediaRepository.findByTaskAnalysisIdOrderByCreatedAtAscIdAsc(sourceTaskId))
@@ -109,6 +122,10 @@ class TaskShellServiceTest {
         TaskCardResponse duplicated = service.duplicate(sourceTaskId, ownerId, "teacher@example.com");
 
         assertThat(duplicated.id()).isEqualTo(UUID.fromString("22222222-2222-2222-2222-222222222222"));
+        assertThat(duplicated.sourceTaskId()).isEqualTo(sourceTaskId);
+        assertThat(duplicated.variantFamilyId()).isNull();
+        assertThat(duplicated.variantRole()).isEqualTo("standalone");
+        assertThat(duplicated.variantCount()).isEqualTo(1);
         @SuppressWarnings("unchecked")
         List<TaskAnalysisStepEntity> copiedSteps = (List<TaskAnalysisStepEntity>) org.mockito.Mockito.mockingDetails(taskAnalysisStepRepository)
                 .getInvocations().stream()
@@ -141,5 +158,69 @@ class TaskShellServiceTest {
         assertThat(copiedMedia.get(0).getFileName()).isEqualTo("rubinetto.png");
         assertThat(copiedMedia.get(0).getAltText()).isEqualTo("Rubinetto");
         verify(taskAnalysisStepMediaRepository).saveAll(any());
+    }
+
+    @Test
+    void listLibraryAddsFamilyMetadataForStandaloneRootAndVariantCards() {
+        UUID ownerId = UUID.randomUUID();
+        UUID rootTaskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID variantTaskId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID standaloneTaskId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        TaskShellEntity root = task(rootTaskId, ownerId, "Lavarsi le mani", "Guidato");
+        TaskShellEntity variant = task(variantTaskId, ownerId, "Lavarsi le mani", "Visivo");
+        variant.setSourceTaskId(rootTaskId);
+        variant.setVariantFamilyId(rootTaskId);
+        TaskShellEntity standalone = task(standaloneTaskId, ownerId, "Preparare lo zaino", "Autonomo");
+
+        when(repository.findLibraryCards(ownerId, null, null, null, null, null, null, null))
+                .thenReturn(List.of(root, variant, standalone));
+        when(repository.findByIdIn(List.of(rootTaskId, standaloneTaskId)))
+                .thenReturn(List.of(root, standalone));
+        when(repository.findByVariantFamilyIdIn(List.of(rootTaskId, standaloneTaskId)))
+                .thenReturn(List.of(variant));
+
+        TaskLibraryResponse response = service.listLibrary(ownerId, new TaskShellService.TaskLibraryFilter(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
+
+        assertThat(response.items()).hasSize(3);
+        Map<UUID, TaskCardResponse> cardsById = response.items().stream()
+                .collect(java.util.stream.Collectors.toMap(TaskCardResponse::id, card -> card));
+
+        assertThat(cardsById.get(rootTaskId).variantRole()).isEqualTo("root");
+        assertThat(cardsById.get(rootTaskId).variantRootTaskId()).isEqualTo(rootTaskId);
+        assertThat(cardsById.get(rootTaskId).variantRootTitle()).isEqualTo("Lavarsi le mani");
+        assertThat(cardsById.get(rootTaskId).variantCount()).isEqualTo(2);
+
+        assertThat(cardsById.get(variantTaskId).variantFamilyId()).isEqualTo(rootTaskId);
+        assertThat(cardsById.get(variantTaskId).variantRole()).isEqualTo("variant");
+        assertThat(cardsById.get(variantTaskId).variantRootTaskId()).isEqualTo(rootTaskId);
+        assertThat(cardsById.get(variantTaskId).variantRootTitle()).isEqualTo("Lavarsi le mani");
+        assertThat(cardsById.get(variantTaskId).variantCount()).isEqualTo(2);
+
+        assertThat(cardsById.get(standaloneTaskId).variantFamilyId()).isNull();
+        assertThat(cardsById.get(standaloneTaskId).variantRootTaskId()).isNull();
+        assertThat(cardsById.get(standaloneTaskId).variantRole()).isEqualTo("standalone");
+        assertThat(cardsById.get(standaloneTaskId).variantCount()).isEqualTo(1);
+    }
+
+    private TaskShellEntity task(UUID id, UUID ownerId, String title, String supportLevel) {
+        TaskShellEntity task = new TaskShellEntity();
+        task.setId(id);
+        task.setOwnerId(ownerId);
+        task.setTitle(title);
+        task.setSupportLevel(supportLevel);
+        task.setStatus(TaskShellStatus.DRAFT);
+        task.setVisibility(TaskShellVisibility.PRIVATE);
+        task.setAuthorName("teacher@example.com");
+        task.setUpdatedAt(Instant.parse("2026-03-13T12:00:00Z"));
+        return task;
     }
 }
