@@ -231,9 +231,17 @@ describe('TaskGuidedPresentPageComponent', () => {
       isSessionComplete: () => boolean;
       showAdultGuidance: () => boolean;
       toggleAdultGuidance: () => void;
-      markCurrentStepCompleted: () => void;
+      primaryActionLabel: () => string;
     };
     const host = fixture.nativeElement as HTMLElement;
+    const buttons = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'));
+    const previousButton = () => buttons().find((button) => button.textContent?.includes('Step precedente'));
+    const nextButton = () => buttons().find((button) => button.textContent?.includes('Step successivo'));
+    const primaryButton = () => buttons().find((button) =>
+      ['Completa step corrente', 'Completa task', 'Vai allo step successivo'].some((label) =>
+        button.textContent?.includes(label)
+      )
+    );
 
     expect(getTaskDetail).toHaveBeenCalledWith('task-7');
     expect(component.currentStep()?.title).toBe('Prendi il piatto');
@@ -247,6 +255,9 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(host.querySelector('img')?.getAttribute('src')).toBe('/api/tasks/task-7/media/media-1/content');
     expect(host.textContent).not.toContain('/draft-only-plate.png');
     expect(host.textContent).not.toContain('Indica il ripiano corretto.');
+    expect(previousButton()?.disabled).toBeTrue();
+    expect(nextButton()?.disabled).toBeFalse();
+    expect(component.primaryActionLabel()).toBe('Completa step corrente');
 
     component.toggleAdultGuidance();
     fixture.detectChanges();
@@ -254,10 +265,7 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(host.textContent).toContain('Prompt adulto');
     expect(host.textContent).toContain('Indica il ripiano corretto.');
 
-    const completeButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
-      button.textContent?.includes('Completa step corrente')
-    );
-    completeButton?.click();
+    primaryButton()?.click();
     fixture.detectChanges();
 
     expect(component.completedStepIndexes()).toEqual([0]);
@@ -265,6 +273,8 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.currentStep()?.title).toBe('Mostra il simbolo del piatto');
     expect(component.showAdultGuidance()).toBeFalse();
     expect(host.textContent).toContain('1 / 4 completati');
+    expect(previousButton()?.disabled).toBeFalse();
+    expect(nextButton()?.disabled).toBeFalse();
 
     params$.next(convertToParamMap({ taskId: 'task-8' }));
     fixture.detectChanges();
@@ -277,11 +287,11 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.currentStep()?.title).toBe('Bevi l acqua');
     expect(component.isLastStep()).toBeTrue();
     expect(component.isSessionComplete()).toBeFalse();
+    expect(previousButton()?.disabled).toBeTrue();
+    expect(nextButton()?.disabled).toBeTrue();
+    expect(component.primaryActionLabel()).toBe('Completa task');
 
-    const completeTaskButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
-      button.textContent?.includes('Completa task')
-    );
-    completeTaskButton?.click();
+    primaryButton()?.click();
     fixture.detectChanges();
 
     expect(component.completedStepIndexes()).toEqual([0]);
@@ -529,5 +539,65 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.isSessionComplete()).toBeFalse();
     expect(getTaskDetail).toHaveBeenCalledTimes(1);
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('lets users revisit completed steps without duplicating completion state', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-7' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(responsiveTask))
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      currentStepIndex: () => number;
+      completedStepIndexes: () => number[];
+      primaryActionLabel: () => string;
+    };
+    const host = fixture.nativeElement as HTMLElement;
+    const buttons = () => Array.from(host.querySelectorAll<HTMLButtonElement>('button'));
+    const previousButton = () => buttons().find((button) => button.textContent?.includes('Step precedente'));
+    const primaryButton = () => buttons().find((button) =>
+      ['Completa step corrente', 'Vai allo step successivo'].some((label) => button.textContent?.includes(label))
+    );
+
+    primaryButton()?.click();
+    fixture.detectChanges();
+
+    expect(component.currentStepIndex()).toBe(1);
+    expect(component.completedStepIndexes()).toEqual([0]);
+
+    previousButton()?.click();
+    fixture.detectChanges();
+
+    expect(component.currentStepIndex()).toBe(0);
+    expect(component.primaryActionLabel()).toBe('Vai allo step successivo');
+
+    primaryButton()?.click();
+    fixture.detectChanges();
+
+    expect(component.currentStepIndex()).toBe(1);
+    expect(component.completedStepIndexes()).toEqual([0]);
+    expect(host.textContent).toContain('1 / 4 completati');
   });
 });

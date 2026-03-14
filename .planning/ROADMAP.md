@@ -199,11 +199,12 @@ Next up: plan and execute Phase 7 guided present mode on top of the saved-task a
 
 ## Phase 7 Next
 
-In progress on 2026-03-14. Summaries:
+Completed on 2026-03-14. Summaries:
 
 - `.planning/phases/07-guided-present-mode/07-01-SUMMARY.md`
 - `.planning/phases/07-guided-present-mode/07-02-SUMMARY.md`
+- `.planning/phases/07-guided-present-mode/07-03-SUMMARY.md`
 
-Phase 7 now has the authenticated guided-present route, local session-state foundation, and a responsive child-facing present surface that still uses only the saved media contract.
+Phase 7 now has the authenticated guided-present route, a responsive child-facing present surface, and a complete local-only in-session flow with clear back/next/complete controls and an explicit completed-task state.
 
-Next up: execute `07-03` to tighten the guided control flow, current-step completion behavior, and explicit task-complete state on top of the new responsive surface.
+Next up: plan Phase 8 safe sharing and public access on top of the now-stable saved-task present-mode surface.

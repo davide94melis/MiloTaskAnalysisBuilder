@@ -180,10 +180,10 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
             <button
               type="button"
               class="present-shell__primary-action"
-              [disabled]="isCurrentStepCompleted()"
-              (click)="markCurrentStepCompleted()"
+              [disabled]="!currentStep()"
+              (click)="handlePrimaryAction()"
             >
-              {{ isLastStep() ? 'Completa task' : 'Completa step corrente' }}
+              {{ primaryActionLabel() }}
             </button>
 
             <button type="button" class="present-shell__ghost-action" [disabled]="isLastStep()" (click)="showNextStep()">
@@ -549,6 +549,17 @@ export class TaskGuidedPresentPageComponent {
     const step = this.currentStep();
     return Boolean(step && this.hasAdultGuidance(step));
   });
+  protected readonly primaryActionLabel = computed(() => {
+    if (!this.currentStep()) {
+      return 'Completa step corrente';
+    }
+
+    if (this.isCurrentStepCompleted()) {
+      return this.isLastStep() ? 'Step gia completato' : 'Vai allo step successivo';
+    }
+
+    return this.isLastStep() ? 'Completa task' : 'Completa step corrente';
+  });
   protected readonly viewportLabel = computed(() => {
     switch (this.viewport()) {
       case 'phone':
@@ -586,6 +597,17 @@ export class TaskGuidedPresentPageComponent {
     this.syncAdultGuidanceVisibility();
   }
 
+  protected handlePrimaryAction(): void {
+    if (this.isCurrentStepCompleted()) {
+      if (!this.isLastStep()) {
+        this.showNextStep();
+      }
+      return;
+    }
+
+    this.markCurrentStepCompleted();
+  }
+
   protected markCurrentStepCompleted(): void {
     const step = this.currentStep();
     if (!step || this.isCurrentStepCompleted()) {
@@ -593,7 +615,13 @@ export class TaskGuidedPresentPageComponent {
     }
 
     const currentIndex = this.currentStepIndex();
-    this.completedStepIndexes.update((indexes) => [...indexes, currentIndex]);
+    this.completedStepIndexes.update((indexes) => {
+      if (indexes.includes(currentIndex)) {
+        return indexes;
+      }
+
+      return [...indexes, currentIndex].sort((left, right) => left - right);
+    });
 
     if (!this.isLastStep()) {
       this.currentStepIndex.set(currentIndex + 1);
