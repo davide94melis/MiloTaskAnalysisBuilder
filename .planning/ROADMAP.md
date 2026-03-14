@@ -196,3 +196,13 @@ Completed on 2026-03-14. Summaries:
 Phase 6 now closes with library and editor family visibility, explicit create-variant actions, and family-aware detail payloads that preserve the Phase 5 media-copy boundary.
 
 Next up: plan and execute Phase 7 guided present mode on top of the saved-task and variant-family contracts.
+
+## Phase 7 Next
+
+In progress on 2026-03-14. Summaries:
+
+- `.planning/phases/07-guided-present-mode/07-01-SUMMARY.md`
+
+Phase 7 now has the authenticated guided-present route and local session-state foundation without introducing public access or persisted tracking.
+
+Next up: execute `07-02` to refine the dedicated present-mode layout and child-facing rendering on top of the new route boundary.

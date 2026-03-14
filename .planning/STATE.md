@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T01:53:17.815Z"
+last_updated: "2026-03-14T02:18:03.261Z"
 progress:
   total_phases: 10
   completed_phases: 6
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 25
+  completed_plans: 22
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 6 is complete. The repo is ready to build guided present mode on top of the now-stable saved-task, media, and support-variant family contracts.
+**Current focus:** Phase 7 guided present mode is in progress. The repo now has the authenticated present-route foundation and can iterate on layout, controls, and launch integration on top of the saved-task contract.
 
 ## Status
 
@@ -47,7 +47,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-plan-phase 07-guided-present-mode`
+- `Execute Phase 7 plan 07-02`
 
 ## Recent Decisions
 
@@ -68,6 +68,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Task detail responses now populate root-family metadata and `relatedVariants` so the editor route can render sibling navigation without reconstructing families client-side.
 - The editor route now shows a compact family panel with root/variant labeling, sibling navigation, and an explicit create-variant action that preserves the existing save boundary.
 - Phase 6 support variants remain duplication-based task families; guided present mode and sharing are still deferred to Phases 7 and 8.
+- Guided present mode now has a dedicated authenticated `/tasks/:taskId/present` route separate from the Phase 5 preview proof.
+- The first present-mode session model is local-only: route loads reset `currentStepIndex` and `completedStepIndexes`, and no persisted session writes were introduced.
+- Zero-step tasks, load failures, and session completion now render intentional present-mode states instead of falling through to broken controls.
 
 ## Constraints To Preserve
 
@@ -79,5 +82,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 06-04-PLAN.md
+- Stopped at: Completed 07-01-PLAN.md
 - Resume file: None
