@@ -111,6 +111,7 @@ describe('TaskSharedViewPageComponent', () => {
     expect(host.textContent).toContain('Lavarsi le mani');
     expect(host.textContent).toContain('Autonomia personale');
     expect(host.textContent).toContain('Sequenza pubblica e salvata per l igiene.');
+    expect(host.textContent).toContain('Apri modalita guidata');
     expect(host.textContent).toContain('Step condivisi');
     expect(host.textContent).toContain('Apri il rubinetto');
     expect(host.textContent).toContain('Prendi il sapone');
@@ -120,6 +121,56 @@ describe('TaskSharedViewPageComponent', () => {
     expect(host.querySelector('img')?.getAttribute('src')).toBe(
       '/api/public/shares/share-view-1/media/media-shared-1/content'
     );
+  });
+
+  it('opens shared present without exposing owner-only controls', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ token: 'share-view-1' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskSharedViewPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getPublicTaskShare: jasmine.createSpy('getPublicTaskShare').and.returnValue(of(sharedViewTask))
+          }
+        },
+        {
+          provide: MiloAuthService,
+          useValue: {
+            isLoggedIn: jasmine.createSpy('isLoggedIn').and.returnValue(false),
+            beginMiloLogin: jasmine.createSpy('beginMiloLogin'),
+            buildLoginBridgeUrl: jasmine.createSpy('buildLoginBridgeUrl')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+
+    const fixture = TestBed.createComponent(TaskSharedViewPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const presentButton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button')
+    ).find((button) => button.textContent?.includes('Apri modalita guidata')) as HTMLButtonElement;
+
+    presentButton.click();
+    await fixture.whenStable();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/shared', 'share-view-1', 'present']);
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Prompt adulto');
   });
 
   it('sends anonymous recipients through Milo login before duplication', async () => {

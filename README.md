@@ -1,6 +1,6 @@
 # Milo Task Analysis Builder
 
-Milo Task Analysis Builder is a Milo ecosystem web app for creating, presenting, sharing, and minimally tracking visual task analyses. The repo now covers the v1 loop from Milo-backed access through authoring, guided present mode, safe public sharing, and minimal completion history.
+Milo Task Analysis Builder is a Milo ecosystem web app for creating, presenting, sharing, exporting, and minimally tracking visual task analyses. The repo now covers the full v1 loop from Milo-backed access through authoring, guided present mode, safe public sharing, minimal completion history, and browser-print PDF export.
 
 ## Phase 1 Auth Contract
 
@@ -15,6 +15,17 @@ Milo Task Analysis Builder is a Milo ecosystem web app for creating, presenting,
 - `backend/` - Spring Boot service that validates Milo JWTs, bootstraps local users, and exposes protected app APIs
 - `frontend/` - Angular app with runtime config, Milo login bridge, auth guard, auth interceptor, and session restore flow
 - `.planning/` - GSD planning artifacts, plans, research, and roadmap state
+
+## V1 Product Surface
+
+The current MVP supports one coherent saved-task workflow:
+
+- create and edit task analyses in the authenticated editor
+- preview the saved version outside authoring
+- launch guided present mode for authenticated and public-share flows
+- generate safe public links for read-only and guided-present access
+- persist one minimal completion record per finished run
+- open a print-optimized export route and save to PDF with the browser print dialog
 
 ## Required Environment
 
@@ -311,3 +322,35 @@ There is still no:
 - Phase 9 still does **not** add longitudinal analytics, charts, filters, or case-management reporting.
 - Phase 9 still does **not** add student assignment, Milo global children/classes, or team collaboration.
 - Advanced per-step and clinical tracking remain deferred beyond v1.
+
+## Phase 10 PDF Export And UX Polish Contract
+
+Phase 10 closes the v1 MVP with a browser-owned print workflow and a targeted polish pass across dashboard, library, editor, preview, present, and shared-view surfaces.
+
+### Export route and saved-content boundary
+
+- Authenticated users can open `/tasks/{taskId}/export` from the editor and from the saved preview flow.
+- Export always reloads the persisted task detail payload and never prints unsaved draft changes.
+- Pending draft media in the editor must still be saved before preview, present, share, or export reflect those assets.
+- PDF generation is intentionally browser-print based in v1: the app renders a print-optimized document surface and relies on the user browser print dialog to save PDF.
+
+### Export output expectations
+
+- step order is preserved
+- mixed supports such as text, symbol, and image remain visible in print
+- the layout is practical for multi-page output rather than a screenshot-style capture
+- export stays part of the same saved-task action sequence as save, preview, present, and share
+
+### UX polish boundary
+
+- Phase 10 improves hierarchy, action clarity, and Milo/Symwriter compatibility without redesigning routing or information architecture.
+- Dashboard and library now emphasize first actions more clearly.
+- Preview, present, shared view, and export use more consistent language around the saved-task boundary.
+
+### Still deferred after v1
+
+- backend-generated PDFs
+- public anonymous export routes
+- deeper analytics or reporting
+- collaborative workspaces and global Milo entities
+- a broader visual redesign beyond the targeted Milo/Symwriter-compatible polish pass

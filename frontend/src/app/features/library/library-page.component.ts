@@ -23,8 +23,12 @@ import { TaskCardComponent } from './task-card.component';
       <div>
         <p class="page-header__eyebrow">Libreria task analysis</p>
         <h2>Trova velocemente task, bozze e template gia pronti.</h2>
+        <p class="page-header__copy">
+          Filtra, riapri e duplica dalla stessa vista. Il livello di supporto resta il segnale principale per
+          orientarti tra task singole e famiglie variante.
+        </p>
       </div>
-      <button type="button" (click)="createTask()">Nuova task</button>
+      <button type="button" (click)="createTask()">Crea nuova task</button>
     </section>
 
     <mtab-library-filters
@@ -99,6 +103,13 @@ import { TaskCardComponent } from './task-card.component';
       h2,
       p {
         margin: 0;
+      }
+
+      .page-header__copy {
+        margin-top: 0.45rem;
+        max-width: 42rem;
+        color: #4b5563;
+        line-height: 1.5;
       }
 
       button {

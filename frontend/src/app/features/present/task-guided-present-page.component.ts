@@ -670,10 +670,10 @@ export class TaskGuidedPresentPageComponent {
 
   protected heroSummary(): string {
     if (this.isSharedContext()) {
-      return 'Uno step alla volta, partendo dal link condiviso salvato, senza mostrare editor o controlli di gestione.';
+      return 'Uno step alla volta dal link condiviso salvato, con la stessa chiarezza della presentazione interna ma senza editor o controlli proprietario.';
     }
 
-    return 'Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione. Al completamento salvo una sessione minima non bloccante.';
+    return 'Uno step alla volta dalla versione salvata della task, con superficie pulita e una sessione minima salvata solo al termine del percorso.';
   }
 
   protected loadingCopy(): string {

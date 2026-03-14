@@ -292,6 +292,7 @@ describe('TaskGuidedPresentPageComponent', () => {
     );
 
     expect(getTaskDetail).toHaveBeenCalledWith('task-7');
+    expect(host.textContent).toContain('Uno step alla volta dalla versione salvata della task');
     expect(component.currentStep()?.title).toBe('Prendi il piatto');
     expect(component.currentStepIndex()).toBe(0);
     expect(component.completedStepIndexes()).toEqual([]);
@@ -566,6 +567,7 @@ describe('TaskGuidedPresentPageComponent', () => {
 
     expect(getPublicPresentTaskShare).toHaveBeenCalledWith('share-present-1');
     expect(host.textContent).toContain('Presentazione condivisa');
+    expect(host.textContent).toContain('stessa chiarezza della presentazione interna');
     expect(host.textContent).toContain('Lavarsi le mani');
     expect(host.textContent).toContain('Apri il rubinetto');
     expect(host.querySelector('img')?.getAttribute('src')).toBe(

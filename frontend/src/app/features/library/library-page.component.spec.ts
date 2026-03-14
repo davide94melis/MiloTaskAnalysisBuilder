@@ -61,6 +61,8 @@ describe('LibraryPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('task');
     expect(fixture.nativeElement.textContent).toContain('Task singola');
     expect(fixture.nativeElement.textContent).toContain('Supportato');
+    expect(fixture.nativeElement.textContent).toContain('Crea nuova task');
+    expect(fixture.nativeElement.textContent).toContain('livello di supporto resta il segnale principale');
   });
 
   it('reloads the library when filters change', async () => {
@@ -205,6 +207,7 @@ describe('LibraryPageComponent', () => {
     expect(text).toContain('Variante');
     expect(text).toContain('1 famiglie variante visibili');
     expect(text).toContain('Task singola');
+    expect(text).toContain('Step');
 
     const titleNodes = Array.from<Element>(fixture.nativeElement.querySelectorAll('h4')).map((node) =>
       node.textContent?.trim()

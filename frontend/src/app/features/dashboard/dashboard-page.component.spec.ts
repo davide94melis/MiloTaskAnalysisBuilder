@@ -65,8 +65,11 @@ describe('DashboardPageComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Crea nuova task');
+    expect(text).toContain('Vai alla libreria');
     expect(text).toContain('Bozza recente');
     expect(text).toContain('Lavarsi le mani');
     expect(text).toContain('Bozze attive');
+    expect(text).toContain('Partenze consigliate');
   });
 });

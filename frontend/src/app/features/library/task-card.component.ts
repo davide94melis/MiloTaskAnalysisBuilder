@@ -32,6 +32,10 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
 
       <dl class="card__meta">
         <div>
+          <dt>Step</dt>
+          <dd>{{ task.stepCount }}</dd>
+        </div>
+        <div>
           <dt>Famiglia</dt>
           <dd>{{ familyCountLabel() }}</dd>
         </div>
@@ -173,7 +177,7 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       .card__meta {
         display: grid;
         gap: 0.65rem;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
       .card__meta dt {
@@ -215,6 +219,12 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
 
       .card__actions {
         flex-wrap: wrap;
+      }
+
+      @media (max-width: 720px) {
+        .card__meta {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
     `
   ],
@@ -262,9 +272,9 @@ export class TaskCardComponent {
       case 'root':
         return `Task base con ${this.familyCount() - 1} varianti collegate e supporti differenziati.`;
       case 'variant':
-        return `Variante collegata alla base "${rootTitle}" per mantenere la stessa famiglia.`;
+        return `Variante della base "${rootTitle}" con supporto distinto ma stesso impianto operativo.`;
       default:
-        return 'Task singola pronta da riaprire, copiare o usare come nuovo punto di partenza.';
+        return 'Task singola pronta da riaprire, copiare o trasformare in una nuova partenza.';
     }
   }
 

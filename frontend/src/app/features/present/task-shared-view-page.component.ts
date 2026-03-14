@@ -37,14 +37,17 @@ interface SharedTaskViewRecord {
             <p class="shared-shell__eyebrow">Task condivisa</p>
             <h1>{{ currentShare.title || 'Task senza titolo' }}</h1>
             <p class="shared-shell__summary">
-              Questa pagina espone solo la versione pubblica e salvata della task. Nessun controllo di authoring o
-              metadato privato viene mostrato qui.
+              Questa pagina mostra solo la versione pubblica e salvata della task. Puoi leggerla, usarla come base e
+              poi duplicarla nel tuo spazio Milo senza vedere note private o controlli di authoring.
             </p>
           </div>
 
           <div class="shared-shell__hero-actions">
             <button type="button" class="shared-shell__ghost" [disabled]="duplicateBusy()" (click)="duplicateTask()">
               Duplica nel mio spazio
+            </button>
+            <button type="button" class="shared-shell__primary" (click)="openSharedPresent()">
+              Apri modalita guidata
             </button>
           </div>
         </header>
@@ -346,6 +349,15 @@ export class TaskSharedViewPageComponent {
 
   protected hasVisualSupport(step: PublicTaskShareStepRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  protected async openSharedPresent(): Promise<void> {
+    const currentShare = this.share();
+    if (!currentShare) {
+      return;
+    }
+
+    await this.router.navigate(['/shared', currentShare.token, 'present']);
   }
 
   protected async duplicateTask(): Promise<void> {
