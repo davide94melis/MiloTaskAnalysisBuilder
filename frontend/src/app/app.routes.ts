@@ -6,12 +6,21 @@ import { LibraryPageComponent } from './features/library/library-page.component'
 import { TaskShellEditorEntryComponent } from './features/library/task-shell-editor-entry.component';
 import { TaskGuidedPresentPageComponent } from './features/present/task-guided-present-page.component';
 import { TaskPlaybackPreviewPageComponent } from './features/present/task-playback-preview-page.component';
+import { TaskSharedViewPageComponent } from './features/present/task-shared-view-page.component';
 import { MainLayoutComponent } from './layout/main-layout.component';
 
 export const appRoutes: Routes = [
   {
     path: 'auth/login',
     component: LoginBridgeComponent
+  },
+  {
+    path: 'shared/:token',
+    component: TaskSharedViewPageComponent
+  },
+  {
+    path: 'shared/:token/present',
+    component: TaskGuidedPresentPageComponent
   },
   {
     path: '',

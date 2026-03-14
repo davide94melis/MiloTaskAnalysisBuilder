@@ -79,6 +79,30 @@ export class MiloAuthService {
     localStorage.setItem(this.tokenKey, trimmed);
   }
 
+  buildLoginBridgeUrl(options: {
+    intent?: string;
+    shareToken?: string;
+    redirectTo?: string;
+  } = {}): string {
+    const baseUrl =
+      typeof window === 'undefined' ? 'http://localhost/auth/login' : `${window.location.origin}/auth/login`;
+    const url = new URL(baseUrl);
+
+    if (options.intent) {
+      url.searchParams.set('intent', options.intent);
+    }
+
+    if (options.shareToken) {
+      url.searchParams.set('shareToken', options.shareToken);
+    }
+
+    if (options.redirectTo) {
+      url.searchParams.set('redirectTo', options.redirectTo);
+    }
+
+    return url.toString();
+  }
+
   beginMiloLogin(returnUrl = window.location.href): void {
     const miloBase = this.config.miloApiBaseUrl.replace(/\/api\/?$/, '');
     const separator = miloBase.includes('?') ? '&' : '?';

@@ -388,4 +388,54 @@ describe('TaskLibraryService', () => {
       url: '/api/tasks/task-1/media/media-1/content'
     });
   });
+
+  it('loads the public shared task contract through the anonymous share route', () => {
+    service.getPublicTaskShare('share-view-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-view-1');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      taskId: 'task-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      description: 'Sequenza pubblica e salvata.',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-14T10:00:00Z',
+      steps: []
+    });
+  });
+
+  it('loads the public guided-present contract through the anonymous present route', () => {
+    service.getPublicPresentTaskShare('share-present-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-present-1/present');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      taskId: 'task-1',
+      title: 'Lavarsi le mani',
+      stepCount: 2,
+      steps: []
+    });
+  });
+
+  it('duplicates a shared task through the authenticated import route', () => {
+    service.duplicateTaskFromShare('share-view-1').subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8080/api/public/shares/share-view-1/duplicate');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({
+      id: 'task-copy-1',
+      title: 'Lavarsi le mani',
+      category: 'Autonomia personale',
+      contextLabel: 'Bagno',
+      targetLabel: '',
+      supportLevel: 'Guidato',
+      visibility: 'private',
+      status: 'draft',
+      stepCount: 2,
+      lastUpdatedAt: '2026-03-14T10:10:00Z',
+      authorName: 'teacher@example.com'
+    });
+  });
 });

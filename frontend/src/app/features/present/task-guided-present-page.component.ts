@@ -3,9 +3,20 @@ import { ChangeDetectionStrategy, Component, HostListener, computed, inject, sig
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TaskDetailRecord, TaskStepDraftRecord } from '../../core/tasks/task-detail.models';
+import { PublicTaskPresentRecord, PublicTaskShareStepRecord } from '../../core/tasks/task-library.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 
 type PresentViewport = 'phone' | 'tablet' | 'desktop';
+type PresentSource = 'owner' | 'shared';
+
+interface PresentTaskRecord {
+  id: string;
+  title: string;
+  description: string;
+  source: PresentSource;
+  shareToken: string | null;
+  steps: TaskStepDraftRecord[];
+}
 
 @Component({
   selector: 'mtab-task-guided-present-page',
@@ -15,13 +26,13 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
     <ng-container *ngIf="!loading(); else loadingState">
       <article class="present-shell present-shell--status present-shell--error" *ngIf="loadError(); else readyState">
         <div class="present-shell__status-copy">
-          <p class="present-shell__eyebrow">Present mode guidato</p>
+          <p class="present-shell__eyebrow">{{ eyebrowLabel() }}</p>
           <h2>Presentazione non disponibile</h2>
           <p>{{ loadError() }}</p>
         </div>
 
         <div class="present-shell__status-actions">
-          <a routerLink="/library">Torna alla libreria</a>
+          <a [routerLink]="fallbackLink()">{{ fallbackLabel() }}</a>
         </div>
       </article>
     </ng-container>
@@ -35,11 +46,10 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
       >
         <header class="present-shell__hero">
           <div class="present-shell__hero-copy">
-            <p class="present-shell__eyebrow">Present mode guidato</p>
+            <p class="present-shell__eyebrow">{{ eyebrowLabel() }}</p>
             <h2>{{ currentTask.title || 'Task pronta per la sessione' }}</h2>
             <p class="present-shell__hero-summary">
-              Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione o
-              registrare sessioni persistenti.
+              {{ heroSummary() }}
             </p>
           </div>
 
@@ -50,16 +60,17 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
               <span>{{ viewportLabel() }}</span>
             </div>
 
-            <div class="present-shell__hero-actions">
+            <div class="present-shell__hero-actions" *ngIf="showHeroActions()">
               <button
-                *ngIf="hasCurrentAdultGuidance()"
+                *ngIf="isOwnerTask() && hasCurrentAdultGuidance()"
                 type="button"
                 class="present-shell__ghost-action"
                 (click)="toggleAdultGuidance()"
               >
                 {{ showAdultGuidance() ? 'Nascondi supporto adulto' : 'Mostra supporto adulto' }}
               </button>
-              <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
+              <a *ngIf="isOwnerTask()" [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
+              <a *ngIf="isSharedTask()" [routerLink]="['/shared', currentTask.shareToken]">Torna alla scheda condivisa</a>
             </div>
           </div>
         </header>
@@ -69,13 +80,12 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
             <p class="present-shell__eyebrow">Task senza step</p>
             <h3>Aggiungi almeno uno step salvato prima di presentare la task</h3>
             <p>
-              La modalita guidata usa solo il contenuto gia salvato. Apri l editor, aggiungi gli step necessari e
-              salva la task prima di avviare una sessione.
+              {{ zeroStepCopy() }}
             </p>
           </div>
 
           <div class="present-shell__status-actions">
-            <a [routerLink]="['/tasks', currentTask.id]">Apri l editor della task</a>
+            <a [routerLink]="fallbackLink()">{{ fallbackLabel() }}</a>
           </div>
         </article>
 
@@ -84,14 +94,13 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
             <p class="present-shell__eyebrow">Task completata</p>
             <h3>Sequenza conclusa</h3>
             <p>
-              Tutti gli step salvati risultano completati in questa sessione locale. Nessun dato e stato salvato fuori
-              dal browser.
+              {{ completionCopy() }}
             </p>
           </div>
 
           <div class="present-shell__status-actions">
             <button type="button" class="present-shell__primary-action" (click)="restartSession()">Ricomincia la sessione</button>
-            <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
+            <a [routerLink]="fallbackLink()">{{ fallbackLabel() }}</a>
           </div>
         </article>
 
@@ -197,9 +206,9 @@ type PresentViewport = 'phone' | 'tablet' | 'desktop';
     <ng-template #loadingState>
       <article class="present-shell present-shell--status">
         <div class="present-shell__status-copy">
-          <p class="present-shell__eyebrow">Present mode guidato</p>
+          <p class="present-shell__eyebrow">{{ eyebrowLabel() }}</p>
           <h2>Caricamento sessione</h2>
-          <p>Sto recuperando la versione salvata della task da presentare.</p>
+          <p>{{ loadingCopy() }}</p>
         </div>
       </article>
     </ng-template>
@@ -523,13 +532,14 @@ export class TaskGuidedPresentPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly taskLibrary = inject(TaskLibraryService);
 
-  protected readonly task = signal<TaskDetailRecord | null>(null);
+  protected readonly task = signal<PresentTaskRecord | null>(null);
   protected readonly loading = signal(true);
   protected readonly loadError = signal('');
   protected readonly currentStepIndex = signal(0);
   protected readonly completedStepIndexes = signal<number[]>([]);
   protected readonly showAdultGuidance = signal(false);
   protected readonly viewport = signal<PresentViewport>(this.resolveViewport());
+  protected readonly activeToken = signal<string | null>(null);
 
   protected readonly savedSteps = computed(() =>
     [...(this.task()?.steps ?? [])].sort((left, right) => left.position - right.position)
@@ -578,7 +588,7 @@ export class TaskGuidedPresentPageComponent {
 
   constructor() {
     this.route.paramMap.subscribe((params) => {
-      void this.loadPresentTask(params.get('taskId'));
+      void this.loadPresentTask(params.get('taskId'), params.get('token'));
     });
   }
 
@@ -643,6 +653,67 @@ export class TaskGuidedPresentPageComponent {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
   }
 
+  protected isOwnerTask(): boolean {
+    return this.task()?.source === 'owner';
+  }
+
+  protected isSharedTask(): boolean {
+    return this.task()?.source === 'shared';
+  }
+
+  protected showHeroActions(): boolean {
+    return (this.isOwnerTask() && this.hasCurrentAdultGuidance()) || this.isOwnerTask() || this.isSharedTask();
+  }
+
+  protected eyebrowLabel(): string {
+    return this.isSharedContext() ? 'Presentazione condivisa' : 'Present mode guidato';
+  }
+
+  protected heroSummary(): string {
+    if (this.isSharedContext()) {
+      return 'Uno step alla volta, partendo dal link condiviso salvato, senza mostrare editor o controlli di gestione.';
+    }
+
+    return 'Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione o registrare sessioni persistenti.';
+  }
+
+  protected loadingCopy(): string {
+    return this.isSharedContext()
+      ? 'Sto recuperando la versione condivisa della task da presentare.'
+      : 'Sto recuperando la versione salvata della task da presentare.';
+  }
+
+  protected zeroStepCopy(): string {
+    if (this.isSharedContext()) {
+      return 'Il link condiviso non contiene step pubblicabili. Torna alla scheda condivisa o chiedi una nuova versione al proprietario.';
+    }
+
+    return 'La modalita guidata usa solo il contenuto gia salvato. Apri l editor, aggiungi gli step necessari e salva la task prima di avviare una sessione.';
+  }
+
+  protected completionCopy(): string {
+    return this.isSharedContext()
+      ? 'Tutti gli step condivisi risultano completati in questa sessione locale. Nessun dato viene salvato sul link pubblico.'
+      : 'Tutti gli step salvati risultano completati in questa sessione locale. Nessun dato e stato salvato fuori dal browser.';
+  }
+
+  protected fallbackLink(): string[] {
+    const currentTask = this.task();
+    if (currentTask?.source === 'shared' && currentTask.shareToken) {
+      return ['/shared', currentTask.shareToken];
+    }
+
+    return ['/library'];
+  }
+
+  protected fallbackLabel(): string {
+    return this.isSharedContext() ? 'Torna alla scheda condivisa' : 'Torna alla libreria';
+  }
+
+  private isSharedContext(): boolean {
+    return this.task()?.source === 'shared' || Boolean(this.activeToken());
+  }
+
   private hasAdultGuidance(step: TaskStepDraftRecord): boolean {
     return Boolean(step.supportGuidance || step.reinforcementNotes || step.estimatedMinutes !== null);
   }
@@ -671,27 +742,83 @@ export class TaskGuidedPresentPageComponent {
     return 'desktop';
   }
 
-  private async loadPresentTask(taskId: string | null): Promise<void> {
+  private async loadPresentTask(taskId: string | null, token: string | null): Promise<void> {
     this.loading.set(true);
     this.loadError.set('');
     this.task.set(null);
+    this.activeToken.set(token);
     this.restartSession();
     this.viewport.set(this.resolveViewport());
 
-    if (!taskId) {
+    if (!taskId && !token) {
       this.loading.set(false);
       this.loadError.set('Task non trovata per la presentazione guidata.');
       return;
     }
 
     try {
-      const detail = await firstValueFrom(this.taskLibrary.getTaskDetail(taskId));
-      this.task.set(detail);
+      if (token) {
+        const detail = await firstValueFrom(this.taskLibrary.getPublicPresentTaskShare(token));
+        this.task.set(this.mapSharedTask(detail));
+      } else if (taskId) {
+        const detail = await firstValueFrom(this.taskLibrary.getTaskDetail(taskId));
+        this.task.set(this.mapOwnerTask(detail));
+      }
       this.syncAdultGuidanceVisibility(true);
     } catch {
-      this.loadError.set('Impossibile caricare la task salvata per la presentazione guidata.');
+      this.loadError.set(
+        token
+          ? 'Impossibile caricare la task condivisa per la presentazione guidata.'
+          : 'Impossibile caricare la task salvata per la presentazione guidata.'
+      );
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private mapOwnerTask(detail: TaskDetailRecord): PresentTaskRecord {
+    return {
+      id: detail.id,
+      title: detail.title,
+      description: detail.description,
+      source: 'owner',
+      shareToken: null,
+      steps: detail.steps
+    };
+  }
+
+  private mapSharedTask(detail: PublicTaskPresentRecord): PresentTaskRecord {
+    return {
+      id: detail.taskId,
+      title: detail.title,
+      description: '',
+      source: 'shared',
+      shareToken: this.activeToken(),
+      steps: detail.steps.map((step) => this.mapSharedStep(step))
+    };
+  }
+
+  private mapSharedStep(step: PublicTaskShareStepRecord): TaskStepDraftRecord {
+    return {
+      id: step.id,
+      position: step.position,
+      title: step.title,
+      description: step.description,
+      required: step.required,
+      supportGuidance: '',
+      reinforcementNotes: '',
+      estimatedMinutes: null,
+      visualSupport: {
+        text: step.visualSupport.text,
+        symbol: step.visualSupport.symbol ? { ...step.visualSupport.symbol } : null,
+        image: step.visualSupport.image
+          ? {
+              ...step.visualSupport.image,
+              storageKey: ''
+            }
+          : null
+      },
+      uploadState: null
+    };
   }
 }

@@ -91,7 +91,6 @@ export interface PublicTaskShareVisualSupportRecord {
   } | null;
   image: {
     mediaId: string;
-    storageKey: string;
     fileName: string;
     mimeType: string;
     fileSizeBytes: number;
@@ -108,19 +107,23 @@ export interface PublicTaskShareStepRecord {
   title: string;
   description: string;
   required: boolean;
-  supportGuidance: string;
-  reinforcementNotes: string;
-  estimatedMinutes: number | null;
   visualSupport: PublicTaskShareVisualSupportRecord;
 }
 
 export interface PublicTaskShareRecord {
-  token: string;
-  mode: TaskShareMode;
+  taskId: string;
   title: string;
+  category: string;
   description: string;
-  educationalObjective: string;
-  supportLevel: string;
+  stepCount: number;
+  lastUpdatedAt: string;
+  steps: PublicTaskShareStepRecord[];
+}
+
+export interface PublicTaskPresentRecord {
+  taskId: string;
+  title: string;
+  stepCount: number;
   steps: PublicTaskShareStepRecord[];
 }
 

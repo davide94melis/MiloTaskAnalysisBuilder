@@ -4,9 +4,11 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { appRoutes } from '../../app.routes';
 import { TaskDetailRecord } from '../../core/tasks/task-detail.models';
+import { PublicTaskPresentRecord } from '../../core/tasks/task-library.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
 import { TaskGuidedPresentPageComponent } from './task-guided-present-page.component';
 import { TaskPlaybackPreviewPageComponent } from './task-playback-preview-page.component';
+import { TaskSharedViewPageComponent } from './task-shared-view-page.component';
 
 describe('TaskGuidedPresentPageComponent', () => {
   const responsiveTask: TaskDetailRecord = {
@@ -166,6 +168,35 @@ describe('TaskGuidedPresentPageComponent', () => {
     steps: []
   };
 
+  const sharedPresentTask: PublicTaskPresentRecord = {
+    taskId: 'shared-task-1',
+    title: 'Lavarsi le mani',
+    stepCount: 1,
+    steps: [
+      {
+        id: 'shared-step-1',
+        position: 1,
+        title: 'Apri il rubinetto',
+        description: 'Apri l acqua lentamente.',
+        required: true,
+        visualSupport: {
+          text: 'Apri',
+          symbol: null,
+          image: {
+            mediaId: 'media-shared-1',
+            fileName: 'rubinetto.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 1200,
+            width: 400,
+            height: 400,
+            altText: 'Rubinetto',
+            url: '/api/public/shares/share-present-1/media/media-shared-1/content'
+          }
+        }
+      }
+    ]
+  };
+
   function setViewport(width: number): void {
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
@@ -178,13 +209,17 @@ describe('TaskGuidedPresentPageComponent', () => {
     setViewport(1280);
   });
 
-  it('registers a protected present route while keeping the preview route intact', () => {
+  it('registers protected and public present routes while keeping the preview route intact', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
     const presentRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/present');
     const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
+    const publicPresentRoute = appRoutes.find((route) => route.path === 'shared/:token/present');
+    const publicViewRoute = appRoutes.find((route) => route.path === 'shared/:token');
 
     expect(presentRoute?.component).toBe(TaskGuidedPresentPageComponent);
     expect(previewRoute?.component).toBe(TaskPlaybackPreviewPageComponent);
+    expect(publicPresentRoute?.component).toBe(TaskGuidedPresentPageComponent);
+    expect(publicViewRoute?.component).toBe(TaskSharedViewPageComponent);
   });
 
   it('loads saved detail, initializes local session state, and resets it when the route changes', async () => {
@@ -478,6 +513,53 @@ describe('TaskGuidedPresentPageComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Presentazione non disponibile');
     expect(host.textContent).toContain('Impossibile caricare la task salvata per la presentazione guidata.');
+  });
+
+  it('loads a public shared present payload without showing editor affordances', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ token: 'share-present-1' }));
+    const getPublicPresentTaskShare = jasmine
+      .createSpy('getPublicPresentTaskShare')
+      .and.returnValue(of(sharedPresentTask));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail'),
+            getPublicPresentTaskShare
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(getPublicPresentTaskShare).toHaveBeenCalledWith('share-present-1');
+    expect(host.textContent).toContain('Presentazione condivisa');
+    expect(host.textContent).toContain('Lavarsi le mani');
+    expect(host.textContent).toContain('Apri il rubinetto');
+    expect(host.querySelector('img')?.getAttribute('src')).toBe(
+      '/api/public/shares/share-present-1/media/media-shared-1/content'
+    );
+    expect(host.textContent).not.toContain('Torna all editor');
+    expect(host.textContent).toContain('Torna alla scheda condivisa');
+    expect(host.textContent).not.toContain('Prompt adulto');
+    expect(host.textContent).not.toContain('Rinforzo');
   });
 
   it('keeps session state local and offers restart without persisted writes', async () => {

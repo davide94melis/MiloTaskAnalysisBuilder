@@ -5,6 +5,7 @@ import { AppConfigService } from '../config/app-config.service';
 import { TaskDetailRecord, TaskMediaUploadRecord, UpdateTaskDetailRequest } from './task-detail.models';
 import {
   CreateTaskShareRequest,
+  PublicTaskPresentRecord,
   CreateTaskShellRequest,
   CreateTaskVariantRequest,
   PublicTaskShareRecord,
@@ -103,8 +104,8 @@ export class TaskLibraryService {
     return this.http.get<PublicTaskShareRecord>(`${this.config.apiUrl}/public/shares/${token}`);
   }
 
-  getPublicPresentTaskShare(token: string): Observable<PublicTaskShareRecord> {
-    return this.http.get<PublicTaskShareRecord>(`${this.config.apiUrl}/public/shares/${token}/present`);
+  getPublicPresentTaskShare(token: string): Observable<PublicTaskPresentRecord> {
+    return this.http.get<PublicTaskPresentRecord>(`${this.config.apiUrl}/public/shares/${token}/present`);
   }
 
   duplicateTaskFromShare(token: string): Observable<TaskCardRecord> {
