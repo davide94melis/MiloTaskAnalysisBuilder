@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - SHAR-01
+  - SHAR-02
+  - SHAR-03
+  - SHAR-04
+  - SHAR-05
+  - MEDI-03
+---
+
 # Plan 08-02 Summary
 
 ## Outcome
@@ -21,3 +31,4 @@ Phase 8 now has a narrow public backend contract with anonymous share read route
 - Public media URLs now use `/api/public/shares/{token}/media/{mediaId}/content`; there is still no generic public storage or raw bucket URL.
 - Duplicate-from-share stays on `POST /api/public/shares/{token}/duplicate`, but it still requires authentication and always returns a new private draft for the authenticated recipient.
 - The backend public contract is intentionally smaller than the owner contract so later frontend work can consume a safe payload without inheriting editor-only fields.
+

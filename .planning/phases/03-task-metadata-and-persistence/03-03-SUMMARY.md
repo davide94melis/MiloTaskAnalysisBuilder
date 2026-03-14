@@ -1,3 +1,12 @@
+---
+requirements-completed:
+  - META-01
+  - META-02
+  - META-03
+  - META-04
+  - STEP-08
+---
+
 # Phase 03 Plan 03-03 Summary
 
 ## Outcome
@@ -25,3 +34,4 @@ Hardened the Phase 3 task detail contract across backend, frontend, and project 
 
 - Phase 3 persists metadata and ordered-step drafts only; rich step authoring remains Phase 4 work.
 - Backend tests emitted the existing Mockito dynamic-agent warning on JDK 21, but the suite passed and no Phase 3 behavior was blocked.
+

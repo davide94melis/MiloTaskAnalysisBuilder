@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - SHAR-01
+  - SHAR-02
+  - SHAR-03
+  - SHAR-04
+  - SHAR-05
+  - MEDI-03
+---
+
 # Plan 08-04 Summary
 
 ## Outcome
@@ -21,3 +31,4 @@ Phase 8 now has the public frontend surfaces for shared tasks: anonymous share r
 
 - Karma still emits expected mocked-image `404` warnings for fixture media URLs, including the new public share media paths.
 - Public view and public present remain intentionally separate links; the read-only public page does not invent editor or owner-only navigation that the safe backend contract does not provide.
+

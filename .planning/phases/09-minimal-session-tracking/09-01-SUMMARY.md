@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - SESS-01
+  - SESS-02
+  - SESS-03
+---
+
 # Phase 09-01 Summary
 
 ## Completed
@@ -17,3 +24,4 @@
 ## Verification
 
 - Passed: `mvn test`
+

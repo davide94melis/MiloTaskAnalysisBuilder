@@ -1,3 +1,12 @@
+---
+requirements-completed:
+  - META-01
+  - META-02
+  - META-03
+  - META-04
+  - STEP-08
+---
+
 # Plan 03-02 Summary
 
 ## Outcome
@@ -25,3 +34,4 @@ Phase 2's placeholder `/tasks/:taskId` handoff screen is now a real Phase 3 meta
 - `frontend/src/app/features/library/task-steps-draft-list.component.ts`
 - `frontend/src/app/features/library/task-shell-editor-entry.component.spec.ts`
 - `.planning/phases/03-task-metadata-and-persistence/03-02-SUMMARY.md`
+

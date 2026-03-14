@@ -1,3 +1,11 @@
+---
+requirements-completed:
+  - STEP-03
+  - STEP-04
+  - MEDI-01
+  - MEDI-02
+---
+
 # Phase 05 Plan 05-01 Summary
 
 ## Outcome
@@ -37,3 +45,4 @@ Added the backend media foundation for Phase 5 without breaking the existing tas
 - Image access uses authenticated backend URLs (`/api/tasks/{taskId}/media/{mediaId}/content`) generated at read time; no signed URLs are persisted.
 - Tasks 2 and 3 were committed together because the upload contract, DTO expansion, mapper changes, and verification surface were tightly coupled.
 - Phase 7 present-mode UI logic and Phase 8 public-sharing rules were not introduced.
+

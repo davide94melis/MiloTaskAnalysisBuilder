@@ -1,3 +1,9 @@
+---
+requirements-completed:
+  - AUTH-01
+  - AUTH-02
+---
+
 # Plan 01-02 Summary
 
 ## Objective
@@ -54,3 +60,4 @@ Create the frontend session layer that uses Milo-backed identity in this app.
 ## Verification Status
 
 - Passed
+

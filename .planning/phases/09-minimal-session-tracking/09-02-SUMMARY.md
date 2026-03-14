@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - SESS-01
+  - SESS-02
+  - SESS-03
+---
+
 # Plan 09-02 Summary
 
 ## Outcome
@@ -21,3 +28,4 @@ Phase 9 now includes the frontend completion/history loop: guided present saves 
 
 - Guided present still treats persistence as a follow-up side effect; the completed screen remains immediate even if the write fails.
 - Karma still emits expected mocked-image `404` warnings for fixture media URLs.
+

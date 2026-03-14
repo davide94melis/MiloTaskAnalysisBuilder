@@ -55,17 +55,17 @@
 
 ### Sharing
 
-- [ ] **SHAR-01**: User can generate a public view link for a task analysis.
-- [ ] **SHAR-02**: User can generate a public interactive link that opens the task directly in present mode.
-- [ ] **SHAR-03**: Public links can be opened without requiring user authentication.
-- [ ] **SHAR-04**: Public access is limited to only the task data and assets intentionally exposed for sharing.
-- [ ] **SHAR-05**: User can duplicate a shared task analysis into their own authenticated space.
+- [x] **SHAR-01**: User can generate a public view link for a task analysis.
+- [x] **SHAR-02**: User can generate a public interactive link that opens the task directly in present mode.
+- [x] **SHAR-03**: Public links can be opened without requiring user authentication.
+- [x] **SHAR-04**: Public access is limited to only the task data and assets intentionally exposed for sharing.
+- [x] **SHAR-05**: User can duplicate a shared task analysis into their own authenticated space.
 
 ### Media
 
 - [x] **MEDI-01**: User can upload or attach images/photos for task steps.
 - [x] **MEDI-02**: Uploaded media is delivered reliably in both editor and present mode.
-- [ ] **MEDI-03**: Publicly shared tasks expose only the media required by that shared task.
+- [x] **MEDI-03**: Publicly shared tasks expose only the media required by that shared task.
 
 ### Session Tracking
 

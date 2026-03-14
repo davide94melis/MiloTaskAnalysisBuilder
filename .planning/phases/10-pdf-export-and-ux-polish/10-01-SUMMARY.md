@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - EXPT-01
+  - EXPT-02
+  - EXPT-03
+---
+
 # Plan 10-01 Summary
 
 ## What Was Built
@@ -23,3 +30,4 @@
 
 - Export stays frontend-owned and browser-print based for v1; no backend PDF pipeline or export DTO was added.
 - The export page preserves the same saved-only boundary already used by preview and present, including persisted step order and saved visual supports only.
+

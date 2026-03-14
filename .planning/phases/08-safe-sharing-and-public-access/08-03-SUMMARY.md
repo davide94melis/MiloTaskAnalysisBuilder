@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - SHAR-01
+  - SHAR-02
+  - SHAR-03
+  - SHAR-04
+  - SHAR-05
+  - MEDI-03
+---
+
 # Plan 08-03 Summary
 
 ## Outcome
@@ -19,3 +29,4 @@ Phase 8 now has the owner-facing frontend share-management surface inside the au
 
 - The frontend service layer now targets the current backend public-share contract at `/api/public/shares/{token}`, `/present`, and `/duplicate`, so later public read and duplicate flows can build on the same boundary without reworking the Phase 7 present UI.
 - Share management remains intentionally available only inside the authenticated owner editor; no public editor affordances were introduced here.
+

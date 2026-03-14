@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - SUPP-01
+  - SUPP-02
+  - SUPP-03
+---
+
 # Phase 06-04 Summary
 
 ## Outcome
@@ -56,3 +63,4 @@ Phase 6 still does not include:
 - public or shared access
 - version history or diff tooling
 - collaboration or assignment workflows
+

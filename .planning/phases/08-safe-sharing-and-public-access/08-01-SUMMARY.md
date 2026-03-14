@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - SHAR-01
+  - SHAR-02
+  - SHAR-03
+  - SHAR-04
+  - SHAR-05
+  - MEDI-03
+---
+
 # Plan 08-01 Summary
 
 ## Outcome
@@ -21,3 +31,4 @@ Phase 8 now has a dedicated backend share-management foundation with persistent 
 - `POST /api/tasks/{taskId}/shares` is idempotent per mode in v1: if an active link already exists for that mode, it is returned unchanged.
 - `POST /api/tasks/{taskId}/shares/{mode}/regenerate` explicitly rotates that mode by revoking the prior active share and issuing a new token.
 - No anonymous read routes, public media routes, or duplicate-from-share routes were introduced in this plan.
+

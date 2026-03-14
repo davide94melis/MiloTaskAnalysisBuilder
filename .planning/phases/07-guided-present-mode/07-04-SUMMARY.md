@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - PRES-01
+  - PRES-02
+  - PRES-03
+  - PRES-04
+  - PRES-05
+  - PRES-06
+---
+
 # Plan 07-04 Summary
 
 ## Outcome
@@ -22,3 +32,4 @@ Phase 7 now closes with editor launch integration for guided present mode, backe
 
 - Frontend Karma output still logs expected test-time 404s for mocked image URLs, but the suite passes.
 - No dedicated present-mode backend endpoint was added.
+

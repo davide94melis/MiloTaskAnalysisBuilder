@@ -1,3 +1,12 @@
+---
+requirements-completed:
+  - STEP-01
+  - STEP-02
+  - STEP-05
+  - STEP-06
+  - STEP-07
+---
+
 # Phase 04 Plan 04-02 Summary
 
 ## Outcome
@@ -24,3 +33,4 @@ Replaced the Phase 3 reorder-only step area with a dedicated Phase 4 step author
 
 - The editor intentionally stays focused on title, description, support guidance, reinforcement notes, required state, and estimated minutes.
 - No media upload, symbol selection, or drag-and-drop interactions were introduced.
+

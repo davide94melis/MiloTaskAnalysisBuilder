@@ -1,3 +1,11 @@
+---
+requirements-completed:
+  - EXPT-01
+  - EXPT-02
+  - UX-01
+  - UX-03
+---
+
 # Plan 10-03 Summary
 
 ## Completed
@@ -15,3 +23,4 @@
 ## Notes
 - Manual browser print-to-PDF checks from `10-VALIDATION.md` were not run in this pass.
 - Public share surfaces remain safe DTO consumers and still do not expose owner-only export or metadata.
+

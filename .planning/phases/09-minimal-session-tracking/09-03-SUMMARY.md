@@ -1,3 +1,10 @@
+---
+requirements-completed:
+  - SESS-01
+  - SESS-02
+  - SESS-03
+---
+
 # Plan 09-03 Summary
 
 ## Outcome
@@ -20,3 +27,4 @@ Phase 9 now closes with aligned backend/frontend regression proof, documentation
 
 - Shared present writes remain token-scoped and write-only for anonymous users; public history reads were not introduced.
 - Phase 9 remains intentionally narrow and does not absorb analytics, assignments, or Milo global entities.
+

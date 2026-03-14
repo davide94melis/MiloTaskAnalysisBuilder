@@ -1,3 +1,13 @@
+---
+requirements-completed:
+  - SHAR-01
+  - SHAR-02
+  - SHAR-03
+  - SHAR-04
+  - SHAR-05
+  - MEDI-03
+---
+
 # Plan 08-05 Summary
 
 ## Outcome
@@ -33,3 +43,4 @@ Phase 8 now closes with cross-stack regression coverage, public-sharing boundary
 - Karma still emits expected mocked-image `404` warnings for fixture media URLs, including public share media paths.
 - Backend tests still emit the existing Mockito dynamic-agent warning on JDK 21.
 - Persisted session tracking, analytics, and generic public asset URLs remain intentionally out of scope for Phase 8.
+
