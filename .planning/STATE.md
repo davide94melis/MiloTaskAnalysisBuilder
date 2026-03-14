@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-03-14T00:57:22.066Z"
+status: in_progress
+last_updated: "2026-03-14T01:23:35Z"
 progress:
   total_phases: 10
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 21
+  completed_plans: 18
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 5 gap closure complete with authenticated preview proof. Ready to plan Phase 6 - Support Variants.
+**Current focus:** Phase 6 variant-family foundation is in place. Ready to execute the create-variant flow on top of duplication.
 
 ## Status
 
@@ -36,6 +36,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 5 Plan 05-03 executed and verified
 - Phase 5 Plan 05-04 executed and verified
 - Phase 5 Plan 05-05 executed and verified
+- Phase 6 Plan 06-01 executed and verified
 
 ## Active Milestone
 
@@ -43,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-plan-phase 6`
+- `$gsd-execute-phase 06-support-variants`
 
 ## Recent Decisions
 
@@ -54,6 +55,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Task duplication copies visual supports by reusing saved media references and metadata rather than cloning image objects.
 - Phase 5 playback proof uses an authenticated `/tasks/:taskId/preview` route that fetches saved task detail outside the editor surface.
 - The preview route is a verification-oriented, read-only proof of saved media playback and does not replace the fuller guided present mode planned for Phase 7.
+- Variant families are modeled as copy-based task lineages using a nullable `variant_family_id` anchor separate from `source_task_id`.
+- Library cards now expose `variantRole`, family root metadata, and family counts without introducing a version history engine or collaboration rules.
+- Generic duplicate remains outside variant-family semantics until the dedicated create-variant flow is implemented.
 
 ## Constraints To Preserve
 
@@ -65,5 +69,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 05-05-PLAN.md
+- Stopped at: Completed 06-01-PLAN.md
 - Resume file: None

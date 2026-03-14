@@ -13,6 +13,7 @@
 | 3 | Complete | 2026-03-13 |
 | 4 | Complete | 2026-03-13 |
 | 5 | Complete | 2026-03-14 |
+| 6 | In Progress | 2026-03-14 |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -182,3 +183,11 @@ Completed on 2026-03-14. Summaries:
 - `.planning/phases/05-media-support-pipeline/05-05-SUMMARY.md`
 
 Next up: plan Phase 6 for support variants on top of the now-stable media duplication boundary and the authenticated preview proof. Phase 7 still owns guided present mode behavior, and Phase 8 still owns any public media access surface.
+
+## Phase 6 Next
+
+In progress on 2026-03-14. Summaries:
+
+- `.planning/phases/06-support-variants/06-01-SUMMARY.md`
+
+Next up: execute `06-02` to add the dedicated create-variant flow that sets `variant_family_id`, requires support-level input, and preserves the Phase 5 media duplication boundary. Library and detail-family navigation can then build on the foundation from `06-01`.
