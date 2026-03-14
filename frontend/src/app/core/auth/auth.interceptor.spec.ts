@@ -48,6 +48,16 @@ describe('authInterceptor', () => {
     request.flush({});
   });
 
+  it('does not attach the local bearer token to Milo auth requests', () => {
+    auth.acceptTokenHandoff('milo-token');
+
+    http.post('http://localhost:8081/api/auth/login', { email: 'teacher@example.com', password: 'Secret123!' }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8081/api/auth/login');
+    expect(request.request.headers.has('Authorization')).toBeFalse();
+    request.flush({});
+  });
+
   it('logs out and redirects on 401 responses', () => {
     spyOn(auth, 'logout').and.callThrough();
     auth.acceptTokenHandoff('milo-token');

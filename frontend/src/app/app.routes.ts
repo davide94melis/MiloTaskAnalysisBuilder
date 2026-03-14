@@ -16,6 +16,10 @@ export const appRoutes: Routes = [
     component: LoginBridgeComponent
   },
   {
+    path: 'auth/register',
+    component: LoginBridgeComponent
+  },
+  {
     path: 'shared/:token',
     component: TaskSharedViewPageComponent
   },
