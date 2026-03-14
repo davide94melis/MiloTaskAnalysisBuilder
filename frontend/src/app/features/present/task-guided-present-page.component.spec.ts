@@ -9,7 +9,7 @@ import { TaskGuidedPresentPageComponent } from './task-guided-present-page.compo
 import { TaskPlaybackPreviewPageComponent } from './task-playback-preview-page.component';
 
 describe('TaskGuidedPresentPageComponent', () => {
-  const multiStepTask: TaskDetailRecord = {
+  const responsiveTask: TaskDetailRecord = {
     id: 'task-7',
     title: 'Preparare la merenda',
     category: 'Routine',
@@ -23,23 +23,43 @@ describe('TaskGuidedPresentPageComponent', () => {
     difficultyLevel: 'Base',
     visibility: 'private',
     status: 'shared',
-    stepCount: 2,
+    stepCount: 4,
     lastUpdatedAt: '2026-03-14T09:00:00Z',
     authorName: 'teacher@example.com',
     sourceTaskId: null,
     steps: [
       {
-        id: 'step-2',
-        position: 2,
+        id: 'step-4',
+        position: 4,
         title: 'Porta il piatto sul tavolo',
         description: 'Appoggialo con calma.',
-        required: true,
+        required: false,
         supportGuidance: '',
-        reinforcementNotes: 'Ottimo lavoro.',
-        estimatedMinutes: 1,
+        reinforcementNotes: '',
+        estimatedMinutes: null,
         visualSupport: {
           text: '',
           symbol: null,
+          image: null
+        },
+        uploadState: null
+      },
+      {
+        id: 'step-2',
+        position: 2,
+        title: 'Mostra il simbolo del piatto',
+        description: 'Guarda il simbolo corretto.',
+        required: true,
+        supportGuidance: '',
+        reinforcementNotes: '',
+        estimatedMinutes: null,
+        visualSupport: {
+          text: '',
+          symbol: {
+            library: 'symwriter',
+            key: 'plate',
+            label: 'Piatto'
+          },
           image: null
         },
         uploadState: null
@@ -51,7 +71,7 @@ describe('TaskGuidedPresentPageComponent', () => {
         description: 'Usa il piatto salvato nella task.',
         required: true,
         supportGuidance: 'Indica il ripiano corretto.',
-        reinforcementNotes: '',
+        reinforcementNotes: 'Ottimo lavoro.',
         estimatedMinutes: 2,
         visualSupport: {
           text: 'Piatto',
@@ -78,12 +98,43 @@ describe('TaskGuidedPresentPageComponent', () => {
           localPreviewUrl: '/draft-only-plate.png',
           pendingPersistence: true
         }
+      },
+      {
+        id: 'step-3',
+        position: 3,
+        title: 'Guarda la foto del bicchiere',
+        description: 'Riconosci l oggetto dalla foto salvata.',
+        required: true,
+        supportGuidance: '',
+        reinforcementNotes: 'Benissimo.',
+        estimatedMinutes: 1,
+        visualSupport: {
+          text: '',
+          symbol: null,
+          image: {
+            mediaId: 'media-2',
+            storageKey: 'tasks/task-7/media-2.png',
+            fileName: 'bicchiere.png',
+            mimeType: 'image/png',
+            fileSizeBytes: 2050,
+            width: 640,
+            height: 640,
+            altText: 'Bicchiere trasparente',
+            url: '/api/tasks/task-7/media/media-2/content'
+          }
+        },
+        uploadState: {
+          status: 'uploaded',
+          errorMessage: '',
+          localPreviewUrl: '/draft-only-glass.png',
+          pendingPersistence: true
+        }
       }
     ]
   };
 
   const oneStepTask: TaskDetailRecord = {
-    ...multiStepTask,
+    ...responsiveTask,
     id: 'task-8',
     title: 'Bere un bicchiere d acqua',
     stepCount: 1,
@@ -108,12 +159,24 @@ describe('TaskGuidedPresentPageComponent', () => {
   };
 
   const zeroStepTask: TaskDetailRecord = {
-    ...multiStepTask,
+    ...responsiveTask,
     id: 'task-empty',
     title: 'Task vuota',
     stepCount: 0,
     steps: []
   };
+
+  function setViewport(width: number): void {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: width
+    });
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  beforeEach(() => {
+    setViewport(1280);
+  });
 
   it('registers a protected present route while keeping the preview route intact', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
@@ -131,7 +194,7 @@ describe('TaskGuidedPresentPageComponent', () => {
         return of(oneStepTask);
       }
 
-      return of(multiStepTask);
+      return of(responsiveTask);
     });
 
     await TestBed.configureTestingModule({
@@ -166,6 +229,8 @@ describe('TaskGuidedPresentPageComponent', () => {
       isFirstStep: () => boolean;
       isLastStep: () => boolean;
       isSessionComplete: () => boolean;
+      showAdultGuidance: () => boolean;
+      toggleAdultGuidance: () => void;
       markCurrentStepCompleted: () => void;
     };
     const host = fixture.nativeElement as HTMLElement;
@@ -176,9 +241,18 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(component.completedStepIndexes()).toEqual([]);
     expect(component.isFirstStep()).toBeTrue();
     expect(component.isLastStep()).toBeFalse();
-    expect(host.textContent).toContain('0 / 2 completati');
+    expect(host.textContent).toContain('0 / 4 completati');
+    expect(host.textContent).toContain('Layout desktop');
+    expect(host.querySelector('.present-shell')?.getAttribute('data-viewport')).toBe('desktop');
     expect(host.querySelector('img')?.getAttribute('src')).toBe('/api/tasks/task-7/media/media-1/content');
     expect(host.textContent).not.toContain('/draft-only-plate.png');
+    expect(host.textContent).not.toContain('Indica il ripiano corretto.');
+
+    component.toggleAdultGuidance();
+    fixture.detectChanges();
+    expect(component.showAdultGuidance()).toBeTrue();
+    expect(host.textContent).toContain('Prompt adulto');
+    expect(host.textContent).toContain('Indica il ripiano corretto.');
 
     const completeButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
       button.textContent?.includes('Completa step corrente')
@@ -188,8 +262,9 @@ describe('TaskGuidedPresentPageComponent', () => {
 
     expect(component.completedStepIndexes()).toEqual([0]);
     expect(component.currentStepIndex()).toBe(1);
-    expect(component.currentStep()?.title).toBe('Porta il piatto sul tavolo');
-    expect(host.textContent).toContain('1 / 2 completati');
+    expect(component.currentStep()?.title).toBe('Mostra il simbolo del piatto');
+    expect(component.showAdultGuidance()).toBeFalse();
+    expect(host.textContent).toContain('1 / 4 completati');
 
     params$.next(convertToParamMap({ taskId: 'task-8' }));
     fixture.detectChanges();
@@ -211,7 +286,118 @@ describe('TaskGuidedPresentPageComponent', () => {
 
     expect(component.completedStepIndexes()).toEqual([0]);
     expect(component.isSessionComplete()).toBeTrue();
-    expect(host.textContent).toContain('Sequenza completata');
+    expect(host.textContent).toContain('Sequenza conclusa');
+  });
+
+  it('renders text-only, symbol-only, image-only, and empty saved supports from the persisted contract', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-7' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(responsiveTask))
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const nextButton = () =>
+      Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+        button.textContent?.includes('Step successivo')
+      );
+
+    expect(host.textContent).toContain('Piatto');
+    expect(host.textContent).toContain('symwriter');
+    expect(host.textContent).toContain('plate');
+    expect(host.querySelector('img')?.getAttribute('src')).toBe('/api/tasks/task-7/media/media-1/content');
+
+    nextButton()?.click();
+    fixture.detectChanges();
+
+    expect(host.textContent).toContain('Mostra il simbolo del piatto');
+    expect(host.textContent).toContain('Simbolo');
+    expect(host.textContent).toContain('Piatto');
+    expect(host.querySelector('img')).toBeNull();
+
+    nextButton()?.click();
+    fixture.detectChanges();
+
+    expect(host.textContent).toContain('Guarda la foto del bicchiere');
+    expect(host.querySelector('img')?.getAttribute('src')).toBe('/api/tasks/task-7/media/media-2/content');
+    expect(host.textContent).not.toContain('/draft-only-glass.png');
+
+    nextButton()?.click();
+    fixture.detectChanges();
+
+    expect(host.textContent).toContain('Porta il piatto sul tavolo');
+    expect(host.textContent).toContain('Nessun supporto visivo salvato per questo step.');
+    expect(host.querySelector('img')).toBeNull();
+  });
+
+  it('switches between phone, tablet, and desktop layout markers on resize', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-7' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskGuidedPresentPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(responsiveTask))
+          }
+        }
+      ]
+    }).compileComponents();
+
+    setViewport(600);
+    const fixture = TestBed.createComponent(TaskGuidedPresentPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const shell = () => host.querySelector('.present-shell');
+
+    expect(shell()?.getAttribute('data-viewport')).toBe('phone');
+    expect(shell()?.classList.contains('present--phone')).toBeTrue();
+    expect(host.textContent).toContain('Layout telefono');
+
+    setViewport(900);
+    fixture.detectChanges();
+    expect(shell()?.getAttribute('data-viewport')).toBe('tablet');
+    expect(shell()?.classList.contains('present--tablet')).toBeTrue();
+    expect(host.textContent).toContain('Layout tablet');
+
+    setViewport(1280);
+    fixture.detectChanges();
+    expect(shell()?.getAttribute('data-viewport')).toBe('desktop');
+    expect(shell()?.classList.contains('present--desktop')).toBeTrue();
+    expect(host.textContent).toContain('Layout desktop');
   });
 
   it('shows a recoverable empty state for tasks with zero saved steps', async () => {

@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TaskDetailRecord, TaskStepDraftRecord } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+
+type PresentViewport = 'phone' | 'tablet' | 'desktop';
 
 @Component({
   selector: 'mtab-task-guided-present-page',
@@ -11,143 +13,181 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
   imports: [CommonModule, RouterLink],
   template: `
     <ng-container *ngIf="!loading(); else loadingState">
-      <article class="present present--status present--error" *ngIf="loadError(); else readyState">
-        <div class="present__status-copy">
-          <p class="present__eyebrow">Present mode guidato</p>
+      <article class="present-shell present-shell--status present-shell--error" *ngIf="loadError(); else readyState">
+        <div class="present-shell__status-copy">
+          <p class="present-shell__eyebrow">Present mode guidato</p>
           <h2>Presentazione non disponibile</h2>
           <p>{{ loadError() }}</p>
         </div>
 
-        <div class="present__status-actions">
+        <div class="present-shell__status-actions">
           <a routerLink="/library">Torna alla libreria</a>
         </div>
       </article>
     </ng-container>
 
     <ng-template #readyState>
-      <section class="present" *ngIf="task() as currentTask">
-        <header class="present__hero">
-          <div class="present__hero-copy">
-            <p class="present__eyebrow">Present mode guidato</p>
+      <section
+        *ngIf="task() as currentTask"
+        class="present-shell"
+        [ngClass]="presentShellClasses()"
+        [attr.data-viewport]="viewport()"
+      >
+        <header class="present-shell__hero">
+          <div class="present-shell__hero-copy">
+            <p class="present-shell__eyebrow">Present mode guidato</p>
             <h2>{{ currentTask.title || 'Task pronta per la sessione' }}</h2>
-            <p class="present__lead">
-              Questa vista usa solo la versione salvata della task e tiene i progressi della sessione nel browser,
-              senza registrare completamenti o storico.
+            <p class="present-shell__hero-summary">
+              Uno step alla volta, solo dalla versione salvata della task, senza mostrare controlli di gestione o
+              registrare sessioni persistenti.
             </p>
           </div>
 
-          <div class="present__hero-actions">
-            <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
-            <div class="present__hero-facts">
+          <div class="present-shell__hero-tools">
+            <div class="present-shell__hero-facts">
               <span>{{ completedStepIndexes().length }} / {{ savedSteps().length }} completati</span>
-              <span *ngIf="!isSessionComplete()">Step {{ currentStepIndex() + 1 }} di {{ savedSteps().length }}</span>
+              <span *ngIf="savedSteps().length && !isSessionComplete()">Step {{ currentStepNumber() }} di {{ savedSteps().length }}</span>
+              <span>{{ viewportLabel() }}</span>
+            </div>
+
+            <div class="present-shell__hero-actions">
+              <button
+                *ngIf="hasCurrentAdultGuidance()"
+                type="button"
+                class="present-shell__ghost-action"
+                (click)="toggleAdultGuidance()"
+              >
+                {{ showAdultGuidance() ? 'Nascondi supporto adulto' : 'Mostra supporto adulto' }}
+              </button>
+              <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
             </div>
           </div>
         </header>
 
-        <article class="present present--status" *ngIf="!savedSteps().length">
-          <div class="present__status-copy">
-            <p class="present__eyebrow">Task senza step</p>
+        <article class="present-shell__status-card" *ngIf="!savedSteps().length">
+          <div class="present-shell__status-copy">
+            <p class="present-shell__eyebrow">Task senza step</p>
             <h3>Aggiungi almeno uno step salvato prima di presentare la task</h3>
             <p>
-              La modalita guidata non usa bozze locali. Apri l editor, aggiungi gli step necessari e salva la task
-              prima di avviare una sessione.
+              La modalita guidata usa solo il contenuto gia salvato. Apri l editor, aggiungi gli step necessari e
+              salva la task prima di avviare una sessione.
             </p>
           </div>
 
-          <div class="present__status-actions">
+          <div class="present-shell__status-actions">
             <a [routerLink]="['/tasks', currentTask.id]">Apri l editor della task</a>
           </div>
         </article>
 
-        <article class="present present--status present--complete" *ngIf="savedSteps().length && isSessionComplete()">
-          <div class="present__status-copy">
-            <p class="present__eyebrow">Task completata</p>
-            <h3>Sequenza completata</h3>
+        <article class="present-shell__status-card present-shell__status-card--complete" *ngIf="savedSteps().length && isSessionComplete()">
+          <div class="present-shell__status-copy">
+            <p class="present-shell__eyebrow">Task completata</p>
+            <h3>Sequenza conclusa</h3>
             <p>
               Tutti gli step salvati risultano completati in questa sessione locale. Nessun dato e stato salvato fuori
               dal browser.
             </p>
           </div>
 
-          <div class="present__status-actions">
-            <button type="button" class="present__primary" (click)="restartSession()">Ricomincia la sessione</button>
+          <div class="present-shell__status-actions">
+            <button type="button" class="present-shell__primary-action" (click)="restartSession()">Ricomincia la sessione</button>
             <a [routerLink]="['/tasks', currentTask.id]">Torna all editor</a>
           </div>
         </article>
 
         <ng-container *ngIf="savedSteps().length && !isSessionComplete() && currentStep() as step">
-          <section class="present__canvas">
-            <article class="present__step-card">
-              <div class="present__step-head">
-                <p class="present__step-index">Step {{ step.position }}</p>
-                <span class="present__step-state" *ngIf="isCurrentStepCompleted()">Completato</span>
-                <span class="present__step-state" *ngIf="!isCurrentStepCompleted()">
-                  {{ step.required ? 'Richiesto' : 'Opzionale' }}
+          <section class="present-shell__progress-strip" aria-label="Avanzamento sequenza">
+            <span
+              *ngFor="let savedStep of savedSteps(); let index = index"
+              class="present-shell__progress-pill"
+              [class.present-shell__progress-pill--current]="index === currentStepIndex()"
+              [class.present-shell__progress-pill--complete]="completedStepIndexes().includes(index)"
+            >
+              {{ index + 1 }}
+            </span>
+          </section>
+
+          <article class="present-stage">
+            <section class="present-stage__visual" aria-label="Supporti visivi salvati">
+              <div class="present-stage__support present-stage__support--text" *ngIf="step.visualSupport.text.trim()">
+                <span class="present-stage__support-label">Testo visivo</span>
+                <strong>{{ step.visualSupport.text }}</strong>
+              </div>
+
+              <div class="present-stage__support present-stage__support--symbol" *ngIf="step.visualSupport.symbol as symbol">
+                <span class="present-stage__support-label">Simbolo</span>
+                <strong>{{ symbol.label }}</strong>
+                <small>{{ symbol.library }} | {{ symbol.key }}</small>
+              </div>
+
+              <figure class="present-stage__support present-stage__support--image" *ngIf="step.visualSupport.image as image">
+                <img [src]="image.url" [alt]="image.altText || image.fileName" />
+                <figcaption>
+                  <strong>{{ image.altText || image.fileName }}</strong>
+                  <span>{{ image.fileName }}</span>
+                </figcaption>
+              </figure>
+
+              <p class="present-stage__support-empty" *ngIf="!hasSavedVisualSupport(step)">
+                Nessun supporto visivo salvato per questo step.
+              </p>
+            </section>
+
+            <section class="present-stage__copy">
+              <div class="present-stage__meta">
+                <p class="present-shell__eyebrow">Step {{ currentStepNumber() }}</p>
+                <span class="present-stage__state" *ngIf="isCurrentStepCompleted()">Completato</span>
+                <span class="present-stage__state" *ngIf="!isCurrentStepCompleted()">
+                  {{ step.required ? 'Step richiesto' : 'Step opzionale' }}
                 </span>
               </div>
 
               <h3>{{ step.title || 'Step senza titolo' }}</h3>
-              <p class="present__step-description">{{ step.description || 'Nessuna descrizione aggiuntiva.' }}</p>
+              <p class="present-stage__description">{{ step.description || 'Nessuna descrizione aggiuntiva.' }}</p>
 
-              <section class="present__support" aria-label="Supporti visivi salvati">
-                <div class="present__text-card" *ngIf="step.visualSupport.text.trim()">
-                  <span>Testo visivo</span>
-                  <strong>{{ step.visualSupport.text }}</strong>
-                </div>
+              <div class="present-stage__quick-facts">
+                <span *ngIf="step.estimatedMinutes !== null">Circa {{ step.estimatedMinutes }} min</span>
+                <span *ngIf="step.supportGuidance || step.reinforcementNotes">Supporto adulto disponibile</span>
+                <span *ngIf="!step.supportGuidance && !step.reinforcementNotes && step.estimatedMinutes === null">
+                  Nessun dettaglio adulto aggiuntivo
+                </span>
+              </div>
 
-                <div class="present__symbol-card" *ngIf="step.visualSupport.symbol as symbol">
-                  <span>Simbolo</span>
-                  <strong>{{ symbol.label }}</strong>
-                  <small>{{ symbol.library }} · {{ symbol.key }}</small>
-                </div>
+              <section class="present-stage__adult-panel" *ngIf="showAdultGuidance() && hasCurrentAdultGuidance()">
+                <article class="present-stage__adult-card" *ngIf="step.supportGuidance">
+                  <p class="present-shell__eyebrow">Prompt adulto</p>
+                  <strong>{{ step.supportGuidance }}</strong>
+                </article>
 
-                <figure class="present__image-card" *ngIf="step.visualSupport.image as image">
-                  <img [src]="image.url" [alt]="image.altText || image.fileName" />
-                  <figcaption>
-                    <strong>{{ image.altText || image.fileName }}</strong>
-                    <span>{{ image.fileName }}</span>
-                  </figcaption>
-                </figure>
+                <article class="present-stage__adult-card" *ngIf="step.reinforcementNotes">
+                  <p class="present-shell__eyebrow">Rinforzo</p>
+                  <strong>{{ step.reinforcementNotes }}</strong>
+                </article>
 
-                <p class="present__empty" *ngIf="!hasSavedVisualSupport(step)">
-                  Nessun supporto visivo salvato per questo step.
-                </p>
+                <article class="present-stage__adult-card" *ngIf="step.estimatedMinutes !== null">
+                  <p class="present-shell__eyebrow">Tempo stimato</p>
+                  <strong>{{ step.estimatedMinutes }} min</strong>
+                </article>
               </section>
-            </article>
+            </section>
+          </article>
 
-            <aside class="present__coach-panel">
-              <article class="present__coach-card">
-                <p class="present__coach-label">Prompt</p>
-                <strong>{{ step.supportGuidance || 'Nessun prompt salvato per questo step.' }}</strong>
-              </article>
-
-              <article class="present__coach-card">
-                <p class="present__coach-label">Rinforzo</p>
-                <strong>{{ step.reinforcementNotes || 'Nessuna nota di rinforzo salvata.' }}</strong>
-              </article>
-
-              <article class="present__coach-card">
-                <p class="present__coach-label">Tempo stimato</p>
-                <strong>{{ step.estimatedMinutes === null ? 'Non indicato' : step.estimatedMinutes + ' min' }}</strong>
-              </article>
-            </aside>
-          </section>
-
-          <nav class="present__nav" aria-label="Controlli modalita guidata">
-            <button type="button" class="present__ghost" [disabled]="isFirstStep()" (click)="showPreviousStep()">
+          <nav class="present-shell__nav" aria-label="Controlli modalita guidata">
+            <button type="button" class="present-shell__ghost-action" [disabled]="isFirstStep()" (click)="showPreviousStep()">
               Step precedente
             </button>
-            <button type="button" class="present__ghost" [disabled]="isLastStep()" (click)="showNextStep()">
-              Step successivo
-            </button>
+
             <button
               type="button"
-              class="present__primary"
+              class="present-shell__primary-action"
               [disabled]="isCurrentStepCompleted()"
               (click)="markCurrentStepCompleted()"
             >
               {{ isLastStep() ? 'Completa task' : 'Completa step corrente' }}
+            </button>
+
+            <button type="button" class="present-shell__ghost-action" [disabled]="isLastStep()" (click)="showNextStep()">
+              Step successivo
             </button>
           </nav>
         </ng-container>
@@ -155,9 +195,9 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
     </ng-template>
 
     <ng-template #loadingState>
-      <article class="present present--status">
-        <div class="present__status-copy">
-          <p class="present__eyebrow">Present mode guidato</p>
+      <article class="present-shell present-shell--status">
+        <div class="present-shell__status-copy">
+          <p class="present-shell__eyebrow">Present mode guidato</p>
           <h2>Caricamento sessione</h2>
           <p>Sto recuperando la versione salvata della task da presentare.</p>
         </div>
@@ -170,64 +210,256 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
         display: block;
       }
 
-      .present {
+      .present-shell {
+        display: grid;
+        gap: 1rem;
+        color: #123446;
+      }
+
+      .present-shell__hero,
+      .present-shell__progress-strip,
+      .present-stage,
+      .present-shell__nav,
+      .present-shell__status-card,
+      .present-shell--status {
+        border-radius: 1.9rem;
+        border: 1px solid rgba(18, 52, 70, 0.12);
+        box-shadow: 0 22px 52px rgba(18, 52, 70, 0.08);
+      }
+
+      .present-shell__hero,
+      .present-stage,
+      .present-shell__status-card,
+      .present-shell--status {
+        background:
+          radial-gradient(circle at top right, rgba(255, 232, 176, 0.45), transparent 32%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 251, 0.98));
+      }
+
+      .present-shell__hero,
+      .present-stage,
+      .present-shell__status-card,
+      .present-shell--status {
+        padding: 1.35rem;
+      }
+
+      .present-shell__hero,
+      .present-stage {
         display: grid;
         gap: 1rem;
       }
 
-      .present__hero,
-      .present__canvas,
-      .present__nav,
-      .present--status {
-        padding: 1.3rem;
-        border-radius: 1.75rem;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 18px 38px rgba(17, 65, 91, 0.08);
-      }
-
-      .present__hero,
-      .present__canvas,
-      .present--status {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .present__hero {
-        grid-template-columns: minmax(0, 1.4fr) minmax(15rem, 0.8fr);
+      .present-shell__hero {
+        grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
         align-items: start;
       }
 
-      .present__hero-copy,
-      .present__hero-actions,
-      .present__status-copy,
-      .present__status-actions,
-      .present__step-card,
-      .present__support,
-      .present__coach-panel {
+      .present-shell__hero-copy,
+      .present-shell__hero-tools,
+      .present-shell__hero-actions,
+      .present-shell__hero-facts,
+      .present-shell__status-copy,
+      .present-shell__status-actions,
+      .present-stage__visual,
+      .present-stage__copy,
+      .present-stage__adult-panel {
         display: grid;
         gap: 0.75rem;
       }
 
-      .present__canvas {
-        grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.75fr);
-        align-items: start;
+      .present-shell__progress-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.78);
       }
 
-      .present__nav {
+      .present-shell__progress-pill {
+        min-width: 2.2rem;
+        min-height: 2.2rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(18, 52, 70, 0.08);
+        color: #466170;
+        font-weight: 700;
+      }
+
+      .present-shell__progress-pill--current {
+        background: #123446;
+        color: #ffffff;
+      }
+
+      .present-shell__progress-pill--complete {
+        background: #c8e8d1;
+        color: #194d2d;
+      }
+
+      .present-stage {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        align-items: stretch;
+      }
+
+      .present-stage__visual,
+      .present-stage__copy {
+        align-content: start;
+      }
+
+      .present-stage__visual {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .present-stage__support,
+      .present-stage__adult-card {
+        padding: 1rem;
+        border-radius: 1.35rem;
+        background: rgba(248, 251, 252, 0.96);
+        border: 1px solid rgba(18, 52, 70, 0.08);
+      }
+
+      .present-stage__support--image {
+        grid-column: 1 / -1;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .present-stage__support--text,
+      .present-stage__support--symbol {
+        min-height: 10rem;
+        align-content: center;
+      }
+
+      .present-stage__support-label {
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8e6236;
+      }
+
+      .present-stage__support strong {
+        font-size: clamp(1.7rem, 3vw, 2.6rem);
+        line-height: 1.15;
+        color: #123446;
+      }
+
+      .present-stage__support small,
+      .present-stage__support figcaption span,
+      .present-shell__hero-summary,
+      .present-stage__description,
+      .present-stage__support-empty,
+      .present-shell__status-copy p,
+      .present-shell__hero-facts span {
+        color: #49606c;
+        line-height: 1.55;
+      }
+
+      .present-stage__support img {
+        width: 100%;
+        min-height: 14rem;
+        max-height: 28rem;
+        object-fit: contain;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(255, 243, 202, 0.72), rgba(228, 242, 247, 0.82));
+      }
+
+      .present-stage__support figcaption {
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      .present-stage__meta,
+      .present-stage__quick-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: center;
+      }
+
+      .present-stage__state,
+      .present-stage__quick-facts span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.2rem;
+        padding: 0 0.9rem;
+        border-radius: 999px;
+        background: rgba(18, 52, 70, 0.08);
+        color: #123446;
+      }
+
+      .present-stage__description {
+        font-size: clamp(1.05rem, 1.9vw, 1.3rem);
+      }
+
+      .present-stage__adult-card strong {
+        color: #123446;
+        line-height: 1.45;
+      }
+
+      .present-shell__nav {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: 0.8rem;
+        padding: 0.95rem;
+        background: rgba(255, 255, 255, 0.88);
       }
 
-      .present__eyebrow,
-      .present__coach-label,
-      .present__step-index {
+      .present-shell__ghost-action,
+      .present-shell__primary-action,
+      .present-shell__hero-actions a,
+      .present-shell__status-actions a {
+        min-height: 3.25rem;
+        border-radius: 999px;
+        padding: 0 1.2rem;
+        border: 1px solid rgba(18, 52, 70, 0.14);
+        background: rgba(247, 250, 252, 0.96);
+        color: #123446;
+        font: inherit;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .present-shell__primary-action {
+        border: 0;
+        background: linear-gradient(180deg, #123446, #235772);
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .present-shell__ghost-action:disabled,
+      .present-shell__primary-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .present-shell__hero-tools {
+        justify-items: end;
+      }
+
+      .present-shell__hero-facts {
+        justify-items: end;
+      }
+
+      .present-shell__status-card--complete {
+        background:
+          radial-gradient(circle at top right, rgba(198, 232, 209, 0.8), transparent 30%),
+          linear-gradient(180deg, rgba(241, 250, 244, 0.98), rgba(255, 255, 255, 0.96));
+      }
+
+      .present-shell--error {
+        color: #b42318;
+      }
+
+      .present-shell__eyebrow {
         margin: 0;
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: #8e6236;
       }
 
       h2,
@@ -238,153 +470,49 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
         margin: 0;
       }
 
-      .present__lead,
-      .present__step-description,
-      .present__empty,
-      .present__status-copy p,
-      .present__hero-facts span,
-      .present__image-card figcaption span {
-        color: #4b5563;
-        line-height: 1.55;
+      .present-shell.present--tablet .present-stage {
+        grid-template-columns: 1fr;
       }
 
-      .present__hero-actions {
-        justify-items: end;
+      .present-shell.present--tablet .present-stage__visual {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .present__hero-actions a,
-      .present__status-actions a,
-      .present__nav button,
-      .present__status-actions button {
-        min-height: 3rem;
-        border-radius: 999px;
-        padding: 0 1.1rem;
-        font: inherit;
-        text-decoration: none;
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(247, 250, 252, 0.96);
-        color: #31566b;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .present__nav button,
-      .present__status-actions button {
-        cursor: pointer;
-      }
-
-      .present__primary {
-        border: 0;
-        background: #11415b;
-        color: #ffffff;
-      }
-
-      .present__nav button:disabled {
-        cursor: not-allowed;
-        opacity: 0.55;
-      }
-
-      .present__hero-facts {
-        justify-items: end;
-      }
-
-      .present__step-card,
-      .present__coach-card,
-      .present__text-card,
-      .present__symbol-card,
-      .present__image-card {
+      .present-shell.present--phone .present-shell__hero,
+      .present-shell.present--phone .present-stage,
+      .present-shell.present--phone .present-shell__nav,
+      .present-shell.present--phone .present-shell__status-card {
         padding: 1rem;
-        border-radius: 1.25rem;
-        background: rgba(247, 250, 252, 0.96);
       }
 
-      .present__step-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
+      .present-shell.present--phone .present-shell__hero,
+      .present-shell.present--phone .present-stage,
+      .present-shell.present--phone .present-shell__nav {
+        grid-template-columns: 1fr;
       }
 
-      .present__step-state {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.4rem 0.8rem;
-        border-radius: 999px;
-        background: rgba(17, 65, 91, 0.08);
-        color: #11415b;
+      .present-shell.present--phone .present-stage__visual {
+        grid-template-columns: 1fr;
       }
 
-      .present__support {
-        align-content: start;
+      .present-shell.present--phone .present-stage__support img {
+        min-height: 11rem;
+        max-height: 18rem;
       }
 
-      .present__text-card strong,
-      .present__symbol-card strong {
-        font-size: clamp(1.55rem, 2.5vw, 2.1rem);
-        color: #11415b;
+      .present-shell.present--phone .present-shell__hero-tools,
+      .present-shell.present--phone .present-shell__hero-facts {
+        justify-items: start;
       }
 
-      .present__symbol-card small {
-        color: #6b7280;
-      }
-
-      .present__image-card {
-        display: grid;
-        gap: 0.75rem;
-      }
-
-      .present__image-card img {
-        width: 100%;
-        min-height: 16rem;
-        max-height: 26rem;
-        object-fit: contain;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(244, 240, 223, 0.6), rgba(231, 243, 248, 0.78));
-      }
-
-      .present__image-card figcaption {
-        display: grid;
-        gap: 0.2rem;
-      }
-
-      .present__coach-card strong {
-        color: #11415b;
-        line-height: 1.5;
-      }
-
-      .present--complete {
-        background: linear-gradient(180deg, rgba(235, 247, 239, 0.95), rgba(255, 255, 255, 0.96));
-      }
-
-      .present--error {
-        color: #b42318;
-      }
-
-      @media (max-width: 960px) {
-        .present__hero,
-        .present__canvas,
-        .present__nav {
+      @media (max-width: 1100px) {
+        .present-shell__hero {
           grid-template-columns: 1fr;
         }
 
-        .present__hero-actions,
-        .present__hero-facts {
+        .present-shell__hero-tools,
+        .present-shell__hero-facts {
           justify-items: start;
-        }
-      }
-
-      @media (max-width: 640px) {
-        .present__hero,
-        .present__canvas,
-        .present__nav,
-        .present--status {
-          padding: 1rem;
-        }
-
-        .present__image-card img {
-          min-height: 12rem;
-          max-height: 18rem;
         }
       }
     `
@@ -400,11 +528,14 @@ export class TaskGuidedPresentPageComponent {
   protected readonly loadError = signal('');
   protected readonly currentStepIndex = signal(0);
   protected readonly completedStepIndexes = signal<number[]>([]);
+  protected readonly showAdultGuidance = signal(false);
+  protected readonly viewport = signal<PresentViewport>(this.resolveViewport());
 
   protected readonly savedSteps = computed(() =>
     [...(this.task()?.steps ?? [])].sort((left, right) => left.position - right.position)
   );
   protected readonly currentStep = computed(() => this.savedSteps()[this.currentStepIndex()] ?? null);
+  protected readonly currentStepNumber = computed(() => this.currentStepIndex() + 1);
   protected readonly isFirstStep = computed(() => this.currentStepIndex() === 0);
   protected readonly isLastStep = computed(() => this.currentStepIndex() >= this.savedSteps().length - 1);
   protected readonly isCurrentStepCompleted = computed(() =>
@@ -414,6 +545,25 @@ export class TaskGuidedPresentPageComponent {
     const stepCount = this.savedSteps().length;
     return stepCount > 0 && this.completedStepIndexes().length === stepCount;
   });
+  protected readonly hasCurrentAdultGuidance = computed(() => {
+    const step = this.currentStep();
+    return Boolean(step && this.hasAdultGuidance(step));
+  });
+  protected readonly viewportLabel = computed(() => {
+    switch (this.viewport()) {
+      case 'phone':
+        return 'Layout telefono';
+      case 'tablet':
+        return 'Layout tablet';
+      default:
+        return 'Layout desktop';
+    }
+  });
+  protected readonly presentShellClasses = computed(() => ({
+    'present--phone': this.viewport() === 'phone',
+    'present--tablet': this.viewport() === 'tablet',
+    'present--desktop': this.viewport() === 'desktop'
+  }));
 
   constructor() {
     this.route.paramMap.subscribe((params) => {
@@ -421,12 +571,19 @@ export class TaskGuidedPresentPageComponent {
     });
   }
 
+  @HostListener('window:resize')
+  protected onWindowResize(): void {
+    this.viewport.set(this.resolveViewport());
+  }
+
   protected showPreviousStep(): void {
     this.currentStepIndex.update((index) => Math.max(index - 1, 0));
+    this.syncAdultGuidanceVisibility();
   }
 
   protected showNextStep(): void {
     this.currentStepIndex.update((index) => Math.min(index + 1, this.savedSteps().length - 1));
+    this.syncAdultGuidanceVisibility();
   }
 
   protected markCurrentStepCompleted(): void {
@@ -440,16 +597,50 @@ export class TaskGuidedPresentPageComponent {
 
     if (!this.isLastStep()) {
       this.currentStepIndex.set(currentIndex + 1);
+      this.syncAdultGuidanceVisibility();
     }
   }
 
   protected restartSession(): void {
     this.currentStepIndex.set(0);
     this.completedStepIndexes.set([]);
+    this.syncAdultGuidanceVisibility(true);
+  }
+
+  protected toggleAdultGuidance(): void {
+    this.showAdultGuidance.update((value) => !value);
   }
 
   protected hasSavedVisualSupport(step: TaskStepDraftRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  private hasAdultGuidance(step: TaskStepDraftRecord): boolean {
+    return Boolean(step.supportGuidance || step.reinforcementNotes || step.estimatedMinutes !== null);
+  }
+
+  private syncAdultGuidanceVisibility(forceHidden = false): void {
+    if (forceHidden) {
+      this.showAdultGuidance.set(false);
+      return;
+    }
+
+    if (!this.hasCurrentAdultGuidance()) {
+      this.showAdultGuidance.set(false);
+    }
+  }
+
+  private resolveViewport(): PresentViewport {
+    const width = typeof window === 'undefined' ? 1280 : window.innerWidth;
+    if (width < 700) {
+      return 'phone';
+    }
+
+    if (width < 1080) {
+      return 'tablet';
+    }
+
+    return 'desktop';
   }
 
   private async loadPresentTask(taskId: string | null): Promise<void> {
@@ -457,6 +648,7 @@ export class TaskGuidedPresentPageComponent {
     this.loadError.set('');
     this.task.set(null);
     this.restartSession();
+    this.viewport.set(this.resolveViewport());
 
     if (!taskId) {
       this.loading.set(false);
@@ -467,6 +659,7 @@ export class TaskGuidedPresentPageComponent {
     try {
       const detail = await firstValueFrom(this.taskLibrary.getTaskDetail(taskId));
       this.task.set(detail);
+      this.syncAdultGuidanceVisibility(true);
     } catch {
       this.loadError.set('Impossibile caricare la task salvata per la presentazione guidata.');
     } finally {
