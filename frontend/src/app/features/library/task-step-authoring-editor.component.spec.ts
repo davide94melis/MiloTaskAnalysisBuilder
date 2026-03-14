@@ -71,6 +71,9 @@ describe('TaskStepAuthoringEditorComponent', () => {
     expect(emitted[0]?.length).toBe(1);
     expect(emitted[0]?.[0].position).toBe(1);
     expect(emitted[0]?.[0].required).toBeTrue();
+    expect(emitted[0]?.[0].id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    );
     expect(emitted[0]?.[0].visualSupport).toEqual(createEmptyVisualSupport());
   });
 

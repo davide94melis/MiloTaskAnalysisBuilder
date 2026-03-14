@@ -36,7 +36,7 @@ import { TASK_SYMBOL_CATALOG, TaskSymbolCatalogEntry } from './task-symbol-catal
       </div>
 
       <ol class="steps" *ngIf="steps.length">
-        <li class="step" *ngFor="let step of steps; let index = index">
+        <li class="step" *ngFor="let step of steps; let index = index; trackBy: trackByStepId">
           <header class="step__header">
             <div>
               <span class="step__badge">Step {{ index + 1 }}</span>
@@ -749,6 +749,10 @@ export class TaskStepAuthoringEditorComponent {
     return (event.target as HTMLInputElement).checked;
   }
 
+  protected trackByStepId(_index: number, step: TaskStepDraftRecord): string {
+    return step.id;
+  }
+
   private updateStep(index: number, updater: (step: TaskStepDraftRecord) => TaskStepDraftRecord): void {
     this.emit(this.steps.map((step, currentIndex) => (currentIndex === index ? updater(step) : step)));
   }
@@ -809,6 +813,13 @@ export class TaskStepAuthoringEditorComponent {
   }
 
   private createStepId(): string {
-    return `step-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    const segment = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).slice(1);
+    return `${segment()}${segment()}-${segment()}-4${segment().slice(0, 3)}-${(
+      8 + Math.floor(Math.random() * 4)
+    ).toString(16)}${segment().slice(0, 3)}-${segment()}${segment()}${segment()}`;
   }
 }
