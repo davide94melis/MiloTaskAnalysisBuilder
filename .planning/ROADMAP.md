@@ -178,5 +178,6 @@ Completed on 2026-03-14. Summaries:
 - `.planning/phases/05-media-support-pipeline/05-01-SUMMARY.md`
 - `.planning/phases/05-media-support-pipeline/05-02-SUMMARY.md`
 - `.planning/phases/05-media-support-pipeline/05-03-SUMMARY.md`
+- `.planning/phases/05-media-support-pipeline/05-04-SUMMARY.md`
 
 Next up: plan Phase 6 for support variants on top of the now-stable media duplication boundary.
