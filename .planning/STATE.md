@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T10:20:00.000Z"
+last_updated: "2026-03-14T11:29:00.000Z"
 progress:
   total_phases: 10
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 33
   completed_plans: 33
 ---
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 9 minimal session tracking is complete. The repo now has owner and shared minimal completion writes, owner-only task history, and non-blocking present-mode persistence on top of the existing present and sharing surfaces.
+**Current focus:** Phase 10 PDF export and UX polish are complete. The repo now covers the full v1 loop from Milo SSO through authoring, preview, guided present, safe sharing, minimal session tracking, and browser-print export.
 
 ## Status
 
@@ -52,14 +52,17 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 9 Plan 09-01 executed and verified
 - Phase 9 Plan 09-02 executed and verified
 - Phase 9 Plan 09-03 executed and verified
+- Phase 10 Plan 10-01 executed and verified
+- Phase 10 Plan 10-02 executed and verified
+- Phase 10 Plan 10-03 executed and verified
 
 ## Active Milestone
 
-- Building V1 MVP with Milo SSO, task authoring, present mode, sharing, basic tracking, and PDF export
+- V1 MVP complete with Milo SSO, task authoring, present mode, sharing, basic tracking, and PDF export
 
 ## Next Command
 
-- `$gsd-plan-phase 10`
+- `$gsd-audit-milestone`
 
 ## Recent Decisions
 
@@ -109,6 +112,10 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Restarting a completed run resets the once-per-run guard so a second full completion records a second minimal session.
 - The authenticated editor now exposes only a narrow history surface for the current task: total completion count plus the 5 most recent sessions.
 - Phase 9 explicitly defers per-step telemetry, timings, prompt/help-level capture, analytics, and clinical reporting.
+- Phase 10 adds an authenticated `/tasks/:taskId/export` route that reuses saved task detail and browser print instead of introducing a backend PDF generator.
+- Export is now discoverable from both the editor and the saved preview flow and follows the same saved-only boundary as preview, present, and share.
+- The final polish pass aligns dashboard, library, task cards, present mode, shared view, and the authenticated shell with clearer Milo/Symwriter-compatible hierarchy and action language.
+- Public share surfaces remain safe DTO consumers after the Phase 10 polish pass and still do not expose owner-only export or metadata.
 
 ## Constraints To Preserve
 
@@ -120,5 +127,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed Phase 9
+- Stopped at: Completed Phase 10
 - Resume file: None

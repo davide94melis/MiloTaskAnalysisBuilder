@@ -17,6 +17,7 @@
 | 7 | Complete | 2026-03-14 |
 | 8 | Complete | 2026-03-14 |
 | 9 | Complete | 2026-03-14 |
+| 10 | Complete | 2026-03-14 |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -244,3 +245,17 @@ Phase 9 now closes with owner and shared minimal completion writes, authenticate
 The final Phase 9 contract remains intentionally narrow: there is still no per-step telemetry, help-level capture, timings, analytics dashboard, or clinical reporting layer.
 
 Next up: plan Phase 10 PDF export and UX polish on top of the now-complete v1 create, present, share, and minimal tracking loop.
+
+## Phase 10 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/10-pdf-export-and-ux-polish/10-01-SUMMARY.md`
+- `.planning/phases/10-pdf-export-and-ux-polish/10-02-SUMMARY.md`
+- `.planning/phases/10-pdf-export-and-ux-polish/10-03-SUMMARY.md`
+
+Phase 10 closes v1 with an authenticated browser-print export route, export entry points from the editor and preview flows, and a final Milo/Symwriter-compatible polish pass across dashboard, library, present, shared view, and the app shell.
+
+The final Phase 10 contract remains intentionally narrow: export is still browser-print based, public anonymous export is still deferred, and no deeper redesign or backend PDF pipeline was pulled into v1.
+
+Next up: audit and close the v1 milestone.

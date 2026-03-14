@@ -16,6 +16,7 @@ import { TaskShellEditorEntryComponent } from './task-shell-editor-entry.compone
 import { TaskStepsDraftListComponent } from './task-steps-draft-list.component';
 import { TaskGuidedPresentPageComponent } from '../present/task-guided-present-page.component';
 import { TaskPlaybackPreviewPageComponent } from '../present/task-playback-preview-page.component';
+import { TaskPrintExportPageComponent } from '../present/task-print-export-page.component';
 
 describe('TaskShellEditorEntryComponent', () => {
   const baseTask: TaskDetailRecord = {
@@ -194,13 +195,15 @@ describe('TaskShellEditorEntryComponent', () => {
     }
   ];
 
-  it('registers the authenticated preview and present routes outside the editor path', () => {
+  it('registers the authenticated preview, present, and export routes outside the editor path', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
     const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
     const presentRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/present');
+    const exportRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/export');
 
     expect(previewRoute?.component).toBe(TaskPlaybackPreviewPageComponent);
     expect(presentRoute?.component).toBe(TaskGuidedPresentPageComponent);
+    expect(exportRoute?.component).toBe(TaskPrintExportPageComponent);
   });
 
   it('loads detail data, retains draft upload state, and saves backend-aligned mixed visual support payloads', async () => {
@@ -523,7 +526,7 @@ describe('TaskShellEditorEntryComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     let previewButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Apri anteprima playback'
+      (button) => button.textContent?.trim() === 'Verifica anteprima'
     ) as HTMLButtonElement | undefined;
     let presentButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Avvia modalita guidata'
@@ -534,8 +537,9 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(previewButton?.disabled).toBeTrue();
     expect(presentButton?.disabled).toBeTrue();
     expect(exportButton?.disabled).toBeTrue();
+    expect(host.textContent).toContain('Versione salvata da aggiornare');
     expect(host.textContent).toContain(
-      'Salva prima la task per includere in anteprima, modalita guidata ed export le immagini ancora in bozza.'
+      'Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini ancora in bozza.'
     );
     previewButton?.click();
     presentButton?.click();
@@ -552,7 +556,7 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     previewButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Apri anteprima playback'
+      (button) => button.textContent?.trim() === 'Verifica anteprima'
     ) as HTMLButtonElement | undefined;
     presentButton = Array.from(host.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Avvia modalita guidata'
@@ -563,6 +567,7 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(previewButton?.disabled).toBeFalse();
     expect(presentButton?.disabled).toBeFalse();
     expect(exportButton?.disabled).toBeFalse();
+    expect(host.textContent).toContain('Versione salvata pronta');
 
     previewButton?.click();
     await fixture.whenStable();

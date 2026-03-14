@@ -75,15 +75,15 @@
 
 ### Export
 
-- [ ] **EXPT-01**: User can export a task analysis to printable PDF.
-- [ ] **EXPT-02**: Export preserves step order, text, and visual supports in a print-friendly layout.
-- [ ] **EXPT-03**: Export can be used for practical real-world materials rather than only on-screen viewing.
+- [x] **EXPT-01**: User can export a task analysis to printable PDF.
+- [x] **EXPT-02**: Export preserves step order, text, and visual supports in a print-friendly layout.
+- [x] **EXPT-03**: Export can be used for practical real-world materials rather than only on-screen viewing.
 
 ### UX Foundation
 
-- [ ] **UX-01**: The application uses a visual language compatible with Milo and Symwriter.
+- [x] **UX-01**: The application uses a visual language compatible with Milo and Symwriter.
 - [x] **UX-02**: The dashboard feels operational and reassuring rather than technical or developer-oriented.
-- [ ] **UX-03**: Core workflows for create, edit, present, share, and export are understandable without training-heavy UI.
+- [x] **UX-03**: Core workflows for create, edit, present, share, and export are understandable without training-heavy UI.
 
 ## v2 Requirements
 
@@ -168,12 +168,12 @@
 | SESS-01 | Phase 9 | Complete |
 | SESS-02 | Phase 9 | Complete |
 | SESS-03 | Phase 9 | Complete |
-| EXPT-01 | Phase 10 | Pending |
-| EXPT-02 | Phase 10 | Pending |
-| EXPT-03 | Phase 10 | Pending |
-| UX-01 | Phase 10 | Pending |
+| EXPT-01 | Phase 10 | Complete |
+| EXPT-02 | Phase 10 | Complete |
+| EXPT-03 | Phase 10 | Complete |
+| UX-01 | Phase 10 | Complete |
 | UX-02 | Phase 2 | Complete |
-| UX-03 | Phase 10 | Pending |
+| UX-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 47 total
