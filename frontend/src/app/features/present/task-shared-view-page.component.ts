@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { MiloAuthService } from '../../core/auth/milo-auth.service';
 import { PublicTaskShareRecord, PublicTaskShareStepRecord } from '../../core/tasks/task-library.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
 interface SharedTaskViewRecord {
   token: string;
@@ -95,6 +96,7 @@ interface SharedTaskViewRecord {
 
               <article class="shared-step__support" *ngIf="step.visualSupport.symbol as symbol">
                 <span>Simbolo</span>
+                <span class="shared-step__symbol-glyph" aria-hidden="true">{{ symbolGlyph(symbol) }}</span>
                 <strong>{{ symbol.label }}</strong>
                 <small>{{ symbol.library }} | {{ symbol.key }}</small>
               </article>
@@ -289,6 +291,11 @@ interface SharedTaskViewRecord {
         font-size: 1.2rem;
       }
 
+      .shared-step__symbol-glyph {
+        font-size: clamp(2.8rem, 6vw, 4.5rem);
+        line-height: 1;
+      }
+
       .shared-step__support--image {
         grid-column: 1 / -1;
       }
@@ -349,6 +356,10 @@ export class TaskSharedViewPageComponent {
 
   protected hasVisualSupport(step: PublicTaskShareStepRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  protected symbolGlyph(symbol: { library: string; key: string; label: string } | null | undefined): string {
+    return resolveTaskSymbolGlyph(symbol?.library, symbol?.key) ?? symbol?.label.slice(0, 1) ?? '?';
   }
 
   protected async openSharedPresent(): Promise<void> {

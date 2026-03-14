@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TaskDetailRecord, TaskStepDraftRecord } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
 @Component({
   selector: 'mtab-task-playback-preview-page',
@@ -76,6 +77,7 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
 
           <div class="preview__symbol-card" *ngIf="step.visualSupport.symbol as symbol">
             <span>Simbolo</span>
+            <span class="preview__symbol-glyph" aria-hidden="true">{{ symbolGlyph(symbol) }}</span>
             <strong>{{ symbol.label }}</strong>
             <small>{{ symbol.library }} · {{ symbol.key }}</small>
           </div>
@@ -272,6 +274,11 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
         color: #6b7280;
       }
 
+      .preview__symbol-glyph {
+        font-size: clamp(2.8rem, 6vw, 4.5rem);
+        line-height: 1;
+      }
+
       .preview__image-card {
         display: grid;
         gap: 0.75rem;
@@ -340,6 +347,10 @@ export class TaskPlaybackPreviewPageComponent {
 
   protected hasSavedVisualSupport(step: TaskStepDraftRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  protected symbolGlyph(symbol: { library: string; key: string; label: string } | null | undefined): string {
+    return resolveTaskSymbolGlyph(symbol?.library, symbol?.key) ?? symbol?.label.slice(0, 1) ?? '?';
   }
 
   private async loadPreview(taskId: string | null): Promise<void> {

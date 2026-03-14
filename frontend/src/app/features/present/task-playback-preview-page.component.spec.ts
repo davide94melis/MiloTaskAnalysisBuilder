@@ -157,6 +157,7 @@ describe('TaskPlaybackPreviewPageComponent', () => {
     expect(host.textContent).toContain('symwriter');
     expect(host.textContent).toContain('book');
     expect(host.textContent).toContain('Quaderno');
+    expect(host.querySelector('.preview__symbol-glyph')?.textContent?.trim().length).toBeGreaterThan(0);
 
     let image = host.querySelector<HTMLImageElement>('img');
     expect(image?.getAttribute('src')).toBe('/api/tasks/task-42/media/media-2/content');

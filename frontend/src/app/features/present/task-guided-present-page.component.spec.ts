@@ -395,6 +395,7 @@ describe('TaskGuidedPresentPageComponent', () => {
     expect(host.textContent).toContain('Mostra il simbolo del piatto');
     expect(host.textContent).toContain('Simbolo');
     expect(host.textContent).toContain('Piatto');
+    expect(host.querySelector('.present-stage__symbol-glyph')?.textContent?.trim().length).toBeGreaterThan(0);
     expect(host.querySelector('img')).toBeNull();
 
     nextButton()?.click();

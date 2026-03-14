@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { TaskDetailRecord, TaskStepDraftRecord } from '../../core/tasks/task-detail.models';
 import { PublicTaskPresentRecord, PublicTaskShareStepRecord } from '../../core/tasks/task-library.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
 type PresentViewport = 'phone' | 'tablet' | 'desktop';
 type PresentSource = 'owner' | 'shared';
@@ -125,6 +126,7 @@ interface PresentTaskRecord {
 
               <div class="present-stage__support present-stage__support--symbol" *ngIf="step.visualSupport.symbol as symbol">
                 <span class="present-stage__support-label">Simbolo</span>
+                <span class="present-stage__symbol-glyph" aria-hidden="true">{{ symbolGlyph(symbol) }}</span>
                 <strong>{{ symbol.label }}</strong>
                 <small>{{ symbol.library }} | {{ symbol.key }}</small>
               </div>
@@ -338,6 +340,11 @@ interface PresentTaskRecord {
       .present-stage__support--symbol {
         min-height: 10rem;
         align-content: center;
+      }
+
+      .present-stage__symbol-glyph {
+        font-size: clamp(3.5rem, 7vw, 5.5rem);
+        line-height: 1;
       }
 
       .present-stage__support-label {
@@ -650,6 +657,10 @@ export class TaskGuidedPresentPageComponent {
 
   protected hasSavedVisualSupport(step: TaskStepDraftRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  protected symbolGlyph(symbol: { library: string; key: string; label: string } | null | undefined): string {
+    return resolveTaskSymbolGlyph(symbol?.library, symbol?.key) ?? symbol?.label.slice(0, 1) ?? '?';
   }
 
   protected isOwnerTask(): boolean {

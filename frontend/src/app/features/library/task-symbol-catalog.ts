@@ -64,3 +64,14 @@ export const TASK_SYMBOL_CATALOG: readonly TaskSymbolCatalogEntry[] = [
     keywords: ['cibo', 'pausa']
   }
 ];
+
+export function resolveTaskSymbolGlyph(
+  library: string | null | undefined,
+  key: string | null | undefined
+): string | null {
+  if (!library || !key) {
+    return null;
+  }
+
+  return TASK_SYMBOL_CATALOG.find((entry) => entry.library === library && entry.key === key)?.glyph ?? null;
+}

@@ -141,6 +141,7 @@ describe('TaskPrintExportPageComponent', () => {
     expect(host.textContent).toContain('Testo visivo');
     expect(host.textContent).toContain('Simbolo');
     expect(host.textContent).toContain('Sapone');
+    expect(host.querySelector('.print-support__symbol-glyph')?.textContent?.trim().length).toBeGreaterThan(0);
     expect(host.textContent).toContain('Nessun supporto visivo salvato per questo step.');
     expect(host.querySelector('img')?.getAttribute('src')).toBe('/api/tasks/task-77/media/media-1/content');
     expect(printSpy).toHaveBeenCalled();
