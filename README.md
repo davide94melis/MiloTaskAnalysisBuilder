@@ -147,6 +147,13 @@ Phase 5 extends the existing task-detail aggregate instead of inventing separate
 - `PUT /api/tasks/{taskId}` still owns explicit persistence for the full ordered step array, including saved media references
 - `GET /api/tasks/{taskId}/media/{mediaId}/content` serves authenticated image content for saved step media
 
+### Frontend playback proof added in Phase 5 gap closure
+
+- Authenticated users can open `/tasks/:taskId/preview` as a read-only playback proof outside the editor route.
+- The preview fetches `GET /api/tasks/{taskId}` again and renders only the persisted `visualSupport` payload returned by the task-detail contract.
+- Draft-only upload state in the editor is not the source of truth for preview rendering; users must save the task before preview includes newly uploaded media.
+- This preview deliberately reuses the same authenticated media pipeline and saved media URLs already used by the editor. It does not introduce a separate save contract or public asset access path.
+
 ### Step visual support payload
 
 Each saved step now round-trips this nested shape:
@@ -167,6 +174,7 @@ Each saved step now round-trips this nested shape:
 
 ### Boundary with later phases
 
-- Phase 5 does **not** implement Phase 7 present-mode UI
+- Phase 5 now includes only an authenticated read-only preview that proves saved media renders outside the editor
+- Phase 5 does **not** implement Phase 7 guided present-mode flow, completion controls, or session behavior
 - Phase 5 does **not** expose public or unauthenticated media access; that remains Phase 8 work
 - Public asset rules, share-safe authorization, and any public media URLs stay deferred until sharing is designed explicitly
