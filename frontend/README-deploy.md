@@ -142,3 +142,23 @@ The frontend must still defer public links/public media to Phase 8 and persisted
 ## Scope Reminder
 
 Phase 7 adds authenticated guided playback, but public sharing/public media still remain Phase 8 work and persisted session tracking still remains Phase 9 work.
+
+## Phase 8 Frontend Contract
+
+Phase 8 adds public share entry routes while preserving the authenticated editor shell.
+
+The frontend now expects:
+
+- `/shared/:token` to load a safe anonymous task-view payload from `GET /api/public/shares/{token}`
+- `/shared/:token/present` to load a safe anonymous guided-present payload from `GET /api/public/shares/{token}/present`
+- `POST /api/public/shares/{token}/duplicate` to remain authenticated even though the read routes are public
+
+Frontend behavior in Phase 8:
+
+- public routes live outside `authGuard` and outside the main authenticated shell
+- the shared present route reuses the Phase 7 guided player instead of introducing a second playback implementation
+- public pages must not render editor controls, family management, owner metadata, or adult-only guidance that is absent from the safe DTO
+- duplicate-from-share is explicit; anonymous recipients are redirected through `/auth/login` and returned with share token plus intended action preserved
+- public media URLs are share-token scoped and should be treated as runtime view URLs, not as durable public storage identifiers
+
+The frontend must still defer persisted session tracking to Phase 9.

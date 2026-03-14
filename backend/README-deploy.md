@@ -125,3 +125,27 @@ Backend boundaries preserved in Phase 7:
 ## Scope Reminder
 
 This backend does not implement local login, registration, or shared Milo entities. Phase 7 keeps guided playback on the existing authenticated task-detail contract, while public media access still belongs to Phase 8 and persisted session tracking still belongs to Phase 9.
+
+## Phase 8 Backend Contract
+
+Phase 8 introduces a separate public-share boundary instead of relaxing the owner task-detail API.
+
+The backend now exposes:
+
+- authenticated owner share-management routes under `POST/GET/DELETE /api/tasks/{taskId}/shares...`
+- anonymous safe read routes:
+  - `GET /api/public/shares/{token}`
+  - `GET /api/public/shares/{token}/present`
+  - `GET /api/public/shares/{token}/media/{mediaId}/content`
+- authenticated duplicate-from-share route:
+  - `POST /api/public/shares/{token}/duplicate`
+
+Backend rules in Phase 8:
+
+- owner task detail on `GET /api/tasks/{taskId}` remains authenticated and is not reused as the public DTO
+- public responses must expose only the safe fields required for public view or public present
+- public media bytes are served only after the share token resolves to an active share and the media still belongs to a currently attached persisted step
+- revoking a share invalidates the public token without changing the private authored task
+- duplicate-from-share always creates a new private recipient-owned draft and does not publish or transfer ownership
+
+The backend must still defer persisted present-mode/session tracking to Phase 9 and must not introduce generic public asset URLs in v1.

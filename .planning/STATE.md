@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T08:58:30.000Z"
+last_updated: "2026-03-14T09:22:30.000Z"
 progress:
   total_phases: 10
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 30
-  completed_plans: 28
+  completed_plans: 30
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 8 safe sharing and public access is in progress. Plans 08-01 through 08-03 now cover backend share management, the safe public backend contract, and the authenticated frontend share-management surface.
+**Current focus:** Phase 8 safe sharing and public access is complete. The repo now has owner share management, anonymous public read surfaces, share-scoped media, and explicit authenticated duplicate-from-share behavior.
 
 ## Status
 
@@ -47,6 +47,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 8 Plan 08-01 executed and verified
 - Phase 8 Plan 08-02 executed and verified
 - Phase 8 Plan 08-03 executed and verified
+- Phase 8 Plan 08-04 executed and verified
+- Phase 8 Plan 08-05 executed and verified
 
 ## Active Milestone
 
@@ -54,7 +56,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `Execute Phase 8 plan 08-04`
+- `$gsd-plan-phase 9`
 
 ## Recent Decisions
 
@@ -94,6 +96,10 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - The authenticated editor now owns share management with separate `view` and `present` controls, while keeping link lifecycle actions outside any public route.
 - Frontend share messaging now states that links always reuse the last saved task state and never publish unsaved draft media or active save-in-progress changes.
 - The frontend service layer now has explicit owner share-management methods plus public-share read and duplicate accessors so later public pages can consume the Phase 8 backend contract without reusing `getTaskDetail`.
+- Public share routes now live outside the authenticated shell at `/shared/:token` and `/shared/:token/present`, with the shared present experience reusing the Phase 7 guided player instead of introducing a second public playback implementation.
+- The public frontend contract now matches the narrowed backend DTOs rather than owner task-detail payloads, so anonymous surfaces intentionally omit professional notes, family metadata, and adult-only guidance.
+- Duplicate-from-share now preserves intent through the Milo login bridge for anonymous recipients and returns authenticated recipients to a new private draft after import succeeds.
+- Phase 8 verification now covers anonymous read, share-scoped media, revoked-link failures, and authenticated duplication across both backend and frontend test suites.
 
 ## Constraints To Preserve
 
@@ -105,5 +111,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 08-03-PLAN.md
+- Stopped at: Completed Phase 8
 - Resume file: None

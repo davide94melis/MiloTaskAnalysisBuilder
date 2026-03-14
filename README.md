@@ -225,3 +225,40 @@ Phase 7 turns the saved playback proof into the authenticated guided present flo
 - Phase 7 does **not** introduce public links, anonymous access, or share-safe public media URLs; those remain Phase 8 work.
 - Phase 7 does **not** persist completion history, session records, timestamps, or facilitator analytics; those remain Phase 9 work.
 - Phase 7 does **not** change the explicit `PUT /api/tasks/{taskId}` save boundary for steps or media.
+
+## Phase 8 Safe Sharing And Public Access Contract
+
+Phase 8 adds owner-managed public links without weakening the authenticated editor/task-detail boundary.
+
+### Owner share-management flow
+
+- Saved tasks can now expose one active `view` link and one active `present` link.
+- Share management stays inside the authenticated editor and never publishes unsaved draft edits or pending media uploads.
+- Regenerate and revoke rotate or disable the public token without changing the private task itself.
+
+### Public routes added in Phase 8
+
+- `/shared/:token`
+  - anonymous read-only page for the safe public view DTO
+- `/shared/:token/present`
+  - anonymous guided present route reusing the Phase 7 single-step player
+- `/auth/login`
+  - still the Milo handoff route, now also preserving explicit duplicate-from-share intent
+
+### Public data and media boundary
+
+- Public routes do **not** reuse the authenticated owner `GET /api/tasks/{taskId}` payload.
+- The backend serves separate safe DTOs that omit professional notes, family/editor metadata, owner identity, and adult-only step guidance.
+- Public images load only through share-token-scoped media URLs such as `/api/public/shares/{token}/media/{mediaId}/content`.
+- There is still no generic public asset bucket URL in v1.
+
+### Explicit duplication boundary
+
+- Anonymous visitors may read shared tasks and shared present links without signing in.
+- Duplicating into a private library remains an explicit authenticated action.
+- If the recipient is not signed in, the frontend preserves the share token and intended duplicate action through the Milo login bridge, then imports the task as a new private draft after auth succeeds.
+
+### Boundary with later phases
+
+- Phase 8 still does **not** persist session completions, per-step tracking, or analytics; that remains Phase 9 work.
+- Phase 8 still does **not** add team workspaces, assignments to children, or generic public template discovery.

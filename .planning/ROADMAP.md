@@ -215,18 +215,16 @@ Next up: plan Phase 8 safe sharing and public access on top of the now-stable sa
 
 ## Phase 8 Next
 
-Plan 08-01 completed on 2026-03-14. Summary:
+Completed on 2026-03-14. Summaries:
 
 - `.planning/phases/08-safe-sharing-and-public-access/08-01-SUMMARY.md`
-
-Plan 08-02 completed on 2026-03-14. Summary:
-
 - `.planning/phases/08-safe-sharing-and-public-access/08-02-SUMMARY.md`
-
-Plan 08-03 completed on 2026-03-14. Summary:
-
 - `.planning/phases/08-safe-sharing-and-public-access/08-03-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-04-SUMMARY.md`
+- `.planning/phases/08-safe-sharing-and-public-access/08-05-SUMMARY.md`
 
-Phase 8 now has a backend share-management foundation, a safe public backend contract, and the authenticated editor share panel plus frontend service-layer support needed to manage `view` and `present` links from saved task state.
+Phase 8 now closes with owner-managed share links, anonymous public view and public present routes, share-token-scoped media delivery, explicit authenticated duplicate-from-share handoff, and verification evidence that private owner fields stay out of the public surface.
 
-Next up: execute Plan 08-04 to connect the new public frontend routes and presentation surfaces to the Phase 8 share contract.
+The final Phase 8 contract remains intentionally narrow: public access is token-scoped and safe DTO based, while persisted session tracking and analytics still stay in Phase 9.
+
+Next up: plan Phase 9 minimal session tracking on top of the now-stable present and share surfaces.
