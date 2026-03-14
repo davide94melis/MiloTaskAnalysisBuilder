@@ -83,6 +83,56 @@ class TaskLibraryControllerIntegrationTest {
     }
 
     @Test
+    void createsVariantForAuthenticatedUser() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID sourceTaskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        TaskCardResponse variant = new TaskCardResponse(
+                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                "Routine del mattino",
+                "Routine quotidiana",
+                "Bambino",
+                "Autonomo",
+                "Casa",
+                "private",
+                "draft",
+                6,
+                principal.getEmail(),
+                sourceTaskId,
+                Instant.parse("2026-03-13T10:15:30Z"),
+                sourceTaskId,
+                sourceTaskId,
+                "Routine del mattino",
+                "variant",
+                2
+        );
+
+        when(taskShellService.createVariant(eq(sourceTaskId), eq(principal.getLocalUserId()), eq(principal.getEmail()), any(CreateTaskRequest.class)))
+                .thenReturn(variant);
+
+        mockMvc.perform(post("/api/tasks")
+                        .principal(authentication(principal))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CreateTaskRequest("Routine del mattino", null, sourceTaskId, "Autonomo"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sourceTaskId").value(sourceTaskId.toString()))
+                .andExpect(jsonPath("$.supportLevel").value("Autonomo"))
+                .andExpect(jsonPath("$.variantFamilyId").value(sourceTaskId.toString()))
+                .andExpect(jsonPath("$.variantRole").value("variant"));
+    }
+
+    @Test
+    void rejectsVariantCreationWithoutSupportLevel() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID sourceTaskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+        mockMvc.perform(post("/api/tasks")
+                        .principal(authentication(principal))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CreateTaskRequest("Routine del mattino", null, sourceTaskId, " "))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void listsLibraryUsingProvidedFilters() throws Exception {
         TaskBuilderPrincipal principal = principal();
         TaskCardResponse draft = card("Preparare lo zaino", principal.getEmail(), "draft");
@@ -158,6 +208,7 @@ class TaskLibraryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.authorName").value(principal.getEmail()))
                 .andExpect(jsonPath("$.status").value("draft"));
+        verify(taskShellService).duplicate(duplicated.id(), principal.getLocalUserId(), principal.getEmail());
     }
 
     @Test
