@@ -69,9 +69,9 @@
 
 ### Session Tracking
 
-- [ ] **SESS-01**: When a task is completed in present mode, the app can save a minimal completion session record.
-- [ ] **SESS-02**: A session record stores task ID, user or access context, completion date, step count, and completed status.
-- [ ] **SESS-03**: Authenticated users can see at least a basic history or count of completed task sessions for their tasks.
+- [x] **SESS-01**: When a task is completed in present mode, the app can save a minimal completion session record.
+- [x] **SESS-02**: A session record stores task ID, user or access context, completion date, step count, and completed status.
+- [x] **SESS-03**: Authenticated users can see at least a basic history or count of completed task sessions for their tasks.
 
 ### Export
 
@@ -165,9 +165,9 @@
 | MEDI-01 | Phase 5 | Complete |
 | MEDI-02 | Phase 5 | Complete |
 | MEDI-03 | Phase 8 | Complete |
-| SESS-01 | Phase 9 | Pending |
-| SESS-02 | Phase 9 | Pending |
-| SESS-03 | Phase 9 | Pending |
+| SESS-01 | Phase 9 | Complete |
+| SESS-02 | Phase 9 | Complete |
+| SESS-03 | Phase 9 | Complete |
 | EXPT-01 | Phase 10 | Pending |
 | EXPT-02 | Phase 10 | Pending |
 | EXPT-03 | Phase 10 | Pending |
@@ -182,4 +182,4 @@
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-14 after Phase 6 Plan 06-04 completion*
+*Last updated: 2026-03-14 after Phase 9 completion*

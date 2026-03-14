@@ -15,6 +15,8 @@
 | 5 | Complete | 2026-03-14 |
 | 6 | Complete | 2026-03-14 |
 | 7 | Complete | 2026-03-14 |
+| 8 | Complete | 2026-03-14 |
+| 9 | Complete | 2026-03-14 |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -228,3 +230,17 @@ Phase 8 now closes with owner-managed share links, anonymous public view and pub
 The final Phase 8 contract remains intentionally narrow: public access is token-scoped and safe DTO based, while persisted session tracking and analytics still stay in Phase 9.
 
 Next up: plan Phase 9 minimal session tracking on top of the now-stable present and share surfaces.
+
+## Phase 9 Next
+
+Completed on 2026-03-14. Summaries:
+
+- `.planning/phases/09-minimal-session-tracking/09-01-SUMMARY.md`
+- `.planning/phases/09-minimal-session-tracking/09-02-SUMMARY.md`
+- `.planning/phases/09-minimal-session-tracking/09-03-SUMMARY.md`
+
+Phase 9 now closes with owner and shared minimal completion writes, authenticated task-level session history, non-blocking write-once present-mode persistence, and verification evidence that public present links can attribute sessions without exposing history.
+
+The final Phase 9 contract remains intentionally narrow: there is still no per-step telemetry, help-level capture, timings, analytics dashboard, or clinical reporting layer.
+
+Next up: plan Phase 10 PDF export and UX polish on top of the now-complete v1 create, present, share, and minimal tracking loop.

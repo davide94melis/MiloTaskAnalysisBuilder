@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T09:22:30.000Z"
+last_updated: "2026-03-14T10:20:00.000Z"
 progress:
   total_phases: 10
-  completed_phases: 8
-  total_plans: 30
-  completed_plans: 30
+  completed_phases: 9
+  total_plans: 33
+  completed_plans: 33
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 8 safe sharing and public access is complete. The repo now has owner share management, anonymous public read surfaces, share-scoped media, and explicit authenticated duplicate-from-share behavior.
+**Current focus:** Phase 9 minimal session tracking is complete. The repo now has owner and shared minimal completion writes, owner-only task history, and non-blocking present-mode persistence on top of the existing present and sharing surfaces.
 
 ## Status
 
@@ -49,6 +49,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 8 Plan 08-03 executed and verified
 - Phase 8 Plan 08-04 executed and verified
 - Phase 8 Plan 08-05 executed and verified
+- Phase 9 Plan 09-01 executed and verified
+- Phase 9 Plan 09-02 executed and verified
+- Phase 9 Plan 09-03 executed and verified
 
 ## Active Milestone
 
@@ -56,7 +59,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `$gsd-plan-phase 9`
+- `$gsd-plan-phase 10`
 
 ## Recent Decisions
 
@@ -100,6 +103,12 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - The public frontend contract now matches the narrowed backend DTOs rather than owner task-detail payloads, so anonymous surfaces intentionally omit professional notes, family metadata, and adult-only guidance.
 - Duplicate-from-share now preserves intent through the Milo login bridge for anonymous recipients and returns authenticated recipients to a new private draft after import succeeds.
 - Phase 8 verification now covers anonymous read, share-scoped media, revoked-link failures, and authenticated duplication across both backend and frontend test suites.
+- Minimal session persistence now uses a dedicated `task_session` domain with one flat row per completed run instead of per-step tracking tables.
+- Authenticated owners write sessions through `/api/tasks/{taskId}/sessions`, while shared-present completions use `/api/public/shares/{token}/sessions` and attribute the session back to the task owner.
+- Guided present mode now keeps the completed state immediate and non-blocking while persisting exactly one minimal session per completed run.
+- Restarting a completed run resets the once-per-run guard so a second full completion records a second minimal session.
+- The authenticated editor now exposes only a narrow history surface for the current task: total completion count plus the 5 most recent sessions.
+- Phase 9 explicitly defers per-step telemetry, timings, prompt/help-level capture, analytics, and clinical reporting.
 
 ## Constraints To Preserve
 
@@ -111,5 +120,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed Phase 8
+- Stopped at: Completed Phase 9
 - Resume file: None
