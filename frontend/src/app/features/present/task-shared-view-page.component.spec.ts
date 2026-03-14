@@ -114,6 +114,7 @@ describe('TaskSharedViewPageComponent', () => {
     expect(host.textContent).toContain('Step condivisi');
     expect(host.textContent).toContain('Apri il rubinetto');
     expect(host.textContent).toContain('Prendi il sapone');
+    expect(host.querySelector('.shared-step__symbol-glyph')?.textContent?.trim().length).toBeGreaterThan(0);
     expect(host.textContent).not.toContain('Prompt adulto');
     expect(host.textContent).not.toContain('Rinforzo');
     expect(host.textContent).not.toContain('professionalNotes');

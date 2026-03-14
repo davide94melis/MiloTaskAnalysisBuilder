@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TaskDetailRecord, TaskStepDraftRecord } from '../../core/tasks/task-detail.models';
 import { TaskLibraryService } from '../../core/tasks/task-library.service';
+import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
 @Component({
   selector: 'mtab-task-print-export-page',
@@ -97,6 +98,7 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
 
                 <article class="print-support print-support--symbol" *ngIf="step.visualSupport.symbol as symbol">
                   <span class="print-support__label">Simbolo</span>
+                  <span class="print-support__symbol-glyph" aria-hidden="true">{{ symbolGlyph(symbol) }}</span>
                   <strong>{{ symbol.label }}</strong>
                   <small>{{ symbol.library }} | {{ symbol.key }}</small>
                 </article>
@@ -287,6 +289,11 @@ import { TaskLibraryService } from '../../core/tasks/task-library.service';
         gap: 0.65rem;
       }
 
+      .print-support__symbol-glyph {
+        font-size: clamp(2.6rem, 5vw, 3.8rem);
+        line-height: 1;
+      }
+
       .print-support img {
         width: 100%;
         max-height: 18rem;
@@ -373,6 +380,10 @@ export class TaskPrintExportPageComponent {
 
   protected hasSavedVisualSupport(step: TaskStepDraftRecord): boolean {
     return Boolean(step.visualSupport.text.trim() || step.visualSupport.symbol || step.visualSupport.image);
+  }
+
+  protected symbolGlyph(symbol: { library: string; key: string; label: string } | null | undefined): string {
+    return resolveTaskSymbolGlyph(symbol?.library, symbol?.key) ?? symbol?.label.slice(0, 1) ?? '?';
   }
 
   protected fallbackLink(): string[] {
