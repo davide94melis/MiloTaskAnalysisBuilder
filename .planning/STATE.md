@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T01:23:35Z"
+last_updated: "2026-03-14T01:35:09Z"
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 21
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 6 variant-family foundation is in place. Ready to execute the create-variant flow on top of duplication.
+**Current focus:** Phase 6 create-variant backend flow is complete. Ready to wire the explicit family-aware contract into library UI behavior.
 
 ## Status
 
@@ -37,6 +37,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 5 Plan 05-04 executed and verified
 - Phase 5 Plan 05-05 executed and verified
 - Phase 6 Plan 06-01 executed and verified
+- Phase 6 Plan 06-02 executed and verified
 
 ## Active Milestone
 
@@ -58,6 +59,8 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Variant families are modeled as copy-based task lineages using a nullable `variant_family_id` anchor separate from `source_task_id`.
 - Library cards now expose `variantRole`, family root metadata, and family counts without introducing a version history engine or collaboration rules.
 - Generic duplicate remains outside variant-family semantics until the dedicated create-variant flow is implemented.
+- Create-variant requests now use the existing `POST /api/tasks` entry point with `variantSourceTaskId` plus required `supportLevel`, while generic duplicate stays on `POST /api/tasks/{taskId}/duplicate`.
+- Variant creation resolves the family root from `source.variantFamilyId ?? source.id` and reuses the exact Phase 5 step/media copy boundary without cloning files.
 
 ## Constraints To Preserve
 
@@ -69,5 +72,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 06-01-PLAN.md
+- Stopped at: Completed 06-02-PLAN.md
 - Resume file: None

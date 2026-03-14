@@ -189,5 +189,6 @@ Next up: plan Phase 6 for support variants on top of the now-stable media duplic
 In progress on 2026-03-14. Summaries:
 
 - `.planning/phases/06-support-variants/06-01-SUMMARY.md`
+- `.planning/phases/06-support-variants/06-02-SUMMARY.md`
 
-Next up: execute `06-02` to add the dedicated create-variant flow that sets `variant_family_id`, requires support-level input, and preserves the Phase 5 media duplication boundary. Library and detail-family navigation can then build on the foundation from `06-01`.
+Next up: execute `06-03` to consume the new create-variant contract in the library client and UI, while preserving the explicit split between generic duplicate and family-aware variant creation.
