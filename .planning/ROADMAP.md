@@ -14,6 +14,7 @@
 | 4 | Complete | 2026-03-13 |
 | 5 | Complete | 2026-03-14 |
 | 6 | Complete | 2026-03-14 |
+| 7 | Complete | 2026-03-14 |
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -211,3 +212,13 @@ Phase 7 now closes with the authenticated guided-present route, responsive child
 The final Phase 7 contract remains intentionally narrow: preview is still a proof surface, public sharing/public media stay in Phase 8, and persisted session tracking stays in Phase 9.
 
 Next up: plan Phase 8 safe sharing and public access on top of the now-stable saved-task present-mode surface.
+
+## Phase 8 Next
+
+Plan 08-01 completed on 2026-03-14. Summary:
+
+- `.planning/phases/08-safe-sharing-and-public-access/08-01-SUMMARY.md`
+
+Phase 8 now has a backend share-management foundation with a dedicated share table, opaque mode-specific links, and authenticated owner lifecycle APIs that preserve the existing task-detail and saved-task boundaries.
+
+Next up: execute Plan 08-02 to add the public read contract and anonymous route foundation on top of the new share domain.

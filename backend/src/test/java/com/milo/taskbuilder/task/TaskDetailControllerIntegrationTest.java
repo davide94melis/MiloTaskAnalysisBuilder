@@ -51,6 +51,9 @@ class TaskDetailControllerIntegrationTest {
     private TaskDetailService taskDetailService;
 
     @MockitoBean
+    private TaskShareService taskShareService;
+
+    @MockitoBean
     private TaskMediaStorageService taskMediaStorageService;
 
     @MockitoBean

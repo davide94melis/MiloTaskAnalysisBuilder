@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.milo.taskbuilder.auth.MiloJwtService;
 import com.milo.taskbuilder.auth.TaskBuilderPrincipal;
 import com.milo.taskbuilder.library.dto.CreateTaskRequest;
+import com.milo.taskbuilder.library.dto.CreateTaskShareRequest;
 import com.milo.taskbuilder.library.dto.DashboardResponse;
 import com.milo.taskbuilder.library.dto.TaskCardResponse;
 import com.milo.taskbuilder.library.dto.TaskLibraryFilterOptionsResponse;
 import com.milo.taskbuilder.library.dto.TaskLibraryResponse;
 import com.milo.taskbuilder.task.TaskDetailService;
+import com.milo.taskbuilder.task.TaskShareService;
 import com.milo.taskbuilder.task.TaskShellService;
 import com.milo.taskbuilder.task.dto.TaskDetailResponse;
+import com.milo.taskbuilder.task.dto.TaskShareSummaryResponse;
+import org.springframework.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,6 +58,9 @@ class TaskLibraryControllerIntegrationTest {
     private TaskDetailService taskDetailService;
 
     @MockitoBean
+    private TaskShareService taskShareService;
+
+    @MockitoBean
     private MiloJwtService miloJwtService;
 
     @MockitoBean
@@ -61,6 +69,12 @@ class TaskLibraryControllerIntegrationTest {
     @Test
     void returnsUnauthorizedWhenAuthenticationMissing() throws Exception {
         mockMvc.perform(get("/api/tasks/dashboard"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void returnsUnauthorizedForShareManagementWhenAuthenticationMissing() throws Exception {
+        mockMvc.perform(get("/api/tasks/{taskId}/shares", UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -212,6 +226,120 @@ class TaskLibraryControllerIntegrationTest {
     }
 
     @Test
+    void createsTaskShareForOwner() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        TaskShareSummaryResponse share = shareSummary(
+                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                taskId,
+                "view",
+                "sharetokenview",
+                true,
+                null
+        );
+
+        when(taskShareService.createShare(eq(taskId), eq(principal.getLocalUserId()), any(CreateTaskShareRequest.class)))
+                .thenReturn(share);
+
+        mockMvc.perform(post("/api/tasks/{taskId}/shares", taskId)
+                        .principal(authentication(principal))
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CreateTaskShareRequest("view"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.mode").value("view"))
+                .andExpect(jsonPath("$.token").value("sharetokenview"))
+                .andExpect(jsonPath("$.shareUrl").value("/shared/sharetokenview"))
+                .andExpect(jsonPath("$.active").value(true));
+    }
+
+    @Test
+    void listsActiveTaskSharesForOwner() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        TaskShareSummaryResponse viewShare = shareSummary(
+                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                taskId,
+                "view",
+                "sharetokenview",
+                true,
+                null
+        );
+        TaskShareSummaryResponse presentShare = shareSummary(
+                UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                taskId,
+                "present",
+                "sharetokenpresent",
+                true,
+                null
+        );
+
+        when(taskShareService.listShares(taskId, principal.getLocalUserId()))
+                .thenReturn(List.of(viewShare, presentShare));
+
+        mockMvc.perform(get("/api/tasks/{taskId}/shares", taskId).principal(authentication(principal)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].mode").value("view"))
+                .andExpect(jsonPath("$[0].shareUrl").value("/shared/sharetokenview"))
+                .andExpect(jsonPath("$[1].mode").value("present"))
+                .andExpect(jsonPath("$[1].shareUrl").value("/shared/sharetokenpresent/present"));
+    }
+
+    @Test
+    void regeneratesRequestedShareMode() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        TaskShareSummaryResponse rotated = shareSummary(
+                UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                taskId,
+                "view",
+                "rotatedtoken",
+                true,
+                null
+        );
+
+        when(taskShareService.regenerateShare(taskId, principal.getLocalUserId(), "view"))
+                .thenReturn(rotated);
+
+        mockMvc.perform(post("/api/tasks/{taskId}/shares/{mode}/regenerate", taskId, "view")
+                        .principal(authentication(principal)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode").value("view"))
+                .andExpect(jsonPath("$.token").value("rotatedtoken"))
+                .andExpect(jsonPath("$.shareUrl").value("/shared/rotatedtoken"));
+    }
+
+    @Test
+    void revokesTaskShareForOwner() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID shareId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        Instant revokedAt = Instant.parse("2026-03-14T06:30:00Z");
+        TaskShareSummaryResponse revoked = shareSummary(shareId, taskId, "present", "sharetokenpresent", false, revokedAt);
+
+        when(taskShareService.revokeShare(taskId, shareId, principal.getLocalUserId()))
+                .thenReturn(revoked);
+
+        mockMvc.perform(delete("/api/tasks/{taskId}/shares/{shareId}", taskId, shareId)
+                        .principal(authentication(principal)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode").value("present"))
+                .andExpect(jsonPath("$.active").value(false))
+                .andExpect(jsonPath("$.revokedAt").value("2026-03-14T06:30:00Z"));
+    }
+
+    @Test
+    void rejectsShareManagementForNonOwnerTask() throws Exception {
+        TaskBuilderPrincipal principal = principal();
+        UUID taskId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+        when(taskShareService.listShares(taskId, principal.getLocalUserId()))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        mockMvc.perform(get("/api/tasks/{taskId}/shares", taskId).principal(authentication(principal)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void returnsTaskDetailById() throws Exception {
         TaskBuilderPrincipal principal = principal();
         TaskDetailResponse reopened = detail("Task riapribile", principal.getEmail(), "draft");
@@ -323,6 +451,27 @@ class TaskLibraryControllerIntegrationTest {
                                 2
                         )
                 )
+        );
+    }
+
+    private TaskShareSummaryResponse shareSummary(
+            UUID shareId,
+            UUID taskId,
+            String mode,
+            String token,
+            boolean active,
+            Instant revokedAt
+    ) {
+        return new TaskShareSummaryResponse(
+                shareId,
+                taskId,
+                mode,
+                token,
+                "present".equals(mode) ? "/shared/" + token + "/present" : "/shared/" + token,
+                active,
+                Instant.parse("2026-03-14T06:15:00Z"),
+                Instant.parse("2026-03-14T06:20:00Z"),
+                revokedAt
         );
     }
 }

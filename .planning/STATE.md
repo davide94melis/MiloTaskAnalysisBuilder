@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-03-14T04:20:00.000Z"
+last_updated: "2026-03-14T03:21:03.000Z"
 progress:
   total_phases: 10
   completed_phases: 7
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 30
+  completed_plans: 26
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Rendere semplice, prevedibile e riusabile l'insegnamento passo-passo delle abilita, trasformando attivita complesse in sequenze visive chiare che possano essere create dai professionisti e usate subito con il bambino.
-**Current focus:** Phase 8 safe sharing and public access is next. Phase 7 guided present mode is complete, including editor launch integration on top of the saved-task contract.
+**Current focus:** Phase 8 safe sharing and public access is in progress. Plan 08-01 established the backend share-management foundation on top of the saved-task contract.
 
 ## Status
 
@@ -44,6 +44,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Phase 7 Plan 07-02 executed and verified
 - Phase 7 Plan 07-03 executed and verified
 - Phase 7 Plan 07-04 executed and verified
+- Phase 8 Plan 08-01 executed and verified
 
 ## Active Milestone
 
@@ -51,7 +52,7 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Next Command
 
-- `Plan Phase 8`
+- `Execute Phase 8 plan 08-02`
 
 ## Recent Decisions
 
@@ -81,6 +82,9 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 - Completing the last saved step now consistently transitions into an explicit local completed-task state for both one-step and multi-step tasks.
 - The editor now launches preview and guided present mode only for the currently opened saved task or variant, and pending draft media continues to block both launch surfaces until the task is saved.
 - Phase 7 closes without family-switching playback, public sharing, public media URLs, or persisted session tracking.
+- Task sharing now has a dedicated `task_share` persistence model with opaque tokens and mode-specific revocation state instead of overloading task visibility or status.
+- Owners can now create, list, regenerate, and revoke one active `view` share and one active `present` share per saved task through authenticated task routes.
+- Share-management responses now expose mode, token, derived share URL, and active state while public read, public media, and duplicate-from-share remain deferred to later Phase 8 plans.
 
 ## Constraints To Preserve
 
@@ -92,5 +96,5 @@ See: .planning/PROJECT.md (updated 2026-03-13)
 
 ## Session Continuity
 
-- Stopped at: Completed 07-04-PLAN.md
+- Stopped at: Completed 08-01-PLAN.md
 - Resume file: None
