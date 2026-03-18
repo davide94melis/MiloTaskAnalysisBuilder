@@ -75,9 +75,16 @@ public class TaskShellService {
     @Transactional(readOnly = true)
     public TaskLibraryResponse listLibrary(UUID ownerId, TaskLibraryFilter filter) {
 
-        String statusValue = status != null ? status.name().toLowerCase() : null;
-        List<TaskShellEntity> entities = repository.findLibraryCards(ownerId, category, contextLabel, targetLabel,
-                author, statusValue, supportLevel, search);
+        List<TaskShellEntity> entities = repository.findLibraryCards(
+                ownerId,
+                normalize(filter.category()),
+                normalize(filter.context()),
+                normalize(filter.targetLabel()),
+                normalize(filter.author()),
+                parseStatus(filter.status()) != null ? parseStatus(filter.status()).name().toLowerCase() : null,
+                normalize(filter.supportLevel()),
+                normalize(filter.search())
+        );
 
         List<TaskCardResponse> items = toCards(entities, ownerId);
 
