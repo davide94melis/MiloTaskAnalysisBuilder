@@ -61,7 +61,8 @@ Phase 09 meets its goal in the current repo state. Guided present mode now persi
 ## Remaining Gaps
 
 - No implementation gaps were found against `SESS-01` through `SESS-03`.
-- Manual browser walkthroughs against a deployed environment were not re-run in this pass; closure relies on automated backend/frontend coverage and the documented minimal-session boundary.
+- Phase 12 records that the intended owner-history manual walkthrough was blocked during closeout and never rerun to completion after follow-up fixes.
+- That missing rerun is accepted milestone-closeout debt; it does not change the automated verification result or indicate a proven implementation defect in Phase 09.
 
 ## Notes
 

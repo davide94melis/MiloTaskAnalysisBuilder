@@ -70,7 +70,8 @@ Phase 08 meets its goal in the current repo state. The app now supports owner-ma
 ## Remaining Gaps
 
 - No implementation gaps were found against `SHAR-01` through `SHAR-05` or `MEDI-03`.
-- Manual browser walkthroughs against a deployed environment were not re-run in this pass; closure relies on the backend and frontend automated matrix plus the documented public-share boundary.
+- Phase 12 added real deployed-environment evidence in `12-UAT.md`: shared view and shared present were reached from Chrome on laptop, but a symbol-rendering defect was observed before closeout and fixed afterward.
+- A fresh final post-fix manual rerun is still not recorded, so the remaining gap is accepted as milestone-closeout debt rather than a Phase 08 implementation blocker.
 
 ## Notes
 
