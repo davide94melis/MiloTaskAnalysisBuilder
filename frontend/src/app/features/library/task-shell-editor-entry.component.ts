@@ -78,244 +78,289 @@ type TaskMetadataFormGroup = FormGroup<{
         <mtab-task-metadata-form [form]="metadataForm" />
 
         <aside class="entry__side">
+          <section class="entry__panel entry__panel--compact">
+            <div class="entry__compact-head">
+              <div>
+                <p class="entry__panel-label">Supporto rapido</p>
+                <strong>Apri solo il contesto che ti serve</strong>
+              </div>
+              <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
+            </div>
+
+            <div class="entry__support-shortcuts">
+              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('editor')">
+                <span class="entry__shortcut-icon">?</span>
+                <span>Editor</span>
+              </button>
+              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('saved')">
+                <span class="entry__shortcut-icon">S</span>
+                <span>Salvataggi</span>
+              </button>
+              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('share')">
+                <span class="entry__shortcut-icon">L</span>
+                <span>Link</span>
+              </button>
+              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('family')">
+                <span class="entry__shortcut-icon">V</span>
+                <span>Varianti</span>
+              </button>
+            </div>
+          </section>
+
           <section class="entry__panel">
             <p class="entry__panel-label">Stato editor</p>
             <strong *ngIf="saving()">Salvataggio in corso...</strong>
             <strong *ngIf="!saving() && saveNotice()">{{ saveNotice() }}</strong>
             <p *ngIf="saveError()" class="entry__error">{{ saveError() }}</p>
-            <p *ngIf="!saveError()">
-              Editor, anteprima, modalita guidata, condivisione ed export leggono sempre l ultima versione salvata
-              della task. Bozze locali e upload pendenti restano fuori finche non confermi il salvataggio.
-            </p>
+            <p *ngIf="!saveError()">Editor e superfici esterne leggono sempre la versione confermata con salvataggio.</p>
             <div class="entry__surface-list">
               <p class="entry__hint"><strong>Anteprima:</strong> controlla la lettura salvata fuori dall authoring.</p>
               <p class="entry__hint"><strong>Presenta:</strong> avvia l esperienza guidata della task corrente.</p>
               <p class="entry__hint"><strong>Esporta PDF:</strong> apre il layout stampabile della stessa versione.</p>
             </div>
+            <button type="button" class="entry__link-button" (click)="openSupportOverlay('saved')">Apri guida superfici</button>
           </section>
 
-          <section class="entry__panel">
-            <div class="entry__share-header">
-              <div>
-                <p class="entry__panel-label">Azioni task salvata</p>
-                <strong>Salva prima, poi verifica, presenta, condividi o stampa.</strong>
-              </div>
-              <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
-            </div>
-            <div class="entry__action-groups">
-              <article class="entry__action-group">
-                <span class="entry__action-group-label">Salvataggio</span>
-                <div class="entry__actions">
-                  <button type="submit" [disabled]="saving()">Salva task</button>
-                  <a routerLink="/library">Torna alla libreria</a>
+          <details class="entry__panel entry__disclosure" open>
+            <summary class="entry__disclosure-summary">
+              <div class="entry__share-header">
+                <div>
+                  <p class="entry__panel-label">Azioni task salvata</p>
+                  <strong>Salva prima, poi verifica, presenta, condividi o stampa.</strong>
                 </div>
-              </article>
-
-              <article class="entry__action-group">
-                <span class="entry__action-group-label">Versione salvata</span>
-                <div class="entry__actions">
-                  <button
-                    type="button"
-                    class="entry__ghost"
-                    [disabled]="saving() || !canLaunchSavedPlayback()"
-                    (click)="openPreview()"
-                  >
-                    Verifica anteprima
-                  </button>
-                  <button
-                    type="button"
-                    class="entry__ghost"
-                    [disabled]="saving() || !canLaunchSavedPlayback()"
-                    (click)="openPresentMode()"
-                  >
-                    Avvia modalita guidata
-                  </button>
-                  <button
-                    type="button"
-                    class="entry__ghost"
-                    [disabled]="saving() || !canLaunchSavedPlayback()"
-                    (click)="openExport()"
-                  >
-                    Esporta PDF
-                  </button>
-                </div>
-              </article>
-
-              <article class="entry__action-group">
-                <span class="entry__action-group-label">Gestione task</span>
-                <div class="entry__actions">
-                  <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
-                    Duplica task
-                  </button>
-                </div>
-              </article>
-            </div>
-            <p class="entry__panel-note">
-              Anteprima controlla la resa salvata, modalita guidata usa la task con il bambino, export PDF prepara la
-              stampa dalla stessa versione.
-            </p>
-            <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
-              Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini
-              ancora in bozza.
-            </p>
-          </section>
-
-          <section class="entry__panel" *ngIf="task() as currentTask">
-            <div class="entry__share-header">
-              <div>
-                <p class="entry__panel-label">Storico sessioni</p>
-                <strong>Completamenti minimi della task corrente</strong>
+                <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
               </div>
-              <span class="entry__share-state" *ngIf="sessionHistoryLoading()">Aggiornamento storico...</span>
-            </div>
-            <p>
-              Lo storico mostra solo il totale completamenti e le 5 sessioni piu recenti della task aperta, senza
-              analytics o filtri.
-            </p>
-            <p *ngIf="sessionHistoryError()" class="entry__error">{{ sessionHistoryError() }}</p>
+            </summary>
 
-            <ng-container *ngIf="!sessionHistoryError()">
-              <div class="entry__history-total">
-                <span class="entry__history-total-label">Totale completamenti</span>
-                <strong>{{ currentTaskSessionCount() }}</strong>
+            <div class="entry__disclosure-body">
+              <div class="entry__action-groups">
+                <article class="entry__action-group">
+                  <span class="entry__action-group-label">Salvataggio</span>
+                  <div class="entry__actions">
+                    <button type="submit" [disabled]="saving()">Salva task</button>
+                    <a routerLink="/library">Torna alla libreria</a>
+                  </div>
+                </article>
+
+                <article class="entry__action-group">
+                  <span class="entry__action-group-label">Versione salvata</span>
+                  <div class="entry__actions">
+                    <button
+                      type="button"
+                      class="entry__ghost"
+                      [disabled]="saving() || !canLaunchSavedPlayback()"
+                      (click)="openPreview()"
+                    >
+                      Verifica anteprima
+                    </button>
+                    <button
+                      type="button"
+                      class="entry__ghost"
+                      [disabled]="saving() || !canLaunchSavedPlayback()"
+                      (click)="openPresentMode()"
+                    >
+                      Avvia modalita guidata
+                    </button>
+                    <button
+                      type="button"
+                      class="entry__ghost"
+                      [disabled]="saving() || !canLaunchSavedPlayback()"
+                      (click)="openExport()"
+                    >
+                      Esporta PDF
+                    </button>
+                  </div>
+                </article>
+
+                <article class="entry__action-group">
+                  <span class="entry__action-group-label">Gestione task</span>
+                  <div class="entry__actions">
+                    <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">
+                      Duplica task
+                    </button>
+                  </div>
+                </article>
               </div>
-
-              <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">
-                Nessuna sessione completata registrata per questa task.
+              <p class="entry__panel-note">Preview, present ed export restano azioni secondarie sulla versione salvata.</p>
+              <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
+                Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini
+                ancora in bozza.
               </p>
-
-              <article class="entry__history-item" *ngFor="let session of recentSessions()">
-                <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-                <span>{{ accessContextLabel(session) }}</span>
-                <small>{{ session.stepCount }} step completati</small>
-              </article>
-            </ng-container>
-          </section>
-
-          <section class="entry__panel" *ngIf="task() as currentTask">
-            <div class="entry__share-header">
-              <div>
-                <p class="entry__panel-label">Condivisione pubblica</p>
-                <strong>Link separati per vista e presentazione</strong>
-              </div>
-              <span class="entry__share-state" *ngIf="shareLoading()">Aggiornamento link...</span>
             </div>
-            <p>
-              I link pubblici riusano solo l ultima versione salvata della task. Nessuna bozza locale, modifica non
-              salvata o immagine pendente viene pubblicata in automatico.
-            </p>
-            <p class="entry__hint">
-              Il link <strong>Vista</strong> apre la lettura pubblica. Il link <strong>Presenta</strong> riusera la
-              stessa esperienza guidata salvata prevista dalla modalita present corrente.
-            </p>
-            <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
-            <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
-            <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
+          </details>
 
-            <article class="entry__share-card" *ngFor="let mode of shareModes">
-              <div class="entry__share-card-copy">
-                <div class="entry__share-card-head">
-                  <strong>{{ shareModeLabel(mode) }}</strong>
-                  <span class="entry__share-pill" [class.entry__share-pill--active]="shareForMode(mode)?.active">
-                    {{ shareForMode(mode)?.active ? 'Attivo' : 'Non creato' }}
-                  </span>
+          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
+            <summary class="entry__disclosure-summary">
+              <div class="entry__share-header">
+                <div>
+                  <p class="entry__panel-label">Storico sessioni</p>
+                  <strong>Completamenti minimi della task corrente</strong>
                 </div>
-                <p>{{ shareModeDescription(mode) }}</p>
-                <code class="entry__share-url" *ngIf="shareForMode(mode) as share">{{ publicShareLink(share) }}</code>
-                <p class="entry__hint" *ngIf="!shareForMode(mode)">
-                  Nessun link {{ shareModeLabel(mode).toLowerCase() }} attivo per questa task salvata.
+                <span class="entry__share-state" *ngIf="sessionHistoryLoading()">Aggiornamento storico...</span>
+              </div>
+            </summary>
+
+            <div class="entry__disclosure-body">
+              <p>
+                Lo storico mostra solo il totale completamenti e le 5 sessioni piu recenti della task aperta, senza
+                analytics o filtri.
+              </p>
+              <p *ngIf="sessionHistoryError()" class="entry__error">{{ sessionHistoryError() }}</p>
+
+              <ng-container *ngIf="!sessionHistoryError()">
+                <div class="entry__history-total">
+                  <span class="entry__history-total-label">Totale completamenti</span>
+                  <strong>{{ currentTaskSessionCount() }}</strong>
+                </div>
+
+                <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">
+                  Nessuna sessione completata registrata per questa task.
                 </p>
-              </div>
 
-              <div class="entry__share-actions">
-                <button
-                  type="button"
-                  class="entry__ghost"
-                  [disabled]="isShareActionDisabled(mode)"
-                  (click)="createShare(mode)"
-                >
-                  {{ shareForMode(mode) ? 'Ricrea link' : 'Crea link' }}
-                </button>
-                <button
-                  type="button"
-                  class="entry__ghost"
-                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
-                  (click)="copyShareLink(mode)"
-                >
-                  Copia link
-                </button>
-                <button
-                  type="button"
-                  class="entry__ghost"
-                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
-                  (click)="regenerateShare(mode)"
-                >
-                  Rigenera link
-                </button>
-                <button
-                  type="button"
-                  class="entry__ghost entry__ghost--danger"
-                  [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
-                  (click)="revokeShare(mode)"
-                >
-                  Revoca link
-                </button>
-              </div>
-            </article>
-
-            <p class="entry__hint">
-              La gestione dei link resta solo nell editor autenticato del proprietario. I link pubblici non abilitano
-              modifica, salvataggio o sessioni separate dal contenuto salvato.
-            </p>
-          </section>
-
-          <section class="entry__panel" *ngIf="task() as currentTask">
-            <p class="entry__panel-label">Famiglia varianti</p>
-            <strong>{{ familyRoleLabel(currentTask) }}</strong>
-            <p>{{ familyContextCopy(currentTask) }}</p>
-
-            <dl class="entry__family-facts">
-              <div>
-                <dt>Base</dt>
-                <dd>{{ familyRootTitle(currentTask) }}</dd>
-              </div>
-              <div>
-                <dt>Supporto</dt>
-                <dd>{{ currentTask.supportLevel || 'Da definire' }}</dd>
-              </div>
-              <div>
-                <dt>Task collegate</dt>
-                <dd>{{ familyCountLabel(currentTask) }}</dd>
-              </div>
-            </dl>
-
-            <div class="entry__family-links" *ngIf="currentTask.relatedVariants?.length; else noRelatedVariants">
-              <button
-                *ngFor="let related of currentTask.relatedVariants"
-                type="button"
-                class="entry__family-link"
-                [disabled]="saving()"
-                (click)="openFamilyTask(related.id)"
-              >
-                <span>{{ related.title }}</span>
-                <small>{{ relatedVariantLabel(related) }}</small>
-              </button>
+                <article class="entry__history-item" *ngFor="let session of recentSessions()">
+                  <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                  <span>{{ accessContextLabel(session) }}</span>
+                  <small>{{ session.stepCount }} step completati</small>
+                </article>
+              </ng-container>
             </div>
+          </details>
 
-            <ng-template #noRelatedVariants>
-              <p class="entry__hint">
-                Nessun altra task collegata per ora. La famiglia resta una copia esplicita, senza confronti o storico.
+          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
+            <summary class="entry__disclosure-summary">
+              <div class="entry__share-header">
+                <div>
+                  <p class="entry__panel-label">Condivisione pubblica</p>
+                  <strong>Link separati per vista e presentazione</strong>
+                </div>
+                <span class="entry__share-state" *ngIf="shareLoading()">Aggiornamento link...</span>
+              </div>
+            </summary>
+
+            <div class="entry__disclosure-body">
+              <p>
+                I link pubblici riusano solo l ultima versione salvata della task. Nessuna bozza locale, modifica non
+                salvata o immagine pendente viene pubblicata in automatico.
               </p>
-            </ng-template>
+              <p class="entry__hint">
+                Il link <strong>Vista</strong> apre la lettura pubblica. Il link <strong>Presenta</strong> riusera la
+                stessa esperienza guidata salvata prevista dalla modalita present corrente.
+              </p>
+              <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
+              <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
+              <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
+              <button type="button" class="entry__link-button" (click)="openSupportOverlay('share')">Apri guida link pubblici</button>
 
-            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="createVariantFromCurrent()">
-              Crea variante da questa task
-            </button>
-            <p class="entry__panel-note">
-              Le varianti riusano lo stesso contenuto salvato, compresi simboli e immagini. Present mode guidato e
-              condivisione restano fasi successive.
-            </p>
-          </section>
+              <article class="entry__share-card" *ngFor="let mode of shareModes">
+                <div class="entry__share-card-copy">
+                  <div class="entry__share-card-head">
+                    <strong>{{ shareModeLabel(mode) }}</strong>
+                    <span class="entry__share-pill" [class.entry__share-pill--active]="shareForMode(mode)?.active">
+                      {{ shareForMode(mode)?.active ? 'Attivo' : 'Non creato' }}
+                    </span>
+                  </div>
+                  <p>{{ shareModeDescription(mode) }}</p>
+                  <code class="entry__share-url" *ngIf="shareForMode(mode) as share">{{ publicShareLink(share) }}</code>
+                  <p class="entry__hint" *ngIf="!shareForMode(mode)">
+                    Nessun link {{ shareModeLabel(mode).toLowerCase() }} attivo per questa task salvata.
+                  </p>
+                </div>
+
+                <div class="entry__share-actions">
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="isShareActionDisabled(mode)"
+                    (click)="createShare(mode)"
+                  >
+                    {{ shareForMode(mode) ? 'Ricrea link' : 'Crea link' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                    (click)="copyShareLink(mode)"
+                  >
+                    Copia link
+                  </button>
+                  <button
+                    type="button"
+                    class="entry__ghost"
+                    [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                    (click)="regenerateShare(mode)"
+                  >
+                    Rigenera link
+                  </button>
+                  <button
+                    type="button"
+                    class="entry__ghost entry__ghost--danger"
+                    [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)"
+                    (click)="revokeShare(mode)"
+                  >
+                    Revoca link
+                  </button>
+                </div>
+              </article>
+
+              <p class="entry__hint">
+                La gestione dei link resta solo nell editor autenticato del proprietario. I link pubblici non abilitano
+                modifica, salvataggio o sessioni separate dal contenuto salvato.
+              </p>
+            </div>
+          </details>
+
+          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
+            <summary class="entry__disclosure-summary">
+              <div>
+                <p class="entry__panel-label">Famiglia varianti</p>
+                <strong>{{ familyRoleLabel(currentTask) }}</strong>
+              </div>
+            </summary>
+
+            <div class="entry__disclosure-body">
+              <p>{{ familyContextCopy(currentTask) }}</p>
+
+              <dl class="entry__family-facts">
+                <div>
+                  <dt>Base</dt>
+                  <dd>{{ familyRootTitle(currentTask) }}</dd>
+                </div>
+                <div>
+                  <dt>Supporto</dt>
+                  <dd>{{ currentTask.supportLevel || 'Da definire' }}</dd>
+                </div>
+                <div>
+                  <dt>Task collegate</dt>
+                  <dd>{{ familyCountLabel(currentTask) }}</dd>
+                </div>
+              </dl>
+
+              <div class="entry__family-links" *ngIf="currentTask.relatedVariants?.length; else noRelatedVariants">
+                <button
+                  *ngFor="let related of currentTask.relatedVariants"
+                  type="button"
+                  class="entry__family-link"
+                  [disabled]="saving()"
+                  (click)="openFamilyTask(related.id)"
+                >
+                  <span>{{ related.title }}</span>
+                  <small>{{ relatedVariantLabel(related) }}</small>
+                </button>
+              </div>
+
+              <ng-template #noRelatedVariants>
+                <p class="entry__hint">
+                  Nessun altra task collegata per ora. La famiglia resta una copia esplicita, senza confronti o storico.
+                </p>
+              </ng-template>
+
+              <button type="button" class="entry__ghost" [disabled]="saving()" (click)="createVariantFromCurrent()">
+                Crea variante da questa task
+              </button>
+              <p class="entry__panel-note">Le varianti restano copie esplicite della stessa base salvata.</p>
+              <button type="button" class="entry__link-button" (click)="openSupportOverlay('family')">Apri guida varianti</button>
+            </div>
+          </details>
         </aside>
 
         <mtab-task-steps-draft-list
@@ -330,6 +375,46 @@ type TaskMetadataFormGroup = FormGroup<{
     <ng-template #loading>
       <article class="entry entry--loading">Caricamento task in corso.</article>
     </ng-template>
+
+    <section class="entry__overlay" *ngIf="supportOverlay() as overlay" (click)="closeSupportOverlay()">
+      <article class="entry__overlay-card" (click)="$event.stopPropagation()">
+        <header class="entry__overlay-head">
+          <div>
+            <p class="entry__panel-label">Supporto contestuale</p>
+            <h3>{{ supportOverlayTitle(overlay) }}</h3>
+          </div>
+          <button type="button" class="entry__overlay-close" (click)="closeSupportOverlay()">Chiudi</button>
+        </header>
+
+        <div class="entry__overlay-body">
+          <ng-container [ngSwitch]="overlay">
+            <div *ngSwitchCase="'editor'" class="entry__overlay-copy">
+              <p>Questa pagina dovrebbe restare focalizzata su metadata essenziali, step e salvataggio.</p>
+              <p>Usa la sezione avanzata del metadata form solo per obiettivi educativi e note team quando servono davvero.</p>
+              <p>Preview, present, link pubblici ed export appartengono alla fase di verifica della versione salvata, non al flusso principale di scrittura.</p>
+            </div>
+
+            <div *ngSwitchCase="'saved'" class="entry__overlay-copy">
+              <p>Anteprima, modalita guidata ed export leggono sempre l ultima versione salvata della task.</p>
+              <p>Bozze locali, step non salvati e immagini con persistenza pendente non entrano nelle superfici esterne finche non confermi il salvataggio.</p>
+              <p>Se devi controllare il risultato finale, salva prima e poi usa le azioni della task salvata.</p>
+            </div>
+
+            <div *ngSwitchCase="'share'" class="entry__overlay-copy">
+              <p>I link pubblici pubblicano solo contenuto gia salvato e separano la lettura pubblica dall editor autenticato.</p>
+              <p>Il link Vista apre la lettura pubblica, mentre il link Presenta riusa il percorso guidato in modalita share-safe.</p>
+              <p>Se hai media in bozza o testo non ancora confermato, salva prima di creare, copiare o rigenerare i link.</p>
+            </div>
+
+            <div *ngSwitchCase="'family'" class="entry__overlay-copy">
+              <p>Le varianti sono copie esplicite della task base con un diverso livello di supporto.</p>
+              <p>La famiglia non introduce confronto, merge o storico avanzato: serve solo a navigare versioni operative affini.</p>
+              <p>Quando crei una variante, riusi il contenuto salvato della task corrente, inclusi simboli e immagini gia confermati.</p>
+            </div>
+          </ng-container>
+        </div>
+      </article>
+    </section>
   `,
   styles: [
     `
@@ -437,6 +522,51 @@ type TaskMetadataFormGroup = FormGroup<{
         gap: 0.7rem;
       }
 
+      .entry__panel--compact {
+        gap: 0.9rem;
+      }
+
+      .entry__compact-head {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        align-items: start;
+      }
+
+      .entry__support-shortcuts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+      }
+
+      .entry__shortcut {
+        display: grid;
+        gap: 0.35rem;
+        justify-items: start;
+        min-height: 4.1rem;
+        padding: 0.85rem;
+        border-radius: 1.05rem;
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        background: rgba(247, 250, 252, 0.96);
+        color: #11415b;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .entry__shortcut-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 999px;
+        background: rgba(17, 65, 91, 0.1);
+        color: #31566b;
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
       .entry__action-groups {
         display: grid;
         gap: 0.8rem;
@@ -507,6 +637,25 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__panel {
         display: grid;
         gap: 0.55rem;
+      }
+
+      .entry__disclosure {
+        padding: 0.9rem 1rem;
+      }
+
+      .entry__disclosure-summary {
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .entry__disclosure-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .entry__disclosure-body {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 0.9rem;
       }
 
       .entry__share-header,
@@ -632,8 +781,64 @@ type TaskMetadataFormGroup = FormGroup<{
         color: #7c5f3b;
       }
 
+      .entry__link-button {
+        justify-self: start;
+        border: 0;
+        background: transparent;
+        color: #31566b;
+        font: inherit;
+        padding: 0;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
       .entry__steps {
         grid-column: 1 / -1;
+      }
+
+      .entry__overlay {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.38);
+        z-index: 20;
+      }
+
+      .entry__overlay-card {
+        width: min(36rem, 100%);
+        display: grid;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-radius: 1.6rem;
+        background: #fffdf8;
+        border: 1px solid rgba(17, 65, 91, 0.14);
+        box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+      }
+
+      .entry__overlay-head {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: start;
+      }
+
+      .entry__overlay-close {
+        min-height: 2.4rem;
+        padding: 0 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(17, 65, 91, 0.14);
+        background: rgba(247, 250, 252, 0.96);
+        color: #31566b;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .entry__overlay-body,
+      .entry__overlay-copy {
+        display: grid;
+        gap: 0.8rem;
       }
 
       .entry--loading {
@@ -682,6 +887,7 @@ export class TaskShellEditorEntryComponent {
   protected readonly shareError = signal('');
   protected readonly shareNotice = signal('');
   protected readonly shareBusyMode = signal<TaskShareMode | null>(null);
+  protected readonly supportOverlay = signal<'editor' | 'saved' | 'share' | 'family' | null>(null);
   protected readonly shareModes: readonly TaskShareMode[] = ['view', 'present'];
 
   protected readonly metadataForm: TaskMetadataFormGroup = new FormGroup({
@@ -1066,6 +1272,27 @@ export class TaskShellEditorEntryComponent {
   protected relatedVariantLabel(related: RelatedVariantRecord): string {
     const roleLabel = related.variantRole === 'root' ? 'Task base' : 'Variante';
     return `${roleLabel} · ${related.supportLevel || 'Supporto da definire'}`;
+  }
+
+  protected openSupportOverlay(topic: 'editor' | 'saved' | 'share' | 'family'): void {
+    this.supportOverlay.set(topic);
+  }
+
+  protected closeSupportOverlay(): void {
+    this.supportOverlay.set(null);
+  }
+
+  protected supportOverlayTitle(topic: 'editor' | 'saved' | 'share' | 'family'): string {
+    switch (topic) {
+      case 'editor':
+        return 'Come usare questa pagina senza sovraccarico';
+      case 'saved':
+        return 'Quando usare anteprima, presenta ed export';
+      case 'share':
+        return 'Regole dei link pubblici';
+      case 'family':
+        return 'Come funzionano le varianti';
+    }
   }
 
   protected async openFamilyTask(taskId: string): Promise<void> {

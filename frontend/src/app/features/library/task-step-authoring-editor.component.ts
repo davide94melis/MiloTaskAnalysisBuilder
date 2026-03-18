@@ -81,60 +81,69 @@ import { TASK_SYMBOL_CATALOG, TaskSymbolCatalogEntry } from './task-symbol-catal
                 (input)="updateText(index, 'description', readValue($event))"
               ></textarea>
             </label>
-
-            <label class="field field--compact">
-              <span>Obbligatorio</span>
-              <input
-                type="checkbox"
-                [checked]="step.required"
-                [disabled]="disabled"
-                (change)="updateRequired(index, readChecked($event))"
-              />
-            </label>
-
-            <label class="field">
-              <span>Tempo stimato (minuti)</span>
-              <input
-                type="number"
-                min="0"
-                [value]="step.estimatedMinutes ?? ''"
-                [disabled]="disabled"
-                (input)="updateEstimatedMinutes(index, readValue($event))"
-              />
-            </label>
-
-            <label class="field field--wide">
-              <span>Prompt o supporto</span>
-              <textarea
-                rows="2"
-                [value]="step.supportGuidance"
-                [disabled]="disabled"
-                (input)="updateText(index, 'supportGuidance', readValue($event))"
-              ></textarea>
-            </label>
-
-            <label class="field field--wide">
-              <span>Rinforzo opzionale</span>
-              <textarea
-                rows="2"
-                [value]="step.reinforcementNotes"
-                [disabled]="disabled"
-                (input)="updateText(index, 'reinforcementNotes', readValue($event))"
-              ></textarea>
-            </label>
           </div>
 
-          <section class="visual-support">
-            <header class="visual-support__header">
-              <div>
-                <p class="visual-support__eyebrow">Visual support</p>
-                <h4>Supporto bambino</h4>
-                <p class="visual-support__copy">Combina testo, simbolo e foto senza cambiare schermata.</p>
-              </div>
-              <span class="visual-support__summary">{{ summarizeVisualSupport(step) }}</span>
-            </header>
+          <details class="step__details">
+            <summary class="step__details-summary">Dettagli educativi e operativi</summary>
 
-            <div class="visual-support__grid">
+            <div class="step__details-body step__grid">
+              <label class="field field--compact">
+                <span>Obbligatorio</span>
+                <input
+                  type="checkbox"
+                  [checked]="step.required"
+                  [disabled]="disabled"
+                  (change)="updateRequired(index, readChecked($event))"
+                />
+              </label>
+
+              <label class="field">
+                <span>Tempo stimato (minuti)</span>
+                <input
+                  type="number"
+                  min="0"
+                  [value]="step.estimatedMinutes ?? ''"
+                  [disabled]="disabled"
+                  (input)="updateEstimatedMinutes(index, readValue($event))"
+                />
+              </label>
+
+              <label class="field field--wide">
+                <span>Prompt o supporto</span>
+                <textarea
+                  rows="2"
+                  [value]="step.supportGuidance"
+                  [disabled]="disabled"
+                  (input)="updateText(index, 'supportGuidance', readValue($event))"
+                ></textarea>
+              </label>
+
+              <label class="field field--wide">
+                <span>Rinforzo opzionale</span>
+                <textarea
+                  rows="2"
+                  [value]="step.reinforcementNotes"
+                  [disabled]="disabled"
+                  (input)="updateText(index, 'reinforcementNotes', readValue($event))"
+                ></textarea>
+              </label>
+            </div>
+          </details>
+
+          <section class="visual-support">
+            <details class="visual-support__details">
+              <summary class="visual-support__summary-bar">
+                <header class="visual-support__header">
+                  <div>
+                    <p class="visual-support__eyebrow">Visual support</p>
+                    <h4>Supporto bambino</h4>
+                    <p class="visual-support__copy">Combina testo, simbolo e foto senza cambiare schermata.</p>
+                  </div>
+                  <span class="visual-support__summary">{{ summarizeVisualSupport(step) }}</span>
+                </header>
+              </summary>
+
+              <div class="visual-support__grid">
               <label class="field field--wide">
                 <span>Testo visivo</span>
                 <textarea
@@ -218,7 +227,8 @@ import { TASK_SYMBOL_CATALOG, TaskSymbolCatalogEntry } from './task-symbol-catal
                   </label>
                 </article>
               </div>
-            </div>
+              </div>
+            </details>
           </section>
         </li>
       </ol>
@@ -323,6 +333,43 @@ import { TASK_SYMBOL_CATALOG, TaskSymbolCatalogEntry } from './task-symbol-catal
         gap: 0.85rem;
       }
 
+      .step__details,
+      .visual-support,
+      .visual-support__details {
+        display: grid;
+        gap: 0.85rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(17, 65, 91, 0.08);
+      }
+
+      .step__details-summary,
+      .visual-support__summary-bar {
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .step__details-summary::-webkit-details-marker,
+      .visual-support__summary-bar::-webkit-details-marker {
+        display: none;
+      }
+
+      .step__details-summary {
+        color: #31566b;
+        font-weight: 600;
+      }
+
+      .step__details-body {
+        margin-top: 0.25rem;
+      }
+
+      .visual-support {
+        padding: 0;
+        border: 0;
+        background: transparent;
+      }
+
       .field {
         display: grid;
         gap: 0.45rem;
@@ -355,15 +402,6 @@ import { TASK_SYMBOL_CATALOG, TaskSymbolCatalogEntry } from './task-symbol-catal
 
       .field textarea {
         resize: vertical;
-      }
-
-      .visual-support {
-        display: grid;
-        gap: 0.85rem;
-        padding: 1rem;
-        border-radius: 1rem;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(17, 65, 91, 0.08);
       }
 
       .visual-support__summary {
