@@ -64,25 +64,31 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           <span>Descrizione</span>
           <textarea formControlName="description" rows="4" placeholder="Obiettivo pratico della task"></textarea>
         </label>
-
-        <label class="field field--wide">
-          <span>Obiettivo educativo</span>
-          <textarea
-            formControlName="educationalObjective"
-            rows="3"
-            placeholder="Competenze o autonomia che vuoi consolidare"
-          ></textarea>
-        </label>
-
-        <label class="field field--wide">
-          <span>Note professionali</span>
-          <textarea
-            formControlName="professionalNotes"
-            rows="3"
-            placeholder="Indicazioni per il team educativo"
-          ></textarea>
-        </label>
       </div>
+
+      <details class="panel__advanced">
+        <summary>Approfondimenti educativi e note team</summary>
+
+        <div class="panel__advanced-grid">
+          <label class="field field--wide">
+            <span>Obiettivo educativo</span>
+            <textarea
+              formControlName="educationalObjective"
+              rows="3"
+              placeholder="Competenze o autonomia che vuoi consolidare"
+            ></textarea>
+          </label>
+
+          <label class="field field--wide">
+            <span>Note professionali</span>
+            <textarea
+              formControlName="professionalNotes"
+              rows="3"
+              placeholder="Indicazioni per il team educativo"
+            ></textarea>
+          </label>
+        </div>
+      </details>
     </section>
   `,
   styles: [
@@ -144,6 +150,30 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
       .field textarea {
         resize: vertical;
+      }
+
+      .panel__advanced {
+        border-radius: 1.2rem;
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        background: rgba(247, 250, 252, 0.9);
+        padding: 0.9rem 1rem;
+      }
+
+      .panel__advanced summary {
+        cursor: pointer;
+        color: #31566b;
+        font-weight: 600;
+        list-style: none;
+      }
+
+      .panel__advanced summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .panel__advanced-grid {
+        display: grid;
+        gap: 0.9rem;
+        margin-top: 0.9rem;
       }
     `
   ],
