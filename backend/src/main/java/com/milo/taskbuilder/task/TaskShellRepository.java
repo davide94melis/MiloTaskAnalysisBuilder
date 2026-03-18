@@ -14,18 +14,18 @@ public interface TaskShellRepository extends JpaRepository<TaskShellEntity, UUID
     select *
     from taskbuilder.task_analysis task
     where (task.owner_id = :ownerId or task.status = 'template')
-      and (:category::text is null or lower(task.category) = lower(:category::text))
-      and (:contextLabel::text is null or lower(task.context_label) = lower(:contextLabel::text))
-      and (:targetLabel::text is null or lower(task.target_label) = lower(:targetLabel::text))
-      and (:author::text is null or lower(task.author_name) like lower(concat('%', :author::text, '%')))
-      and (:status::text is null or task.status = :status::text)
-      and (:supportLevel::text is null or lower(task.support_level) = lower(:supportLevel::text))
+      and (cast(:category as text) is null or lower(task.category) = lower(cast(:category as text)))
+      and (cast(:contextLabel as text) is null or lower(task.context_label) = lower(cast(:contextLabel as text)))
+      and (cast(:targetLabel as text) is null or lower(task.target_label) = lower(cast(:targetLabel as text)))
+      and (cast(:author as text) is null or lower(task.author_name) like lower(concat('%', cast(:author as text), '%')))
+      and (cast(:status as text) is null or task.status = cast(:status as text))
+      and (cast(:supportLevel as text) is null or lower(task.support_level) = lower(cast(:supportLevel as text)))
       and (
-          :search::text is null
-          or lower(task.title) like lower(concat('%', :search::text, '%'))
-          or lower(coalesce(task.category, '')) like lower(concat('%', :search::text, '%'))
-          or lower(coalesce(task.target_label, '')) like lower(concat('%', :search::text, '%'))
-          or lower(coalesce(task.context_label, '')) like lower(concat('%', :search::text, '%'))
+          cast(:search as text) is null
+          or lower(task.title) like lower(concat('%', cast(:search as text), '%'))
+          or lower(coalesce(task.category, '')) like lower(concat('%', cast(:search as text), '%'))
+          or lower(coalesce(task.target_label, '')) like lower(concat('%', cast(:search as text), '%'))
+          or lower(coalesce(task.context_label, '')) like lower(concat('%', cast(:search as text), '%'))
       )
     order by task.updated_at desc
     """, nativeQuery = true)
