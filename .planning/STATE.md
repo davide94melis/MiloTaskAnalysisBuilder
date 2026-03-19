@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_completed
-last_updated: "2026-03-14T19:05:00.000Z"
+milestone: v1.1
+milestone_name: Ecosystem Assignment
+status: defining_requirements
+last_updated: "2026-03-19T10:12:00.000Z"
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 42
-  completed_plans: 42
+  total_phases: 4
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -22,26 +22,36 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Status
 
-- v1.0 MVP archived
-- 12 phases complete
-- 42 plans complete
-- Milestone archives created for roadmap and requirements
-- Project definition evolved for post-v1.0 state
-- Residual closeout debt explicitly accepted and documented
+- v1.1 Ecosystem Assignment started
+- Requirements are being defined for the narrowed assignment-focused milestone
+- v1.0 remains the latest shipped milestone
+- Prior milestone archives remain available for roadmap and requirements history
 
 ## Active Milestone
 
-- None
+- v1.1 Ecosystem Assignment
 
 ## Next Command
 
-- `$gsd-new-milestone`
+- `$gsd-discuss-phase 13`
 
 ## Recent Decisions
 
-- v1.0 is archived as a shipped MVP with accepted non-blocking closeout debt.
-- The next milestone should prioritize Milo global entities, assignment, deeper tracking, and collaboration decisions.
-- Browser-print export remains acceptable for now, but should be revisited if product usage exposes print limitations.
+- v1.1 now starts from the first assignment model instead of shared Milo recipient integration.
+- Shared-entity recipient reuse is no longer mapped to the immediate roadmap.
+- A new future phase was added for task-editor graphic refactor and UX simplification.
+- Phase 16 is now planned as a three-wave frontend refactor: shell/rail, step workspace, then modal migration and responsive polish.
+- Phase 16 wave 1 is complete: the editor shell now uses a minimal top bar and Symwriter-style rail foundation.
+- Phase 16 wave 2 is complete: step authoring now uses a focused left editor with an ordered step board on the right.
+- Phase 16 wave 3 is complete: saved/share/history/family surfaces now live only behind rail-triggered overlays.
+- Research stays enabled before requirements and roadmap creation.
+- Deeper per-step tracking and collaboration remain outside the immediate milestone focus.
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 16 added: Graphic Refactor for Task Editor UX
 
 ## Constraints To Preserve
 
@@ -53,5 +63,5 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Session Continuity
 
-- Stopped at: v1.0 archived, ready for next milestone definition
-- Resume file: None
+- Stopped at: phase 16 complete; assignment milestone planning resumes at phase 13
+- Resume file: .planning/ROADMAP.md

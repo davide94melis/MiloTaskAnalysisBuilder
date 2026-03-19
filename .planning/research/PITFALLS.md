@@ -1,90 +1,33 @@
-# Pitfalls Research
+# Milestone Research: Pitfalls
 
-## 1. Building A Generic Checklist Tool
+**Milestone:** v1.1 Ecosystem Assignment  
+**Focus:** Milo shared entities and first assignment workflow
 
-- Warning signs:
-  - Editor focuses on generic todo fields instead of educational support context
-  - Present mode feels like a normal checklist page
-- Prevention:
-  - Design around support level, visual supports, and real session playback from the start
-  - Keep present mode as a first-class surface, not a preview afterthought
-- Phase to address:
-  - Phase 1 and Phase 2
+## Major pitfalls
 
-## 2. Overbuilding Clinical Tracking Too Early
+### 1. Treating assignment like generic sharing
 
-- Warning signs:
-  - Session model expands into per-step scoring, prompts, notes, and durations before core workflow is usable
-  - Requirements start centering data collection over task usability
-- Prevention:
-  - Limit V1 to session-header tracking only
-  - Treat detailed clinical telemetry as a separate validated need
-- Phase to address:
-  - Requirements definition and roadmap scoping
+Assignment is not the same as public share. It carries recipient context, access boundaries, and operational ownership.
 
-## 3. Weak Public Sharing Security
+### 2. Copying Milo entities into a second source of truth
 
-- Warning signs:
-  - Public links reuse internal IDs directly
-  - Shared routes expose edit metadata, author-only notes, or raw storage URLs
-- Prevention:
-  - Use scoped share tokens
-  - Separate public DTOs from editor DTOs
-  - Review asset access model before shipping sharing
-- Phase to address:
-  - Sharing phase
+If child/class/user data becomes editable local state, drift and permission ambiguity appear quickly.
 
-## 4. Media Workflow Friction
+### 3. Overreaching into case management
 
-- Warning signs:
-  - Uploading or replacing images is slow or confusing
-  - Print output and playback do not use the same asset assumptions
-- Prevention:
-  - Define media model and storage policies early
-  - Test authoring with realistic therapist/teacher workflows, not only developer data
-- Phase to address:
-  - Editor phase
+If the milestone includes scheduling, team workflow, notes, analytics, and assignment together, scope will explode.
 
-## 5. Variant Model That Does Not Scale
+### 4. Weak authorization boundaries
 
-- Warning signs:
-  - Support-level variants require manual rebuilds from scratch
-  - Small changes to a base task become error-prone across variants
-- Prevention:
-  - Decide early whether variants are independent copies with metadata, or parent-child derivatives
-  - Start simple, but keep source linkage possible
-- Phase to address:
-  - Core domain phase
+Recipient lookup and assignment creation must both respect legitimate access rules. It is not enough to validate only at UI level.
 
-## 6. Designing For Admins Instead Of Real Sessions
+### 5. Breaking the existing authoring loop
 
-- Warning signs:
-  - Dashboard and editor look polished, but present mode is cluttered or fragile on tablets
-  - The product is easy to demo but awkward to use with a child in front of you
-- Prevention:
-  - Prioritize large targets, low-distraction layouts, and full-screen playback
-  - Treat mobile/tablet ergonomics as part of acceptance criteria
-- Phase to address:
-  - Present mode phase
+Replacing freeform labels should not force assignment decisions in every authoring path. Draft authoring and recipient assignment should remain separable where useful.
 
-## 7. Mixing Milo Global Entities Into V1
+## Prevention strategy
 
-- Warning signs:
-  - Schema starts referencing children/classes/team structures before the app proves standalone value
-  - Roadmap early phases depend on cross-app entity sync
-- Prevention:
-  - Keep V1 scoped to SSO only
-  - Design extension points for V2 global entities without hard dependency now
-- Phase to address:
-  - Architecture and roadmap phases
-
-## 8. Print As An Afterthought
-
-- Warning signs:
-  - Export is deferred until after UI decisions make print output ugly or brittle
-  - Media aspect ratios and layouts are inconsistent
-- Prevention:
-  - Treat print/export as a real output channel in requirements
-  - Use a constrained printable layout model instead of screenshot-based export
-- Phase to address:
-  - Export phase
+- Treat Milo entities as externally owned references.
+- Introduce assignment as a separate but adjacent workflow on saved tasks.
+- Keep tracking and collaboration out of v1.1 requirements.
+- Make recipient visibility and assignment authorization explicit in backend policy code.
