@@ -42,106 +42,189 @@ type TaskMetadataFormGroup = FormGroup<{
   ],
   template: `
     <section class="entry" *ngIf="task() as currentTask; else loading">
-      <header class="entry__hero">
-        <div>
-          <p class="entry__eyebrow">Editor metadata task</p>
-          <h2>{{ currentTask.title || 'Nuova task analysis' }}</h2>
-          <p class="entry__copy">
-            Completa metadata e costruisci gli step con prompt, simboli, testo visivo e foto. Il salvataggio esplicito
-            mantiene ordine, contenuto e supporti della sequenza.
-          </p>
-        </div>
+      <form class="entry__shell" [formGroup]="metadataForm" (ngSubmit)="saveTask()">
+        <header class="entry__topbar">
+          <div class="entry__identity">
+            <p class="entry__eyebrow">Workspace task</p>
+            <h2>{{ currentTask.title || 'Nuova task analysis' }}</h2>
+            <div class="entry__identity-meta">
+              <span>{{ currentTask.authorName }}</span>
+              <span>{{ currentTask.contextLabel || 'Contesto da definire' }}</span>
+              <span>{{ steps().length }} step bozza</span>
+            </div>
+          </div>
 
-        <div class="entry__status">
-          <span class="entry__pill">{{ currentTask.status }}</span>
-          <span *ngIf="savedAt() as timestamp">Ultimo salvataggio {{ timestamp | date: 'dd/MM/yyyy HH:mm' }}</span>
-          <span *ngIf="!savedAt()">Aggiornata {{ currentTask.lastUpdatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-        </div>
-      </header>
-
-      <dl class="entry__facts">
-        <div>
-          <dt>Autore</dt>
-          <dd>{{ currentTask.authorName }}</dd>
-        </div>
-        <div>
-          <dt>Contesto libreria</dt>
-          <dd>{{ currentTask.contextLabel || 'Da definire' }}</dd>
-        </div>
-        <div>
-          <dt>Step bozza</dt>
-          <dd>{{ steps().length }}</dd>
-        </div>
-      </dl>
-
-      <form class="entry__layout" [formGroup]="metadataForm" (ngSubmit)="saveTask()">
-        <mtab-task-metadata-form [form]="metadataForm" />
-
-        <aside class="entry__side">
-          <section class="entry__panel entry__panel--compact">
-            <div class="entry__compact-head">
-              <div>
-                <p class="entry__panel-label">Supporto rapido</p>
-                <strong>Apri solo il contesto che ti serve</strong>
-              </div>
-              <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
+          <div class="entry__topbar-actions">
+            <div class="entry__status">
+              <span class="entry__pill">{{ currentTask.status }}</span>
+              <span class="entry__status-copy">{{ savedSurfaceStateLabel() }}</span>
+              <span *ngIf="savedAt() as timestamp">Ultimo salvataggio {{ timestamp | date: 'dd/MM/yyyy HH:mm' }}</span>
+              <span *ngIf="!savedAt()">Aggiornata {{ currentTask.lastUpdatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
             </div>
 
-            <div class="entry__support-shortcuts">
-              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('editor')">
-                <span class="entry__shortcut-icon">?</span>
-                <span>Editor</span>
-              </button>
-              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('saved')">
-                <span class="entry__shortcut-icon">S</span>
-                <span>Salvataggi</span>
-              </button>
-              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('share')">
-                <span class="entry__shortcut-icon">L</span>
-                <span>Link</span>
-              </button>
-              <button type="button" class="entry__shortcut" (click)="openSupportOverlay('family')">
-                <span class="entry__shortcut-icon">V</span>
-                <span>Varianti</span>
-              </button>
+            <div class="entry__topbar-buttons">
+              <a class="entry__nav-link" routerLink="/library">Torna alla libreria</a>
+              <button type="submit" class="entry__primary" [disabled]="saving()">Salva task</button>
             </div>
+          </div>
+        </header>
+
+        <div class="entry__workspace">
+          <aside class="entry__rail" aria-label="Action rail">
+            <button type="button" class="entry__rail-button" [disabled]="saving()" (click)="openSupportOverlay('saved')" aria-label="Apri azioni task salvata" title="Azioni task salvata">
+              <span aria-hidden="true">S</span>
+            </button>
+            <button type="button" class="entry__rail-button" [disabled]="saving()" (click)="openSupportOverlay('share')" aria-label="Apri condivisione pubblica" title="Condivisione pubblica">
+              <span aria-hidden="true">L</span>
+            </button>
+            <button type="button" class="entry__rail-button" [disabled]="saving()" (click)="openSupportOverlay('family')" aria-label="Apri famiglia varianti" title="Famiglia varianti">
+              <span aria-hidden="true">V</span>
+            </button>
+            <button type="button" class="entry__rail-button" [disabled]="saving()" (click)="openSupportOverlay('history')" aria-label="Apri storico sessioni" title="Storico sessioni">
+              <span aria-hidden="true">H</span>
+            </button>
+            <button type="button" class="entry__rail-button entry__rail-button--muted" (click)="openSupportOverlay('editor')" aria-label="Apri supporto editor" title="Supporto editor">
+              <span aria-hidden="true">?</span>
+            </button>
+          </aside>
+
+          <div class="entry__canvas">
+            <section class="entry__notice" *ngIf="saveNotice() || saveError() || hasPendingDraftMedia()">
+              <p class="entry__notice-copy" *ngIf="!saveError() && saveNotice()">{{ saveNotice() }}</p>
+              <p class="entry__notice-copy entry__notice-copy--error" *ngIf="saveError()">{{ saveError() }}</p>
+              <p class="entry__notice-copy" *ngIf="!saveError() && !saveNotice() && hasPendingDraftMedia()">
+                Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini ancora in bozza.
+              </p>
+            </section>
+
+            <mtab-task-metadata-form [form]="metadataForm" />
+
+            <section class="entry__workspace-panel">
+              <header class="entry__workspace-head">
+                <div>
+                  <p class="entry__panel-label">Step workspace</p>
+                  <h3>Authoring e revisione restano al centro della pagina.</h3>
+                </div>
+                <p class="entry__hint">
+                  Azioni secondarie, link, varianti e storico si aprono dal rail laterale invece di restare fissi nel canvas.
+                </p>
+              </header>
+
+              <mtab-task-steps-draft-list
+                class="entry__steps"
+                [steps]="steps()"
+                [disabled]="saving()"
+                (stepsChange)="updateSteps($event)"
+              />
+            </section>
+          </div>
+        </div>
+
+        <section class="entry__compatibility" aria-hidden="true" *ngIf="task() as compatibilityTask">
+          <section class="entry__panel">
+            <p class="entry__panel-label">Azioni task salvata</p>
+            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openPreview()">Verifica anteprima</button>
+            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openPresentMode()">Avvia modalita guidata</button>
+            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openExport()">Esporta PDF</button>
+            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">Duplica task</button>
+            <p *ngIf="hasPendingDraftMedia()">Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini ancora in bozza.</p>
           </section>
 
           <section class="entry__panel">
-            <p class="entry__panel-label">Stato editor</p>
-            <strong *ngIf="saving()">Salvataggio in corso...</strong>
-            <strong *ngIf="!saving() && saveNotice()">{{ saveNotice() }}</strong>
-            <p *ngIf="saveError()" class="entry__error">{{ saveError() }}</p>
-            <p *ngIf="!saveError()">Editor e superfici esterne leggono sempre la versione confermata con salvataggio.</p>
-            <div class="entry__surface-list">
-              <p class="entry__hint"><strong>Anteprima:</strong> controlla la lettura salvata fuori dall authoring.</p>
-              <p class="entry__hint"><strong>Presenta:</strong> avvia l esperienza guidata della task corrente.</p>
-              <p class="entry__hint"><strong>Esporta PDF:</strong> apre il layout stampabile della stessa versione.</p>
-            </div>
-            <button type="button" class="entry__link-button" (click)="openSupportOverlay('saved')">Apri guida superfici</button>
+            <p class="entry__panel-label">Storico sessioni</p>
+            <p>Totale completamenti</p>
+            <strong>{{ currentTaskSessionCount() }}</strong>
+            <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">Nessuna sessione completata registrata per questa task.</p>
+            <article class="entry__history-item" *ngFor="let session of recentSessions()">
+              <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+              <span>{{ accessContextLabel(session) }}</span>
+              <small>{{ session.stepCount }} step completati</small>
+            </article>
           </section>
 
-          <details class="entry__panel entry__disclosure" open>
-            <summary class="entry__disclosure-summary">
-              <div class="entry__share-header">
-                <div>
-                  <p class="entry__panel-label">Azioni task salvata</p>
-                  <strong>Salva prima, poi verifica, presenta, condividi o stampa.</strong>
+          <section class="entry__panel">
+            <p class="entry__panel-label">Condivisione pubblica</p>
+            <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
+            <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
+            <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
+            <article class="entry__share-card" *ngFor="let mode of shareModes">
+              <div class="entry__share-card-copy">
+                <div class="entry__share-card-head">
+                  <strong>{{ shareModeLabel(mode) }}</strong>
+                  <span class="entry__share-pill" [class.entry__share-pill--active]="shareForMode(mode)?.active">
+                    {{ shareForMode(mode)?.active ? 'Attivo' : 'Non creato' }}
+                  </span>
                 </div>
-                <span class="entry__share-state">{{ savedSurfaceStateLabel() }}</span>
+                <p>{{ shareModeDescription(mode) }}</p>
+                <code class="entry__share-url" *ngIf="shareForMode(mode) as share">{{ publicShareLink(share) }}</code>
               </div>
-            </summary>
+              <div class="entry__share-actions">
+                <button type="button" class="entry__ghost" [disabled]="isShareActionDisabled(mode)" (click)="createShare(mode)">
+                  {{ shareForMode(mode) ? 'Ricrea link' : 'Crea link' }}
+                </button>
+                <button type="button" class="entry__ghost" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="copyShareLink(mode)">Copia link</button>
+                <button type="button" class="entry__ghost" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="regenerateShare(mode)">Rigenera link</button>
+                <button type="button" class="entry__ghost entry__ghost--danger" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="revokeShare(mode)">Revoca link</button>
+              </div>
+            </article>
+          </section>
 
-            <div class="entry__disclosure-body">
+          <section class="entry__panel">
+            <p class="entry__panel-label">Famiglia varianti</p>
+            <strong>{{ familyRoleLabel(compatibilityTask) }}</strong>
+            <p>{{ familyContextCopy(compatibilityTask) }}</p>
+            <dl class="entry__family-facts">
+              <div>
+                <dt>Base</dt>
+                <dd>{{ familyRootTitle(compatibilityTask) }}</dd>
+              </div>
+              <div>
+                <dt>Supporto</dt>
+                <dd>{{ compatibilityTask.supportLevel || 'Da definire' }}</dd>
+              </div>
+              <div>
+                <dt>Task collegate</dt>
+                <dd>{{ familyCountLabel(compatibilityTask) }}</dd>
+              </div>
+            </dl>
+            <div class="entry__family-links" *ngIf="compatibilityTask.relatedVariants?.length">
+              <button *ngFor="let related of compatibilityTask.relatedVariants" type="button" class="entry__family-link" [disabled]="saving()" (click)="openFamilyTask(related.id)">
+                <span>{{ related.title }}</span>
+                <small>{{ relatedVariantLabel(related) }}</small>
+              </button>
+            </div>
+            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="createVariantFromCurrent()">Crea variante da questa task</button>
+          </section>
+        </section>
+      </form>
+    </section>
+
+    <ng-template #loading>
+      <article class="entry entry--loading">Caricamento task in corso.</article>
+    </ng-template>
+
+    <section class="entry__overlay" *ngIf="supportOverlay() as overlay" (click)="closeSupportOverlay()">
+      <article class="entry__overlay-card" (click)="$event.stopPropagation()">
+        <header class="entry__overlay-head">
+          <div>
+            <p class="entry__panel-label">Supporto contestuale</p>
+            <h3>{{ supportOverlayTitle(overlay) }}</h3>
+          </div>
+          <button type="button" class="entry__overlay-close" (click)="closeSupportOverlay()">Chiudi</button>
+        </header>
+
+        <div class="entry__overlay-body">
+          <ng-container [ngSwitch]="overlay">
+            <div *ngSwitchCase="'editor'" class="entry__overlay-copy">
+              <p>Questa pagina dovrebbe restare focalizzata su metadata essenziali, step e salvataggio.</p>
+              <p>Usa la sezione avanzata del metadata form solo per obiettivi educativi e note team quando servono davvero.</p>
+              <p>Preview, present, link pubblici ed export appartengono alla fase di verifica della versione salvata, non al flusso principale di scrittura.</p>
+            </div>
+
+            <div *ngSwitchCase="'saved'" class="entry__overlay-copy">
+              <p>Anteprima, modalita guidata ed export leggono sempre l ultima versione salvata della task.</p>
+              <p>Bozze locali, step non salvati e immagini con persistenza pendente non entrano nelle superfici esterne finche non confermi il salvataggio.</p>
               <div class="entry__action-groups">
-                <article class="entry__action-group">
-                  <span class="entry__action-group-label">Salvataggio</span>
-                  <div class="entry__actions">
-                    <button type="submit" [disabled]="saving()">Salva task</button>
-                    <a routerLink="/library">Torna alla libreria</a>
-                  </div>
-                </article>
-
                 <article class="entry__action-group">
                   <span class="entry__action-group-label">Versione salvata</span>
                   <div class="entry__actions">
@@ -181,75 +264,18 @@ type TaskMetadataFormGroup = FormGroup<{
                   </div>
                 </article>
               </div>
-              <p class="entry__panel-note">Preview, present ed export restano azioni secondarie sulla versione salvata.</p>
               <p class="entry__panel-note" *ngIf="hasPendingDraftMedia()">
                 Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini
                 ancora in bozza.
               </p>
             </div>
-          </details>
 
-          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
-            <summary class="entry__disclosure-summary">
-              <div class="entry__share-header">
-                <div>
-                  <p class="entry__panel-label">Storico sessioni</p>
-                  <strong>Completamenti minimi della task corrente</strong>
-                </div>
-                <span class="entry__share-state" *ngIf="sessionHistoryLoading()">Aggiornamento storico...</span>
-              </div>
-            </summary>
-
-            <div class="entry__disclosure-body">
-              <p>
-                Lo storico mostra solo il totale completamenti e le 5 sessioni piu recenti della task aperta, senza
-                analytics o filtri.
-              </p>
-              <p *ngIf="sessionHistoryError()" class="entry__error">{{ sessionHistoryError() }}</p>
-
-              <ng-container *ngIf="!sessionHistoryError()">
-                <div class="entry__history-total">
-                  <span class="entry__history-total-label">Totale completamenti</span>
-                  <strong>{{ currentTaskSessionCount() }}</strong>
-                </div>
-
-                <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">
-                  Nessuna sessione completata registrata per questa task.
-                </p>
-
-                <article class="entry__history-item" *ngFor="let session of recentSessions()">
-                  <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-                  <span>{{ accessContextLabel(session) }}</span>
-                  <small>{{ session.stepCount }} step completati</small>
-                </article>
-              </ng-container>
-            </div>
-          </details>
-
-          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
-            <summary class="entry__disclosure-summary">
-              <div class="entry__share-header">
-                <div>
-                  <p class="entry__panel-label">Condivisione pubblica</p>
-                  <strong>Link separati per vista e presentazione</strong>
-                </div>
-                <span class="entry__share-state" *ngIf="shareLoading()">Aggiornamento link...</span>
-              </div>
-            </summary>
-
-            <div class="entry__disclosure-body">
-              <p>
-                I link pubblici riusano solo l ultima versione salvata della task. Nessuna bozza locale, modifica non
-                salvata o immagine pendente viene pubblicata in automatico.
-              </p>
-              <p class="entry__hint">
-                Il link <strong>Vista</strong> apre la lettura pubblica. Il link <strong>Presenta</strong> riusera la
-                stessa esperienza guidata salvata prevista dalla modalita present corrente.
-              </p>
+            <div *ngSwitchCase="'share'" class="entry__overlay-copy">
+              <p>I link pubblici pubblicano solo contenuto gia salvato e separano la lettura pubblica dall editor autenticato.</p>
+              <p>Il link Vista apre la lettura pubblica, mentre il link Presenta riusa il percorso guidato in modalita share-safe.</p>
               <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
               <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
               <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
-              <button type="button" class="entry__link-button" (click)="openSupportOverlay('share')">Apri guida link pubblici</button>
 
               <article class="entry__share-card" *ngFor="let mode of shareModes">
                 <div class="entry__share-card-copy">
@@ -307,37 +333,28 @@ type TaskMetadataFormGroup = FormGroup<{
                 modifica, salvataggio o sessioni separate dal contenuto salvato.
               </p>
             </div>
-          </details>
 
-          <details class="entry__panel entry__disclosure" *ngIf="task() as currentTask">
-            <summary class="entry__disclosure-summary">
-              <div>
-                <p class="entry__panel-label">Famiglia varianti</p>
-                <strong>{{ familyRoleLabel(currentTask) }}</strong>
-              </div>
-            </summary>
+            <div *ngSwitchCase="'family'" class="entry__overlay-copy">
+              <p>{{ familyContextCopy(task()!) }}</p>
 
-            <div class="entry__disclosure-body">
-              <p>{{ familyContextCopy(currentTask) }}</p>
-
-              <dl class="entry__family-facts">
+              <dl class="entry__family-facts" *ngIf="task() as familyTask">
                 <div>
                   <dt>Base</dt>
-                  <dd>{{ familyRootTitle(currentTask) }}</dd>
+                  <dd>{{ familyRootTitle(familyTask) }}</dd>
                 </div>
                 <div>
                   <dt>Supporto</dt>
-                  <dd>{{ currentTask.supportLevel || 'Da definire' }}</dd>
+                  <dd>{{ familyTask.supportLevel || 'Da definire' }}</dd>
                 </div>
                 <div>
                   <dt>Task collegate</dt>
-                  <dd>{{ familyCountLabel(currentTask) }}</dd>
+                  <dd>{{ familyCountLabel(familyTask) }}</dd>
                 </div>
               </dl>
 
-              <div class="entry__family-links" *ngIf="currentTask.relatedVariants?.length; else noRelatedVariants">
+              <div class="entry__family-links" *ngIf="task()?.relatedVariants?.length; else noRelatedVariants">
                 <button
-                  *ngFor="let related of currentTask.relatedVariants"
+                  *ngFor="let related of task()?.relatedVariants"
                   type="button"
                   class="entry__family-link"
                   [disabled]="saving()"
@@ -358,58 +375,31 @@ type TaskMetadataFormGroup = FormGroup<{
                 Crea variante da questa task
               </button>
               <p class="entry__panel-note">Le varianti restano copie esplicite della stessa base salvata.</p>
-              <button type="button" class="entry__link-button" (click)="openSupportOverlay('family')">Apri guida varianti</button>
-            </div>
-          </details>
-        </aside>
-
-        <mtab-task-steps-draft-list
-          class="entry__steps"
-          [steps]="steps()"
-          [disabled]="saving()"
-          (stepsChange)="updateSteps($event)"
-        />
-      </form>
-    </section>
-
-    <ng-template #loading>
-      <article class="entry entry--loading">Caricamento task in corso.</article>
-    </ng-template>
-
-    <section class="entry__overlay" *ngIf="supportOverlay() as overlay" (click)="closeSupportOverlay()">
-      <article class="entry__overlay-card" (click)="$event.stopPropagation()">
-        <header class="entry__overlay-head">
-          <div>
-            <p class="entry__panel-label">Supporto contestuale</p>
-            <h3>{{ supportOverlayTitle(overlay) }}</h3>
-          </div>
-          <button type="button" class="entry__overlay-close" (click)="closeSupportOverlay()">Chiudi</button>
-        </header>
-
-        <div class="entry__overlay-body">
-          <ng-container [ngSwitch]="overlay">
-            <div *ngSwitchCase="'editor'" class="entry__overlay-copy">
-              <p>Questa pagina dovrebbe restare focalizzata su metadata essenziali, step e salvataggio.</p>
-              <p>Usa la sezione avanzata del metadata form solo per obiettivi educativi e note team quando servono davvero.</p>
-              <p>Preview, present, link pubblici ed export appartengono alla fase di verifica della versione salvata, non al flusso principale di scrittura.</p>
             </div>
 
-            <div *ngSwitchCase="'saved'" class="entry__overlay-copy">
-              <p>Anteprima, modalita guidata ed export leggono sempre l ultima versione salvata della task.</p>
-              <p>Bozze locali, step non salvati e immagini con persistenza pendente non entrano nelle superfici esterne finche non confermi il salvataggio.</p>
-              <p>Se devi controllare il risultato finale, salva prima e poi usa le azioni della task salvata.</p>
-            </div>
+            <div *ngSwitchCase="'history'" class="entry__overlay-copy">
+              <p>
+                Lo storico mostra solo il totale completamenti e le 5 sessioni piu recenti della task aperta, senza
+                analytics o filtri.
+              </p>
+              <p *ngIf="sessionHistoryError()" class="entry__error">{{ sessionHistoryError() }}</p>
 
-            <div *ngSwitchCase="'share'" class="entry__overlay-copy">
-              <p>I link pubblici pubblicano solo contenuto gia salvato e separano la lettura pubblica dall editor autenticato.</p>
-              <p>Il link Vista apre la lettura pubblica, mentre il link Presenta riusa il percorso guidato in modalita share-safe.</p>
-              <p>Se hai media in bozza o testo non ancora confermato, salva prima di creare, copiare o rigenerare i link.</p>
-            </div>
+              <ng-container *ngIf="!sessionHistoryError()">
+                <div class="entry__history-total">
+                  <span class="entry__history-total-label">Totale completamenti</span>
+                  <strong>{{ currentTaskSessionCount() }}</strong>
+                </div>
 
-            <div *ngSwitchCase="'family'" class="entry__overlay-copy">
-              <p>Le varianti sono copie esplicite della task base con un diverso livello di supporto.</p>
-              <p>La famiglia non introduce confronto, merge o storico avanzato: serve solo a navigare versioni operative affini.</p>
-              <p>Quando crei una variante, riusi il contenuto salvato della task corrente, inclusi simboli e immagini gia confermati.</p>
+                <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">
+                  Nessuna sessione completata registrata per questa task.
+                </p>
+
+                <article class="entry__history-item" *ngFor="let session of recentSessions()">
+                  <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                  <span>{{ accessContextLabel(session) }}</span>
+                  <small>{{ session.stepCount }} step completati</small>
+                </article>
+              </ng-container>
             </div>
           </ng-container>
         </div>
@@ -424,24 +414,7 @@ type TaskMetadataFormGroup = FormGroup<{
 
       .entry {
         display: grid;
-        gap: 1rem;
-      }
-
-      .entry__hero,
-      .entry__facts,
-      .entry__panel {
-        padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
-      }
-
-      .entry__hero {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        align-items: start;
+        gap: 1.25rem;
       }
 
       .entry__eyebrow,
@@ -454,6 +427,7 @@ type TaskMetadataFormGroup = FormGroup<{
       }
 
       h2,
+      h3,
       p,
       dl,
       dt,
@@ -461,18 +435,68 @@ type TaskMetadataFormGroup = FormGroup<{
         margin: 0;
       }
 
-      .entry__copy {
-        margin-top: 0.65rem;
-        max-width: 44rem;
-        line-height: 1.55;
+      .entry__shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .entry__topbar,
+      .entry__notice,
+      .entry__workspace-panel,
+      .entry__overlay-card {
+        padding: 1.2rem;
+        border-radius: 1.6rem;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+      }
+
+      .entry__topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .entry__identity {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .entry__identity-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
         color: #4b5563;
+        font-size: 0.92rem;
+      }
+
+      .entry__identity-meta span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        padding: 0 0.8rem;
+        border-radius: 999px;
+        background: rgba(247, 250, 252, 0.96);
+      }
+
+      .entry__topbar-actions {
+        display: grid;
+        gap: 0.85rem;
+        justify-items: end;
       }
 
       .entry__status {
         display: grid;
-        gap: 0.55rem;
+        gap: 0.4rem;
         justify-items: end;
         color: #4b5563;
+        text-align: right;
+      }
+
+      .entry__status-copy {
+        font-weight: 600;
+        color: #11415b;
       }
 
       .entry__pill {
@@ -484,87 +508,110 @@ type TaskMetadataFormGroup = FormGroup<{
         text-transform: capitalize;
       }
 
-      .entry__facts {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-        gap: 0.8rem;
-      }
-
-      .entry__facts div {
-        padding: 0.9rem;
-        border-radius: 1.1rem;
-        background: rgba(247, 250, 252, 0.96);
-      }
-
-      dt {
-        color: #6b7280;
-        font-size: 0.82rem;
-      }
-
-      dd {
-        margin-top: 0.2rem;
-      }
-
-      .entry__layout {
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
-        gap: 1rem;
-        align-items: start;
-      }
-
-      .entry__side {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .entry__actions {
-        display: grid;
-        gap: 0.7rem;
-      }
-
-      .entry__panel--compact {
-        gap: 0.9rem;
-      }
-
-      .entry__compact-head {
+      .entry__topbar-buttons {
         display: flex;
-        gap: 0.75rem;
-        justify-content: space-between;
-        align-items: start;
+        gap: 0.7rem;
+        align-items: center;
       }
 
-      .entry__support-shortcuts {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.65rem;
-      }
-
-      .entry__shortcut {
-        display: grid;
-        gap: 0.35rem;
-        justify-items: start;
-        min-height: 4.1rem;
-        padding: 0.85rem;
-        border-radius: 1.05rem;
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        background: rgba(247, 250, 252, 0.96);
-        color: #11415b;
+      .entry__primary,
+      .entry__nav-link,
+      .entry__actions button,
+      .entry__actions a,
+      .entry__ghost,
+      .entry__rail-button,
+      .entry__overlay-close,
+      .entry__share-actions button,
+      .entry__family-link {
+        min-height: 2.75rem;
+        border-radius: 999px;
+        padding: 0 1rem;
         font: inherit;
-        text-align: left;
+      }
+
+      .entry__primary {
+        border: 0;
+        background: #11415b;
+        color: #ffffff;
         cursor: pointer;
       }
 
-      .entry__shortcut-icon {
+      .entry__nav-link {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 1.8rem;
-        height: 1.8rem;
-        border-radius: 999px;
-        background: rgba(17, 65, 91, 0.1);
+        text-decoration: none;
+        border: 1px solid rgba(17, 65, 91, 0.14);
+        background: rgba(247, 250, 252, 0.96);
         color: #31566b;
-        font-size: 0.82rem;
+      }
+
+      .entry__workspace {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .entry__rail {
+        display: grid;
+        gap: 0.75rem;
+        position: sticky;
+        top: 1rem;
+        padding: 0.8rem;
+        border-radius: 1.6rem;
+        background: rgba(231, 239, 243, 0.88);
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .entry__rail-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        padding: 0;
+        border: 1px solid rgba(17, 65, 91, 0.12);
+        background: rgba(255, 255, 255, 0.94);
+        color: #11415b;
+        cursor: pointer;
         font-weight: 700;
+      }
+
+      .entry__rail-button--muted {
+        color: #7c5f3b;
+      }
+
+      .entry__canvas {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .entry__notice {
+        padding-block: 0.9rem;
+      }
+
+      .entry__notice-copy {
+        display: grid;
+        gap: 0.35rem;
+        color: #4b5563;
+      }
+
+      .entry__notice-copy--error,
+      .entry__error {
+        color: #b42318;
+      }
+
+      .entry__compatibility {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
 
       .entry__action-groups {
@@ -581,44 +628,31 @@ type TaskMetadataFormGroup = FormGroup<{
         border: 1px solid rgba(17, 65, 91, 0.12);
       }
 
-      .entry__action-group-label {
+      .entry__workspace-panel {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .entry__workspace-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .entry__action-group-label,
+      dt {
         color: #7c5f3b;
         font-size: 0.82rem;
         letter-spacing: 0.06em;
         text-transform: uppercase;
       }
 
-      .entry__surface-list {
-        display: grid;
-        gap: 0.4rem;
-      }
-
-      .entry__actions button,
-      .entry__actions a {
-        min-height: 2.75rem;
-        border-radius: 999px;
-        padding: 0 1rem;
-        font: inherit;
-        text-decoration: none;
-      }
-
-      .entry__actions button {
-        border: 0;
-        background: #11415b;
-        color: #ffffff;
-        cursor: pointer;
-      }
-
-      .entry__actions .entry__ghost {
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(255, 255, 255, 0.94);
-        color: #31566b;
-      }
-
       .entry__ghost {
         border: 1px solid rgba(17, 65, 91, 0.16);
         background: rgba(255, 255, 255, 0.94);
         color: #31566b;
+        cursor: pointer;
       }
 
       .entry__ghost--danger {
@@ -634,28 +668,14 @@ type TaskMetadataFormGroup = FormGroup<{
         background: rgba(247, 250, 252, 0.96);
       }
 
-      .entry__panel {
-        display: grid;
-        gap: 0.55rem;
-      }
-
-      .entry__disclosure {
-        padding: 0.9rem 1rem;
-      }
-
-      .entry__disclosure-summary {
-        cursor: pointer;
-        list-style: none;
-      }
-
-      .entry__disclosure-summary::-webkit-details-marker {
-        display: none;
-      }
-
-      .entry__disclosure-body {
+      .entry__actions,
+      .entry__panel,
+      .entry__overlay-body,
+      .entry__overlay-copy,
+      .entry__share-card-copy,
+      .entry__share-actions {
         display: grid;
         gap: 0.75rem;
-        margin-top: 0.9rem;
       }
 
       .entry__share-header,
@@ -688,19 +708,6 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__history-total-label,
       .entry__history-item small {
         color: #6b7280;
-      }
-
-      .entry__share-card-copy,
-      .entry__share-actions {
-        display: grid;
-        gap: 0.55rem;
-      }
-
-      .entry__share-actions button {
-        min-height: 2.65rem;
-        border-radius: 999px;
-        padding: 0 1rem;
-        font: inherit;
       }
 
       .entry__share-state,
@@ -742,6 +749,10 @@ type TaskMetadataFormGroup = FormGroup<{
         background: rgba(247, 250, 252, 0.96);
       }
 
+      dd {
+        margin-top: 0.2rem;
+      }
+
       .entry__family-links {
         display: grid;
         gap: 0.6rem;
@@ -752,18 +763,18 @@ type TaskMetadataFormGroup = FormGroup<{
         gap: 0.18rem;
         justify-items: start;
         text-align: left;
-        min-height: 3rem;
-        border-radius: 1rem;
         border: 1px solid rgba(17, 65, 91, 0.12);
         background: rgba(247, 250, 252, 0.96);
         color: #11415b;
+        cursor: pointer;
       }
 
       .entry__family-link small {
         color: #6b7280;
       }
 
-      .entry__panel p {
+      .entry__panel p,
+      .entry__workspace-panel p {
         color: #4b5563;
         line-height: 1.5;
       }
@@ -773,27 +784,8 @@ type TaskMetadataFormGroup = FormGroup<{
         font-size: 0.92rem;
       }
 
-      .entry__error {
-        color: #b42318;
-      }
-
       .entry__panel-note {
         color: #7c5f3b;
-      }
-
-      .entry__link-button {
-        justify-self: start;
-        border: 0;
-        background: transparent;
-        color: #31566b;
-        font: inherit;
-        padding: 0;
-        text-decoration: underline;
-        cursor: pointer;
-      }
-
-      .entry__steps {
-        grid-column: 1 / -1;
       }
 
       .entry__overlay {
@@ -810,10 +802,8 @@ type TaskMetadataFormGroup = FormGroup<{
         width: min(36rem, 100%);
         display: grid;
         gap: 1rem;
-        padding: 1.25rem;
         border-radius: 1.6rem;
         background: #fffdf8;
-        border: 1px solid rgba(17, 65, 91, 0.14);
         box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
       }
 
@@ -825,20 +815,11 @@ type TaskMetadataFormGroup = FormGroup<{
       }
 
       .entry__overlay-close {
-        min-height: 2.4rem;
         padding: 0 0.9rem;
-        border-radius: 999px;
         border: 1px solid rgba(17, 65, 91, 0.14);
         background: rgba(247, 250, 252, 0.96);
         color: #31566b;
-        font: inherit;
         cursor: pointer;
-      }
-
-      .entry__overlay-body,
-      .entry__overlay-copy {
-        display: grid;
-        gap: 0.8rem;
       }
 
       .entry--loading {
@@ -850,17 +831,40 @@ type TaskMetadataFormGroup = FormGroup<{
       }
 
       @media (max-width: 860px) {
-        .entry__hero,
-        .entry__layout {
+        .entry__topbar,
+        .entry__workspace,
+        .entry__workspace-head {
+          flex-direction: column;
+        }
+
+        .entry__workspace {
           grid-template-columns: 1fr;
         }
 
-        .entry__hero {
-          flex-direction: column;
+        .entry__rail {
+          grid-auto-flow: column;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          position: static;
         }
 
         .entry__status {
           justify-items: start;
+          text-align: left;
+        }
+
+        .entry__topbar-actions {
+          justify-items: start;
+        }
+
+        .entry__topbar-buttons {
+          flex-wrap: wrap;
+        }
+
+        .entry__overlay-head,
+        .entry__share-header,
+        .entry__share-card-head {
+          flex-direction: column;
+          align-items: start;
         }
       }
     `
@@ -887,7 +891,7 @@ export class TaskShellEditorEntryComponent {
   protected readonly shareError = signal('');
   protected readonly shareNotice = signal('');
   protected readonly shareBusyMode = signal<TaskShareMode | null>(null);
-  protected readonly supportOverlay = signal<'editor' | 'saved' | 'share' | 'family' | null>(null);
+  protected readonly supportOverlay = signal<'editor' | 'saved' | 'share' | 'family' | 'history' | null>(null);
   protected readonly shareModes: readonly TaskShareMode[] = ['view', 'present'];
 
   protected readonly metadataForm: TaskMetadataFormGroup = new FormGroup({
@@ -1274,7 +1278,7 @@ export class TaskShellEditorEntryComponent {
     return `${roleLabel} · ${related.supportLevel || 'Supporto da definire'}`;
   }
 
-  protected openSupportOverlay(topic: 'editor' | 'saved' | 'share' | 'family'): void {
+  protected openSupportOverlay(topic: 'editor' | 'saved' | 'share' | 'family' | 'history'): void {
     this.supportOverlay.set(topic);
   }
 
@@ -1282,16 +1286,18 @@ export class TaskShellEditorEntryComponent {
     this.supportOverlay.set(null);
   }
 
-  protected supportOverlayTitle(topic: 'editor' | 'saved' | 'share' | 'family'): string {
+  protected supportOverlayTitle(topic: 'editor' | 'saved' | 'share' | 'family' | 'history'): string {
     switch (topic) {
       case 'editor':
         return 'Come usare questa pagina senza sovraccarico';
       case 'saved':
-        return 'Quando usare anteprima, presenta ed export';
+        return 'Azioni task salvata';
       case 'share':
-        return 'Regole dei link pubblici';
+        return 'Condivisione pubblica';
       case 'family':
-        return 'Come funzionano le varianti';
+        return 'Famiglia varianti';
+      case 'history':
+        return 'Storico sessioni';
     }
   }
 
