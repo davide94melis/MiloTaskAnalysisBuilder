@@ -55,6 +55,19 @@ type TaskMetadataFormGroup = FormGroup<{
           </div>
 
           <div class="entry__topbar-actions">
+            <button
+              type="button"
+              class="entry__rail-toggle"
+              [class.entry__rail-toggle--open]="railOpen()"
+              [attr.aria-expanded]="railOpen()"
+              aria-label="Apri menu workspace"
+              (click)="toggleRail()"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+
             <div class="entry__status">
               <span class="entry__pill">{{ currentTask.status }}</span>
               <span class="entry__status-copy">{{ savedSurfaceStateLabel() }}</span>
@@ -69,8 +82,8 @@ type TaskMetadataFormGroup = FormGroup<{
           </div>
         </header>
 
-        <div class="entry__workspace">
-          <aside class="entry__rail" aria-label="Action rail">
+        <div class="entry__workspace" [class.entry__workspace--rail-open]="railOpen()">
+          <aside class="entry__rail" [class.entry__rail--open]="railOpen()" [attr.data-state]="railOpen() ? 'open' : 'closed'" aria-label="Action rail">
             <button type="button" class="entry__rail-button" [disabled]="saving()" (click)="openSupportOverlay('saved')" aria-label="Apri azioni task salvata" title="Azioni task salvata">
               <span aria-hidden="true">S</span>
             </button>
@@ -120,82 +133,6 @@ type TaskMetadataFormGroup = FormGroup<{
           </div>
         </div>
 
-        <section class="entry__compatibility" aria-hidden="true" *ngIf="task() as compatibilityTask">
-          <section class="entry__panel">
-            <p class="entry__panel-label">Azioni task salvata</p>
-            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openPreview()">Verifica anteprima</button>
-            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openPresentMode()">Avvia modalita guidata</button>
-            <button type="button" class="entry__ghost" [disabled]="saving() || !canLaunchSavedPlayback()" (click)="openExport()">Esporta PDF</button>
-            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="duplicateTask()">Duplica task</button>
-            <p *ngIf="hasPendingDraftMedia()">Salva prima la task per includere in anteprima, modalita guidata, export PDF e link pubblici le immagini ancora in bozza.</p>
-          </section>
-
-          <section class="entry__panel">
-            <p class="entry__panel-label">Storico sessioni</p>
-            <p>Totale completamenti</p>
-            <strong>{{ currentTaskSessionCount() }}</strong>
-            <p class="entry__hint" *ngIf="!recentSessions().length && !sessionHistoryLoading()">Nessuna sessione completata registrata per questa task.</p>
-            <article class="entry__history-item" *ngFor="let session of recentSessions()">
-              <strong>{{ session.completedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-              <span>{{ accessContextLabel(session) }}</span>
-              <small>{{ session.stepCount }} step completati</small>
-            </article>
-          </section>
-
-          <section class="entry__panel">
-            <p class="entry__panel-label">Condivisione pubblica</p>
-            <p *ngIf="shareError()" class="entry__error">{{ shareError() }}</p>
-            <p *ngIf="shareNotice()" class="entry__panel-note">{{ shareNotice() }}</p>
-            <p class="entry__panel-note">{{ shareBoundaryNotice() }}</p>
-            <article class="entry__share-card" *ngFor="let mode of shareModes">
-              <div class="entry__share-card-copy">
-                <div class="entry__share-card-head">
-                  <strong>{{ shareModeLabel(mode) }}</strong>
-                  <span class="entry__share-pill" [class.entry__share-pill--active]="shareForMode(mode)?.active">
-                    {{ shareForMode(mode)?.active ? 'Attivo' : 'Non creato' }}
-                  </span>
-                </div>
-                <p>{{ shareModeDescription(mode) }}</p>
-                <code class="entry__share-url" *ngIf="shareForMode(mode) as share">{{ publicShareLink(share) }}</code>
-              </div>
-              <div class="entry__share-actions">
-                <button type="button" class="entry__ghost" [disabled]="isShareActionDisabled(mode)" (click)="createShare(mode)">
-                  {{ shareForMode(mode) ? 'Ricrea link' : 'Crea link' }}
-                </button>
-                <button type="button" class="entry__ghost" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="copyShareLink(mode)">Copia link</button>
-                <button type="button" class="entry__ghost" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="regenerateShare(mode)">Rigenera link</button>
-                <button type="button" class="entry__ghost entry__ghost--danger" [disabled]="!shareForMode(mode) || isShareActionDisabled(mode)" (click)="revokeShare(mode)">Revoca link</button>
-              </div>
-            </article>
-          </section>
-
-          <section class="entry__panel">
-            <p class="entry__panel-label">Famiglia varianti</p>
-            <strong>{{ familyRoleLabel(compatibilityTask) }}</strong>
-            <p>{{ familyContextCopy(compatibilityTask) }}</p>
-            <dl class="entry__family-facts">
-              <div>
-                <dt>Base</dt>
-                <dd>{{ familyRootTitle(compatibilityTask) }}</dd>
-              </div>
-              <div>
-                <dt>Supporto</dt>
-                <dd>{{ compatibilityTask.supportLevel || 'Da definire' }}</dd>
-              </div>
-              <div>
-                <dt>Task collegate</dt>
-                <dd>{{ familyCountLabel(compatibilityTask) }}</dd>
-              </div>
-            </dl>
-            <div class="entry__family-links" *ngIf="compatibilityTask.relatedVariants?.length">
-              <button *ngFor="let related of compatibilityTask.relatedVariants" type="button" class="entry__family-link" [disabled]="saving()" (click)="openFamilyTask(related.id)">
-                <span>{{ related.title }}</span>
-                <small>{{ relatedVariantLabel(related) }}</small>
-              </button>
-            </div>
-            <button type="button" class="entry__ghost" [disabled]="saving()" (click)="createVariantFromCurrent()">Crea variante da questa task</button>
-          </section>
-        </section>
       </form>
     </section>
 
@@ -514,6 +451,54 @@ type TaskMetadataFormGroup = FormGroup<{
         align-items: center;
       }
 
+      .entry__rail-toggle {
+        display: none;
+        position: relative;
+        width: 3rem;
+        height: 3rem;
+        padding: 0;
+        border-radius: 999px;
+        border: 1px solid rgba(17, 65, 91, 0.14);
+        background: rgba(247, 250, 252, 0.96);
+        cursor: pointer;
+      }
+
+      .entry__rail-toggle span {
+        position: absolute;
+        left: 0.82rem;
+        width: 1.35rem;
+        height: 2px;
+        border-radius: 999px;
+        background: #11415b;
+        transition: transform 180ms ease, opacity 180ms ease, top 180ms ease;
+      }
+
+      .entry__rail-toggle span:nth-child(1) {
+        top: 0.98rem;
+      }
+
+      .entry__rail-toggle span:nth-child(2) {
+        top: 1.45rem;
+      }
+
+      .entry__rail-toggle span:nth-child(3) {
+        top: 1.92rem;
+      }
+
+      .entry__rail-toggle--open span:nth-child(1) {
+        top: 1.45rem;
+        transform: rotate(45deg);
+      }
+
+      .entry__rail-toggle--open span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .entry__rail-toggle--open span:nth-child(3) {
+        top: 1.45rem;
+        transform: rotate(-45deg);
+      }
+
       .entry__primary,
       .entry__nav-link,
       .entry__actions button,
@@ -600,18 +585,6 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__notice-copy--error,
       .entry__error {
         color: #b42318;
-      }
-
-      .entry__compatibility {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
       }
 
       .entry__action-groups {
@@ -842,9 +815,14 @@ type TaskMetadataFormGroup = FormGroup<{
         }
 
         .entry__rail {
+          display: none;
+          position: static;
+        }
+
+        .entry__rail--open {
+          display: grid;
           grid-auto-flow: column;
           grid-template-columns: repeat(5, minmax(0, 1fr));
-          position: static;
         }
 
         .entry__status {
@@ -853,11 +831,18 @@ type TaskMetadataFormGroup = FormGroup<{
         }
 
         .entry__topbar-actions {
+          width: 100%;
           justify-items: start;
         }
 
         .entry__topbar-buttons {
           flex-wrap: wrap;
+        }
+
+        .entry__rail-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .entry__overlay-head,
@@ -891,6 +876,7 @@ export class TaskShellEditorEntryComponent {
   protected readonly shareError = signal('');
   protected readonly shareNotice = signal('');
   protected readonly shareBusyMode = signal<TaskShareMode | null>(null);
+  protected readonly railOpen = signal(false);
   protected readonly supportOverlay = signal<'editor' | 'saved' | 'share' | 'family' | 'history' | null>(null);
   protected readonly shareModes: readonly TaskShareMode[] = ['view', 'present'];
 
@@ -1278,7 +1264,12 @@ export class TaskShellEditorEntryComponent {
     return `${roleLabel} · ${related.supportLevel || 'Supporto da definire'}`;
   }
 
+  protected toggleRail(): void {
+    this.railOpen.update((open) => !open);
+  }
+
   protected openSupportOverlay(topic: 'editor' | 'saved' | 'share' | 'family' | 'history'): void {
+    this.railOpen.set(false);
     this.supportOverlay.set(topic);
   }
 

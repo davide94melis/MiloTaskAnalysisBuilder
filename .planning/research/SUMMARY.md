@@ -1,50 +1,38 @@
-# Research Summary
+# Research Summary: v1.1 Ecosystem Assignment
 
-## Stack
+## Stack additions
 
-The chosen technical direction is sound for V1: Java Spring Boot on Render, Angular on Vercel, and Supabase for Postgres plus storage. The main architectural caution is not the stack itself but how strictly the app separates its own schema, public sharing surface, and Milo-linked identity boundary.
+- Add Milo entity integration for children, classes, and user relationships.
+- Add local assignment persistence and APIs inside Task Analysis Builder.
+- Keep Milo as source of truth for shared entities and Task Analysis Builder as source of truth for authored tasks plus assignments.
 
-## Table Stakes
+## Feature table stakes
 
-Users in this space expect:
+- recipient selection from real Milo entities
+- assignment creation from saved tasks
+- assignment state visibility in task/library flows
+- strict separation between assignment and public sharing
 
-- task and step authoring
-- media-rich visual supports
-- reusable templates
-- guided playback
-- sharing
-- printable materials
+## Architecture direction
 
-If these are missing, the product risks feeling like an incomplete authoring prototype.
+- integrate shared entities through read-oriented Milo gateways
+- persist assignments locally with ecosystem references
+- centralize recipient authorization in backend policy code
 
-## Differentiators
+## Watch out for
 
-The strongest differentiators for this product are:
+- permission drift if entity access is not validated in backend
+- scope blow-up if assignment, tracking, and collaboration all land together
+- UX overload if assignment becomes mandatory for every authoring path
 
-- support-level variants
-- clinically realistic playback mode
-- mixed symbol/photo/text representations
-- easy duplication and reuse across professionals and families
+## Recommendation
 
-## Watch Out For
+Scope v1.1 around:
+- Milo shared recipient reuse
+- first assignment lifecycle
+- assignment-aware UI and API boundaries
 
-The biggest risks are:
-
-- building a generic checklist tool instead of a task-analysis product
-- overbuilding clinical tracking in V1
-- weak security around public links and media
-- poor tablet/full-screen usability during real sessions
-- letting future Milo global-entity plans distort the V1 scope
-
-## Implication For Requirements
-
-Requirements should center on one tight V1 loop:
-
-1. Milo-authenticated professional creates a task
-2. enriches it with structured visual steps
-3. runs it in present mode
-4. shares it safely
-5. optionally exports it
-6. records a minimal completion event
-
-Everything outside that loop should be treated as deferred unless it directly strengthens it.
+Defer:
+- advanced per-step tracking
+- workspace collaboration
+- broader automation

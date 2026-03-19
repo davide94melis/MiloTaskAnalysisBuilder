@@ -17,13 +17,14 @@ v1.1 is now proposed as the next milestone focused on assignment flows with a na
 
 ## Proposed Roadmap
 
-**3 phases** | **9 requirements mapped** | Shared-entity requirements currently unmapped
+**4 phases** | **9 requirements mapped** | Shared-entity requirements currently unmapped
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
 | 13 | Assignment Domain Foundation | Introduce the first assignment record and saved-task assignment creation flow. | ASSN-01, ASSN-02, ASSN-04 | 4 |
 | 14 | Assignment Lifecycle And Boundary Safety | Let users manage assignments safely without breaking authoring or public-share boundaries. | ASSN-03, OPER-01, OPER-02 | 4 |
 | 15 | Recipient-Aware Product Surfaces | Make assignment state visible across library/task flows and verify present/share/export continuity. | OPER-03, UX-04, UX-05 | 4 |
+| 16 | Graphic Refactor for Task Editor UX | Refactor the authenticated task editor into a cleaner Symwriter-like workspace with a persistent action rail, focused step authoring area, and lighter secondary surfaces. | UI-REF-01, UI-REF-02, UI-REF-03 | 4 |
 
 ## Phase Details
 
@@ -68,6 +69,7 @@ Success criteria:
 - Phase 13 now starts directly from the minimum assignment domain.
 - Phase 14 protects workflow boundaries so assignment does not contaminate draft authoring or public sharing.
 - Phase 15 finishes the milestone by making the new model legible across the product and verifying continuity of existing saved-task flows.
+- Phase 16 is reserved for the task-editor UX refactor after the assignment surfaces are stable.
 
 ## Next Up
 
@@ -78,3 +80,15 @@ Success criteria:
 Also available:
 - `$gsd-plan-phase 13`
 - For history: [.planning/milestones/v1.0-ROADMAP.md](/C:/Users/davmelis/Documents/MyGitHub/Milo%20-%20Ecosystem/MiloTaskAnalysisBuilder/.planning/milestones/v1.0-ROADMAP.md)
+
+### Phase 16: Graphic Refactor for Task Editor UX
+
+Goal: Refactor the authenticated task editor into a cleaner Symwriter-like workspace with a persistent action rail, focused step authoring area, and lighter secondary surfaces.
+
+Requirements: UI-REF-01, UI-REF-02, UI-REF-03
+
+Success criteria:
+1. The editor uses a minimal top bar and removes the current redundant introductory/support blocks from the main page.
+2. Metadata remains at the top while step authoring becomes a two-column workspace with focused editing on the left and ordered step cards on the right.
+3. Secondary surfaces such as saved-task actions, public sharing, variants, and session history move behind icon-triggered modals opened from a Symwriter-style rail.
+4. The new layout remains usable on laptop and smaller screens, with a persistent desktop rail and animated hamburger-to-X toggle on compact viewports.

@@ -195,6 +195,24 @@ describe('TaskShellEditorEntryComponent', () => {
     }
   ];
 
+  function openRailOverlay(fixture: { detectChanges: () => void }, host: HTMLElement, title: string): HTMLElement {
+    const trigger = Array.from(host.querySelectorAll<HTMLButtonElement>('.entry__rail-button')).find(
+      (button) => button.title === title
+    );
+    expect(trigger).withContext(`missing rail trigger for ${title}`).toBeDefined();
+    trigger?.click();
+    fixture.detectChanges();
+    const overlay = host.querySelector<HTMLElement>('.entry__overlay');
+    expect(overlay).withContext(`missing overlay for ${title}`).not.toBeNull();
+    return overlay!;
+  }
+
+  function overlayButton(host: HTMLElement, label: string): HTMLButtonElement | undefined {
+    return Array.from(host.querySelectorAll<HTMLButtonElement>('.entry__overlay button')).find(
+      (button) => button.textContent?.trim() === label
+    );
+  }
+
   it('registers the authenticated preview, present, and export routes outside the editor path', () => {
     const shellRoute = appRoutes.find((route) => route.path === '');
     const previewRoute = shellRoute?.children?.find((route) => route.path === 'tasks/:taskId/preview');
@@ -204,6 +222,135 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(previewRoute?.component).toBe(TaskPlaybackPreviewPageComponent);
     expect(presentRoute?.component).toBe(TaskGuidedPresentPageComponent);
     expect(exportRoute?.component).toBe(TaskPrintExportPageComponent);
+  });
+
+  it('renders a minimal top bar with rail-driven secondary entry points outside the main canvas', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask)),
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const topbar = host.querySelector<HTMLElement>('.entry__topbar');
+    const canvas = host.querySelector<HTMLElement>('.entry__canvas');
+    const metadataForm = canvas?.querySelector('mtab-task-metadata-form');
+    const railButtons = Array.from(host.querySelectorAll<HTMLButtonElement>('.entry__rail-button'));
+    const canvasText = canvas?.textContent ?? '';
+
+    expect(topbar?.textContent).toContain('Workspace task');
+    expect(topbar?.textContent).toContain('Lavarsi le mani');
+    expect(metadataForm).not.toBeNull();
+    expect(canvas?.firstElementChild?.tagName.toLowerCase()).toBe('mtab-task-metadata-form');
+    expect(host.querySelector('.entry__compatibility')).toBeNull();
+    expect(railButtons.length).toBe(5);
+    expect(railButtons.map((button) => button.title)).toEqual([
+      'Azioni task salvata',
+      'Condivisione pubblica',
+      'Famiglia varianti',
+      'Storico sessioni',
+      'Supporto editor'
+    ]);
+    expect(canvasText).not.toContain('Supporto rapido');
+    expect(canvasText).not.toContain('Stato editor');
+    expect(canvasText).not.toContain('Azioni task salvata');
+    expect(canvasText).not.toContain('Condivisione pubblica');
+    expect(canvasText).not.toContain('Storico sessioni');
+    expect(canvasText).not.toContain('Famiglia varianti');
+  });
+
+  it('tracks compact rail open and closed state through the workspace toggle', async () => {
+    const params$ = new BehaviorSubject(convertToParamMap({ taskId: 'task-1' }));
+
+    await TestBed.configureTestingModule({
+      imports: [TaskShellEditorEntryComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params$.asObservable(),
+            snapshot: { paramMap: params$.value }
+          }
+        },
+        {
+          provide: TaskLibraryService,
+          useValue: {
+            getTaskDetail: jasmine.createSpy('getTaskDetail').and.returnValue(of(baseTask)),
+            updateTask: jasmine.createSpy('updateTask'),
+            listTaskShares: jasmine.createSpy('listTaskShares').and.returnValue(of([])),
+            listTaskSessions: jasmine.createSpy('listTaskSessions').and.returnValue(of([])),
+            createTaskShare: jasmine.createSpy('createTaskShare'),
+            regenerateTaskShare: jasmine.createSpy('regenerateTaskShare'),
+            revokeTaskShare: jasmine.createSpy('revokeTaskShare'),
+            createDraft: jasmine.createSpy('createDraft'),
+            duplicateTask: jasmine.createSpy('duplicateTask'),
+            createVariant: jasmine.createSpy('createVariant')
+          }
+        }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TaskShellEditorEntryComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const toggle = host.querySelector<HTMLButtonElement>('.entry__rail-toggle');
+    const workspace = host.querySelector<HTMLElement>('.entry__workspace');
+    const rail = host.querySelector<HTMLElement>('.entry__rail');
+
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle?.classList.contains('entry__rail-toggle--open')).toBeFalse();
+    expect(workspace?.classList.contains('entry__workspace--rail-open')).toBeFalse();
+    expect(rail?.getAttribute('data-state')).toBe('closed');
+
+    toggle?.click();
+    fixture.detectChanges();
+
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle?.classList.contains('entry__rail-toggle--open')).toBeTrue();
+    expect(workspace?.classList.contains('entry__workspace--rail-open')).toBeTrue();
+    expect(rail?.getAttribute('data-state')).toBe('open');
+
+    toggle?.click();
+    fixture.detectChanges();
+
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle?.classList.contains('entry__rail-toggle--open')).toBeFalse();
+    expect(workspace?.classList.contains('entry__workspace--rail-open')).toBeFalse();
+    expect(rail?.getAttribute('data-state')).toBe('closed');
   });
 
   it('loads detail data, retains draft upload state, and saves backend-aligned mixed visual support payloads', async () => {
@@ -525,15 +672,10 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    let previewButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Verifica anteprima'
-    ) as HTMLButtonElement | undefined;
-    let presentButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
-    ) as HTMLButtonElement | undefined;
-    let exportButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Esporta PDF'
-    ) as HTMLButtonElement | undefined;
+    openRailOverlay(fixture, host, 'Azioni task salvata');
+    let previewButton = overlayButton(host, 'Verifica anteprima');
+    let presentButton = overlayButton(host, 'Avvia modalita guidata');
+    let exportButton = overlayButton(host, 'Esporta PDF');
     expect(previewButton?.disabled).toBeTrue();
     expect(presentButton?.disabled).toBeTrue();
     expect(exportButton?.disabled).toBeTrue();
@@ -555,15 +697,9 @@ describe('TaskShellEditorEntryComponent', () => {
     ]);
     fixture.detectChanges();
 
-    previewButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Verifica anteprima'
-    ) as HTMLButtonElement | undefined;
-    presentButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
-    ) as HTMLButtonElement | undefined;
-    exportButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Esporta PDF'
-    ) as HTMLButtonElement | undefined;
+    previewButton = overlayButton(host, 'Verifica anteprima');
+    presentButton = overlayButton(host, 'Avvia modalita guidata');
+    exportButton = overlayButton(host, 'Esporta PDF');
     expect(previewButton?.disabled).toBeFalse();
     expect(presentButton?.disabled).toBeFalse();
     expect(exportButton?.disabled).toBeFalse();
@@ -643,9 +779,8 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const presentButton = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Avvia modalita guidata'
-    ) as HTMLButtonElement | undefined;
+    openRailOverlay(fixture, host, 'Azioni task salvata');
+    const presentButton = overlayButton(host, 'Avvia modalita guidata');
 
     expect(presentButton?.disabled).toBeFalse();
 
@@ -699,16 +834,17 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const historyItems = host.querySelectorAll('.entry__history-item');
+    const overlay = openRailOverlay(fixture, host, 'Storico sessioni');
+    const historyItems = overlay.querySelectorAll('.entry__history-item');
 
     expect(listTaskSessions).toHaveBeenCalledWith('task-1');
-    expect(host.textContent).toContain('Storico sessioni');
-    expect(host.textContent).toContain('Totale completamenti');
-    expect(host.textContent).toContain('6');
+    expect(overlay.textContent).toContain('Storico sessioni');
+    expect(overlay.textContent).toContain('Totale completamenti');
+    expect(overlay.textContent).toContain('6');
     expect(historyItems.length).toBe(5);
-    expect(host.textContent).toContain('Modalita guidata autenticata');
-    expect(host.textContent).toContain('Link condiviso');
-    expect(host.textContent).not.toContain('Nessuna sessione completata registrata per questa task.');
+    expect(overlay.textContent).toContain('Modalita guidata autenticata');
+    expect(overlay.textContent).toContain('Link condiviso');
+    expect(overlay.textContent).not.toContain('Nessuna sessione completata registrata per questa task.');
   });
 
   it('renders the empty history state when the current task has no recorded sessions', async () => {
@@ -749,9 +885,10 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('Totale completamenti');
-    expect(host.textContent).toContain('0');
-    expect(host.textContent).toContain('Nessuna sessione completata registrata per questa task.');
+    const overlay = openRailOverlay(fixture, host, 'Storico sessioni');
+    expect(overlay.textContent).toContain('Totale completamenti');
+    expect(overlay.textContent).toContain('0');
+    expect(overlay.textContent).toContain('Nessuna sessione completata registrata per questa task.');
   });
 
   it('renders family context, opens sibling navigation, and creates a new variant from the editor', async () => {
@@ -806,12 +943,13 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('Famiglia varianti');
-    expect(host.textContent).toContain('Task base');
-    expect(host.textContent).toContain('3 task nella famiglia');
-    expect(host.textContent).toContain('Variante · Visivo');
+    const overlay = openRailOverlay(fixture, host, 'Famiglia varianti');
+    expect(overlay.textContent).toContain('Famiglia varianti');
+    expect(overlay.textContent).toContain('3 task nella famiglia');
+    expect(overlay.textContent).toContain('Variante');
+    expect(overlay.textContent).toContain('Visivo');
 
-    const familyButtons = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).filter((button) =>
+    const familyButtons = Array.from(overlay.querySelectorAll<HTMLButtonElement>('button')).filter((button) =>
       button.textContent?.includes('Visivo')
     );
     familyButtons[0].click();
@@ -819,7 +957,7 @@ describe('TaskShellEditorEntryComponent', () => {
 
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', 'task-2']);
 
-    const createVariantButton = Array.from(host.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
+    const createVariantButton = Array.from(overlay.querySelectorAll<HTMLButtonElement>('button')).find((button) =>
       button.textContent?.includes('Crea variante da questa task')
     );
     createVariantButton?.click();
@@ -901,14 +1039,15 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const shareCards = host.querySelectorAll<HTMLElement>('.entry__share-card');
+    const overlay = openRailOverlay(fixture, host, 'Condivisione pubblica');
+    const shareCards = overlay.querySelectorAll<HTMLElement>('.entry__share-card');
     expect(listTaskShares).toHaveBeenCalledWith('task-1');
-    expect(host.textContent).toContain('Condivisione pubblica');
+    expect(overlay.textContent).toContain('Condivisione pubblica');
     expect(shareCards.length).toBe(2);
     expect(shareCards[0].textContent).toContain('Vista');
     expect(shareCards[1].textContent).toContain('Presenta');
-    expect(host.textContent).toContain('/shared/sharetokenview');
-    expect(host.textContent).toContain('/shared/sharetokenpresent/present');
+    expect(overlay.textContent).toContain('/shared/sharetokenview');
+    expect(overlay.textContent).toContain('/shared/sharetokenpresent/present');
 
     const viewButtons = shareCards[0].querySelectorAll<HTMLButtonElement>('button');
     viewButtons[1].click();
@@ -916,7 +1055,7 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     expect(writeText).toHaveBeenCalledWith(jasmine.stringMatching('/shared/sharetokenview$') as unknown as string);
-    expect(host.textContent).toContain('Link vista copiato negli appunti.');
+    expect(overlay.textContent).toContain('Link vista copiato negli appunti.');
 
     const presentButtons = shareCards[1].querySelectorAll<HTMLButtonElement>('button');
     presentButtons[2].click();
@@ -924,8 +1063,8 @@ describe('TaskShellEditorEntryComponent', () => {
     fixture.detectChanges();
 
     expect(regenerateTaskShare).toHaveBeenCalledWith('task-1', 'present');
-    expect(host.textContent).toContain('rotatedpresent/present');
-    expect(host.textContent).toContain('Il token precedente non e piu valido.');
+    expect(overlay.textContent).toContain('rotatedpresent/present');
+    expect(overlay.textContent).toContain('Il token precedente non e piu valido.');
 
     viewButtons[3].click();
     await fixture.whenStable();
@@ -934,7 +1073,7 @@ describe('TaskShellEditorEntryComponent', () => {
     expect(revokeTaskShare).toHaveBeenCalledWith('task-1', 'share-view');
     expect(shareCards[0].textContent).toContain('Non creato');
     expect(shareCards[0].textContent).not.toContain('/shared/sharetokenview');
-    expect(host.textContent).toContain('Link vista revocato.');
+    expect(overlay.textContent).toContain('Link vista revocato.');
   });
 
   it('keeps share actions behind the saved-only boundary and creates missing mode links explicitly', async () => {
@@ -980,7 +1119,8 @@ describe('TaskShellEditorEntryComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     const stepsList = fixture.debugElement.query(By.directive(TaskStepsDraftListComponent)).componentInstance as TaskStepsDraftListComponent;
-    const shareCards = () => host.querySelectorAll<HTMLElement>('.entry__share-card');
+    openRailOverlay(fixture, host, 'Condivisione pubblica');
+    const shareCards = () => host.querySelectorAll<HTMLElement>('.entry__overlay .entry__share-card');
 
     stepsList.stepsChange.emit([
       {

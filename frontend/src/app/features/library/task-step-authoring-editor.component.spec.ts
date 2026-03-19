@@ -77,6 +77,56 @@ describe('TaskStepAuthoringEditorComponent', () => {
     expect(emitted[0]?.[0].visualSupport).toEqual(createEmptyVisualSupport());
   });
 
+  it('renders an ordered step board and loads a selected card into the focused editor', () => {
+    component.steps = [
+      {
+        ...baseSteps[0],
+        visualSupport: {
+          text: 'Apri',
+          symbol: {
+            library: 'symwriter',
+            key: 'tap',
+            label: 'Rubinetto'
+          },
+          image: null
+        }
+      },
+      {
+        id: 'step-2',
+        position: 2,
+        title: 'Prendi il sapone',
+        description: 'Usa il dispenser.',
+        required: false,
+        supportGuidance: 'Modello visivo',
+        reinforcementNotes: 'Bravo',
+        estimatedMinutes: 2,
+        visualSupport: {
+          text: 'Sapone',
+          symbol: null,
+          image: null
+        },
+        uploadState: createIdleUploadState()
+      }
+    ];
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const cards = host.querySelectorAll<HTMLButtonElement>('.step-card__surface');
+
+    expect(cards.length).toBe(2);
+    expect(cards[0].textContent).toContain('Step 1');
+    expect(cards[1].textContent).toContain('Step 2');
+    expect(host.querySelector('.step-card__surface--selected')?.textContent).toContain('Apri il rubinetto');
+
+    cards[1].click();
+    fixture.detectChanges();
+
+    const titleInput = host.querySelector<HTMLInputElement>('.step-editor input[type="text"]');
+    expect(host.querySelector('.step-card__surface--selected')?.textContent).toContain('Prendi il sapone');
+    expect(titleInput?.value).toBe('Prendi il sapone');
+    expect(host.textContent).toContain('2 step nella sequenza');
+  });
+
   it('preserves mixed visual supports across duplicate reorder delete interactions', () => {
     component.steps = [
       {
@@ -126,8 +176,11 @@ describe('TaskStepAuthoringEditorComponent', () => {
     component.stepsChange.subscribe((steps) => emitted.push(steps));
 
     const host = fixture.nativeElement as HTMLElement;
-    const buttons = Array.from(host.querySelectorAll('.step__actions button')) as HTMLButtonElement[];
-    buttons.find((button) => button.textContent?.trim() === 'Duplica')?.click();
+    const duplicateButton = Array.from(host.querySelectorAll<HTMLButtonElement>('.step-card__actions button')).find(
+      (button) => button.textContent?.trim() === 'Duplica'
+    );
+    duplicateButton?.click();
+
     expect(emitted.at(-1)?.length).toBe(3);
     expect(emitted.at(-1)?.[1].visualSupport.text).toBe('Apri');
     expect(emitted.at(-1)?.[1].visualSupport.symbol?.key).toBe('tap');
@@ -136,7 +189,7 @@ describe('TaskStepAuthoringEditorComponent', () => {
 
     component.steps = emitted.at(-1) ?? component.steps;
     fixture.detectChanges();
-    const moveDownButtons = (Array.from(host.querySelectorAll('.step__actions button')) as HTMLButtonElement[]).filter(
+    const moveDownButtons = (Array.from(host.querySelectorAll('.step-card__actions button')) as HTMLButtonElement[]).filter(
       (button) => button.textContent?.trim() === 'Giu'
     );
     moveDownButtons[0].click();
@@ -145,13 +198,13 @@ describe('TaskStepAuthoringEditorComponent', () => {
 
     component.steps = emitted.at(-1) ?? component.steps;
     fixture.detectChanges();
-    const deleteButtons = Array.from(fixture.nativeElement.querySelectorAll('.step__danger')) as HTMLButtonElement[];
+    const deleteButtons = Array.from(host.querySelectorAll('.step-card__danger')) as HTMLButtonElement[];
     deleteButtons[0].click();
     expect(emitted.at(-1)?.length).toBe(2);
     expect(emitted.at(-1)?.[0].visualSupport.text).toBe('Apri');
   });
 
-  it('supports symbol plus text combinations', () => {
+  it('supports symbol plus text combinations through the focused editor', () => {
     component.steps = [...baseSteps];
     fixture.detectChanges();
 
@@ -159,7 +212,7 @@ describe('TaskStepAuthoringEditorComponent', () => {
     component.stepsChange.subscribe((steps) => emitted.push(steps));
 
     const host = fixture.nativeElement as HTMLElement;
-    const visualTextArea = host.querySelector('section.visual-support textarea') as HTMLTextAreaElement;
+    const visualTextArea = host.querySelector('.visual-support textarea') as HTMLTextAreaElement;
     visualTextArea.value = 'Apri';
     visualTextArea.dispatchEvent(new Event('input'));
 
@@ -202,7 +255,7 @@ describe('TaskStepAuthoringEditorComponent', () => {
     component.stepsChange.subscribe((steps) => emitted.push(steps));
 
     const host = fixture.nativeElement as HTMLElement;
-    const visualTextArea = host.querySelector('section.visual-support textarea') as HTMLTextAreaElement;
+    const visualTextArea = host.querySelector('.visual-support textarea') as HTMLTextAreaElement;
     visualTextArea.value = 'Apri il rubinetto';
     visualTextArea.dispatchEvent(new Event('input'));
 
@@ -233,9 +286,7 @@ describe('TaskStepAuthoringEditorComponent', () => {
   });
 
   it('scopes upload failures to the affected step without clearing the rest of the draft', async () => {
-    taskLibrary.uploadTaskMedia.and.returnValue(
-      throwError(() => new Error('upload failed'))
-    );
+    taskLibrary.uploadTaskMedia.and.returnValue(throwError(() => new Error('upload failed')));
     component.steps = [
       {
         ...baseSteps[0],
@@ -256,8 +307,6 @@ describe('TaskStepAuthoringEditorComponent', () => {
     component.stepsChange.subscribe((steps) => emitted.push(steps));
 
     const host = fixture.nativeElement as HTMLElement;
-    component.steps = emitted.at(-1) ?? component.steps;
-    fixture.detectChanges();
     const fileInput = host.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(['bad-image'], 'broken.png', { type: 'image/png' });
     Object.defineProperty(fileInput, 'files', {
