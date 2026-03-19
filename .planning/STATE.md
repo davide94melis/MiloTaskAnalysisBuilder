@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_completed
-last_updated: "2026-03-14T19:05:00.000Z"
+milestone: v1.1
+milestone_name: Ecosystem Assignment
+status: defining_requirements
+last_updated: "2026-03-19T08:37:11.524Z"
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 42
-  completed_plans: 42
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -22,26 +22,25 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Status
 
-- v1.0 MVP archived
-- 12 phases complete
-- 42 plans complete
-- Milestone archives created for roadmap and requirements
-- Project definition evolved for post-v1.0 state
-- Residual closeout debt explicitly accepted and documented
+- v1.1 Ecosystem Assignment started
+- Requirements are being defined for the narrowed assignment-focused milestone
+- v1.0 remains the latest shipped milestone
+- Prior milestone archives remain available for roadmap and requirements history
 
 ## Active Milestone
 
-- None
+- v1.1 Ecosystem Assignment
 
 ## Next Command
 
-- `$gsd-new-milestone`
+- `$gsd-discuss-phase 13`
 
 ## Recent Decisions
 
-- v1.0 is archived as a shipped MVP with accepted non-blocking closeout debt.
-- The next milestone should prioritize Milo global entities, assignment, deeper tracking, and collaboration decisions.
-- Browser-print export remains acceptable for now, but should be revisited if product usage exposes print limitations.
+- v1.1 now starts from the first assignment model instead of shared Milo recipient integration.
+- Shared-entity recipient reuse is no longer mapped to the immediate roadmap.
+- Research stays enabled before requirements and roadmap creation.
+- Deeper per-step tracking and collaboration remain outside the immediate milestone focus.
 
 ## Constraints To Preserve
 
@@ -53,5 +52,5 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Session Continuity
 
-- Stopped at: v1.0 archived, ready for next milestone definition
+- Stopped at: phase 13 removed and roadmap renumbered for v1.1, awaiting next planning decision
 - Resume file: None
