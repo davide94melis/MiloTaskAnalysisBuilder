@@ -97,10 +97,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         display: grid;
         gap: 1rem;
         padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .panel__eyebrow {
@@ -108,7 +108,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h3,
@@ -133,19 +133,19 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
       .field span {
         font-size: 0.88rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .field input,
       .field select,
       .field textarea {
         width: 100%;
-        border-radius: 1rem;
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.75rem;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-input-bg);
         padding: 0.82rem 0.95rem;
         font: inherit;
-        color: #1f2a37;
+        color: var(--pitwriter-text);
       }
 
       .field textarea {
@@ -153,15 +153,15 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       }
 
       .panel__advanced {
-        border-radius: 1.2rem;
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        background: rgba(247, 250, 252, 0.9);
+        border-radius: 0.9rem;
+        border: 1px solid var(--pitwriter-border-subtle);
+        background: var(--pitwriter-bg-surface);
         padding: 0.9rem 1rem;
       }
 
       .panel__advanced summary {
         cursor: pointer;
-        color: #31566b;
+        color: var(--pitwriter-text);
         font-weight: 600;
         list-style: none;
       }

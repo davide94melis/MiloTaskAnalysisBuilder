@@ -1,13 +1,48 @@
+:root {
+  --pitwriter-bg-page: radial-gradient(circle at top, #eff6ff 0, #f9fafb 45%, #f3f4f6 100%);
+  --pitwriter-bg-surface: #f9fafb;
+  --pitwriter-bg-surface-rgb: 249, 250, 251;
+  --pitwriter-bg-surface-elevated: #ffffff;
+  --pitwriter-bg-hover: #f3f4f6;
+  --pitwriter-text: #0f172a;
+  --pitwriter-text-muted: #4b5563;
+  --pitwriter-text-muted-2: #6b7280;
+  --pitwriter-border: #d1d5db;
+  --pitwriter-border-subtle: rgba(148, 163, 184, 0.3);
+  --pitwriter-input-bg: #ffffff;
+  --pitwriter-shadow: rgba(15, 23, 42, 0.12);
+  --pitwriter-shadow-subtle: rgba(15, 23, 42, 0.08);
+  --pitwriter-focus-ring: rgba(79, 70, 229, 0.22);
+  --pitwriter-modal-backdrop: rgba(15, 23, 42, 0.5);
+  --pitwriter-primary-from: #4f46e5;
+  --pitwriter-primary-to: #ec4899;
+  --pitwriter-button-active-bg: #111827;
+  --pitwriter-button-active-text: #ffffff;
+  --pitwriter-success-bg: #ecfdf5;
+  --pitwriter-success-text: #047857;
+  --pitwriter-warning-bg: #fff7ed;
+  --pitwriter-warning-text: #c2410c;
+  --pitwriter-danger-border: #f97373;
+  --pitwriter-danger-text: #b91c1c;
+  --pitwriter-danger-bg: #fee2e2;
+}
+
 html,
 body {
   margin: 0;
   min-height: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top, #eff6ff 0, #f9fafb 45%, #f3f4f6 100%);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--pitwriter-bg-page);
 }
 
 body {
-  color: #0f172a;
+  color: var(--pitwriter-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 button,
@@ -15,4 +50,23 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+a,
+button {
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--pitwriter-focus-ring);
 }

@@ -158,10 +158,10 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .export-shell--status,
       .print-document {
         padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.92);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .export-shell__toolbar {
@@ -194,7 +194,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .export-shell__toolbar-actions {
@@ -205,13 +205,13 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .export-shell__primary-action,
       .export-shell__status-actions a {
         min-height: 3rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         padding: 0 1rem;
         font: inherit;
         text-decoration: none;
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(247, 250, 252, 0.96);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -220,7 +220,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
       .export-shell__primary-action {
         border: 0;
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
         font-weight: 700;
       }
@@ -235,11 +235,11 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
 
       .print-document__hero {
         padding-bottom: 0.9rem;
-        border-bottom: 1px solid rgba(17, 65, 91, 0.12);
+        border-bottom: 1px solid var(--pitwriter-border-subtle);
       }
 
       .print-document__description {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.55;
       }
 
@@ -253,14 +253,15 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .print-support,
       .print-document__empty {
         padding: 0.95rem;
-        border-radius: 1rem;
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.85rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .print-step {
         padding: 1rem;
-        border-radius: 1.2rem;
-        border: 1px solid rgba(17, 65, 91, 0.1);
+        border-radius: 0.9rem;
+        border: 1px solid var(--pitwriter-border-subtle);
         break-inside: avoid;
         page-break-inside: avoid;
       }
@@ -275,7 +276,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .print-support small,
       .print-support figcaption span,
       .print-support__empty {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.5;
       }
 
@@ -299,7 +300,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         max-height: 18rem;
         object-fit: contain;
         border-radius: 0.8rem;
-        background: rgba(244, 240, 223, 0.55);
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.08));
       }
 
       .print-support figcaption {
@@ -348,7 +349,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         .print-support,
         .print-document__empty {
           background: #ffffff;
-          border: 1px solid rgba(17, 65, 91, 0.18);
+          border: 1px solid rgba(148, 163, 184, 0.45);
         }
       }
     `

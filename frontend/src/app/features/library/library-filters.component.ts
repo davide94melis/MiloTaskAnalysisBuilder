@@ -77,9 +77,10 @@ import {
         gap: 0.85rem;
         grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
         padding: 1rem;
-        border-radius: 1.35rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       label {
@@ -88,7 +89,7 @@ import {
       }
 
       span {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted);
         font-size: 0.84rem;
       }
 
@@ -96,17 +97,23 @@ import {
       select,
       button {
         min-height: 2.6rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.7rem;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-input-bg);
         padding: 0 0.8rem;
         font: inherit;
+        color: var(--pitwriter-text);
       }
 
       button {
         align-self: end;
         cursor: pointer;
-        color: #31566b;
+        color: var(--pitwriter-text);
+        background: var(--pitwriter-bg-surface);
+      }
+
+      button:hover {
+        background: var(--pitwriter-bg-hover);
       }
     `
   ],
