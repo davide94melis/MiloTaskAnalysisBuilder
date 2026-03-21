@@ -132,9 +132,7 @@ interface SharedTaskViewRecord {
         display: block;
         min-height: 100dvh;
         padding: clamp(1rem, 2vw, 1.5rem);
-        background:
-          radial-gradient(circle at top left, rgba(255, 233, 189, 0.6), transparent 28%),
-          linear-gradient(180deg, #f7fafc, #eef6f8);
+        background: var(--pitwriter-bg-page);
       }
 
       .shared-shell {
@@ -142,7 +140,7 @@ interface SharedTaskViewRecord {
         gap: 1rem;
         max-width: 72rem;
         margin: 0 auto;
-        color: #123446;
+        color: var(--pitwriter-text);
       }
 
       .shared-shell__hero,
@@ -151,10 +149,10 @@ interface SharedTaskViewRecord {
       .shared-step,
       .shared-shell--status {
         padding: 1.25rem;
-        border-radius: 1.75rem;
-        border: 1px solid rgba(18, 52, 70, 0.12);
-        background: rgba(255, 255, 255, 0.92);
-        box-shadow: 0 18px 40px rgba(18, 52, 70, 0.08);
+        border-radius: 1rem;
+        border: 1px solid var(--pitwriter-border-subtle);
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.92);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .shared-shell__hero,
@@ -177,7 +175,7 @@ interface SharedTaskViewRecord {
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #8e6236;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .shared-shell__summary,
@@ -185,7 +183,7 @@ interface SharedTaskViewRecord {
       .shared-shell__copy p,
       .shared-step__empty,
       .shared-step__support small {
-        color: #49606c;
+        color: var(--pitwriter-text-muted);
         line-height: 1.55;
       }
 
@@ -197,7 +195,7 @@ interface SharedTaskViewRecord {
       .shared-shell__ghost {
         min-height: 3.1rem;
         padding: 0 1.1rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         font: inherit;
         text-decoration: none;
         display: inline-flex;
@@ -207,14 +205,14 @@ interface SharedTaskViewRecord {
 
       .shared-shell__primary {
         border: 0;
-        background: linear-gradient(180deg, #123446, #235772);
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
       }
 
       .shared-shell__ghost {
-        border: 1px solid rgba(18, 52, 70, 0.16);
-        background: rgba(247, 250, 252, 0.96);
-        color: #123446;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
       }
 
       .shared-shell__ghost:disabled {
@@ -224,13 +222,13 @@ interface SharedTaskViewRecord {
 
       .shared-shell__notice {
         margin: 0;
-        color: #0f766e;
+        color: var(--pitwriter-success-text);
       }
 
       .shared-shell__error-copy,
       .shared-shell--error p,
       .shared-shell--error h1 {
-        color: #b42318;
+        color: var(--pitwriter-danger-text);
       }
 
       .shared-shell__facts {
@@ -241,8 +239,9 @@ interface SharedTaskViewRecord {
 
       .shared-shell__facts div {
         padding: 0.85rem;
-        border-radius: 1.1rem;
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .shared-shell__steps {
@@ -263,8 +262,8 @@ interface SharedTaskViewRecord {
         min-height: 2rem;
         padding: 0 0.85rem;
         border-radius: 999px;
-        background: rgba(18, 52, 70, 0.08);
-        color: #123446;
+        background: rgba(79, 70, 229, 0.08);
+        color: var(--pitwriter-primary-from);
       }
 
       .shared-step__supports {
@@ -273,9 +272,9 @@ interface SharedTaskViewRecord {
 
       .shared-step__support {
         padding: 1rem;
-        border-radius: 1.2rem;
-        border: 1px solid rgba(18, 52, 70, 0.08);
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.9rem;
+        border: 1px solid var(--pitwriter-border-subtle);
+        background: var(--pitwriter-bg-surface);
         display: grid;
         gap: 0.45rem;
       }
@@ -284,7 +283,7 @@ interface SharedTaskViewRecord {
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #8e6236;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .shared-step__support strong {
@@ -305,7 +304,7 @@ interface SharedTaskViewRecord {
         max-height: 24rem;
         object-fit: contain;
         border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(255, 243, 202, 0.72), rgba(228, 242, 247, 0.82));
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.08));
       }
 
       h1,
