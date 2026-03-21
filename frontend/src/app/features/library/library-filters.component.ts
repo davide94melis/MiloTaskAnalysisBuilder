@@ -75,7 +75,7 @@ import {
       .filters {
         display: grid;
         gap: 0.85rem;
-        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
         padding: 1rem;
         border-radius: 1rem;
         background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
@@ -86,6 +86,7 @@ import {
       label {
         display: grid;
         gap: 0.32rem;
+        min-width: 0;
       }
 
       span {
@@ -96,6 +97,8 @@ import {
       input,
       select,
       button {
+        width: 100%;
+        box-sizing: border-box;
         min-height: 2.6rem;
         border-radius: 0.7rem;
         border: 1px solid var(--pitwriter-border);
@@ -110,6 +113,10 @@ import {
         cursor: pointer;
         color: var(--pitwriter-text);
         background: var(--pitwriter-bg-surface);
+      }
+
+      select {
+        min-width: 0;
       }
 
       button:hover {
