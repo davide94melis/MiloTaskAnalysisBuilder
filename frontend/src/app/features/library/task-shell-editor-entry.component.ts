@@ -360,7 +360,7 @@ type TaskMetadataFormGroup = FormGroup<{
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h2,
@@ -382,10 +382,10 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__workspace-panel,
       .entry__overlay-card {
         padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.88);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.9);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .entry__topbar {
@@ -404,7 +404,7 @@ type TaskMetadataFormGroup = FormGroup<{
         display: flex;
         flex-wrap: wrap;
         gap: 0.6rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         font-size: 0.92rem;
       }
 
@@ -414,7 +414,8 @@ type TaskMetadataFormGroup = FormGroup<{
         min-height: 2rem;
         padding: 0 0.8rem;
         border-radius: 999px;
-        background: rgba(247, 250, 252, 0.96);
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .entry__topbar-actions {
@@ -427,21 +428,21 @@ type TaskMetadataFormGroup = FormGroup<{
         display: grid;
         gap: 0.4rem;
         justify-items: end;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         text-align: right;
       }
 
       .entry__status-copy {
         font-weight: 600;
-        color: #11415b;
+        color: var(--pitwriter-primary-from);
       }
 
       .entry__pill {
         display: inline-flex;
         padding: 0.45rem 0.8rem;
         border-radius: 999px;
-        background: rgba(17, 65, 91, 0.08);
-        color: #11415b;
+        background: rgba(79, 70, 229, 0.08);
+        color: var(--pitwriter-primary-from);
         text-transform: capitalize;
       }
 
@@ -458,8 +459,8 @@ type TaskMetadataFormGroup = FormGroup<{
         height: 3rem;
         padding: 0;
         border-radius: 999px;
-        border: 1px solid rgba(17, 65, 91, 0.14);
-        background: rgba(247, 250, 252, 0.96);
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
         cursor: pointer;
       }
 
@@ -469,7 +470,7 @@ type TaskMetadataFormGroup = FormGroup<{
         width: 1.35rem;
         height: 2px;
         border-radius: 999px;
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         transition: transform 180ms ease, opacity 180ms ease, top 180ms ease;
       }
 
@@ -509,7 +510,7 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__share-actions button,
       .entry__family-link {
         min-height: 2.75rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         padding: 0 1rem;
         font: inherit;
       }
@@ -526,9 +527,9 @@ type TaskMetadataFormGroup = FormGroup<{
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        border: 1px solid rgba(17, 65, 91, 0.14);
-        background: rgba(247, 250, 252, 0.96);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
       }
 
       .entry__workspace {
@@ -544,9 +545,9 @@ type TaskMetadataFormGroup = FormGroup<{
         position: sticky;
         top: 1rem;
         padding: 0.8rem;
-        border-radius: 1.6rem;
-        background: rgba(231, 239, 243, 0.88);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
 
@@ -556,15 +557,15 @@ type TaskMetadataFormGroup = FormGroup<{
         justify-content: center;
         width: 3rem;
         padding: 0;
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        background: rgba(255, 255, 255, 0.94);
-        color: #11415b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface-elevated);
+        color: var(--pitwriter-primary-from);
         cursor: pointer;
         font-weight: 700;
       }
 
       .entry__rail-button--muted {
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted);
       }
 
       .entry__canvas {
@@ -579,12 +580,12 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__notice-copy {
         display: grid;
         gap: 0.35rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .entry__notice-copy--error,
       .entry__error {
-        color: #b42318;
+        color: var(--pitwriter-danger-text);
       }
 
       .entry__action-groups {
@@ -596,9 +597,9 @@ type TaskMetadataFormGroup = FormGroup<{
         display: grid;
         gap: 0.6rem;
         padding: 0.95rem;
-        border-radius: 1.2rem;
-        background: rgba(247, 250, 252, 0.96);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .entry__workspace-panel {
@@ -615,30 +616,30 @@ type TaskMetadataFormGroup = FormGroup<{
 
       .entry__action-group-label,
       dt {
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
         font-size: 0.82rem;
         letter-spacing: 0.06em;
         text-transform: uppercase;
       }
 
       .entry__ghost {
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(255, 255, 255, 0.94);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface-elevated);
+        color: var(--pitwriter-text);
         cursor: pointer;
       }
 
       .entry__ghost--danger {
-        border-color: rgba(180, 35, 24, 0.22);
-        color: #b42318;
+        border-color: var(--pitwriter-danger-border);
+        color: var(--pitwriter-danger-text);
       }
 
       .entry__actions a {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        color: #31566b;
-        background: rgba(247, 250, 252, 0.96);
+        color: var(--pitwriter-text);
+        background: var(--pitwriter-bg-surface);
       }
 
       .entry__actions,
@@ -663,9 +664,9 @@ type TaskMetadataFormGroup = FormGroup<{
         display: grid;
         gap: 0.8rem;
         padding: 0.95rem;
-        border-radius: 1.2rem;
-        background: rgba(247, 250, 252, 0.96);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .entry__history-total,
@@ -673,14 +674,14 @@ type TaskMetadataFormGroup = FormGroup<{
         display: grid;
         gap: 0.35rem;
         padding: 0.95rem;
-        border-radius: 1.2rem;
-        background: rgba(247, 250, 252, 0.96);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .entry__history-total-label,
       .entry__history-item small {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .entry__share-state,
@@ -691,23 +692,23 @@ type TaskMetadataFormGroup = FormGroup<{
         min-height: 2rem;
         padding: 0 0.8rem;
         border-radius: 999px;
-        background: rgba(17, 65, 91, 0.08);
-        color: #31566b;
+        background: var(--pitwriter-bg-hover);
+        color: var(--pitwriter-text-muted);
         font-size: 0.84rem;
       }
 
       .entry__share-pill--active {
-        background: rgba(25, 77, 45, 0.12);
-        color: #194d2d;
+        background: var(--pitwriter-success-bg);
+        color: var(--pitwriter-success-text);
       }
 
       .entry__share-url {
         display: block;
         padding: 0.75rem 0.9rem;
-        border-radius: 1rem;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px dashed rgba(17, 65, 91, 0.16);
-        color: #11415b;
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface-elevated);
+        border: 1px dashed rgba(99, 102, 241, 0.25);
+        color: var(--pitwriter-primary-from);
         overflow-wrap: anywhere;
       }
 
@@ -719,7 +720,8 @@ type TaskMetadataFormGroup = FormGroup<{
       .entry__family-facts div {
         padding: 0.75rem 0.9rem;
         border-radius: 1rem;
-        background: rgba(247, 250, 252, 0.96);
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       dd {
@@ -736,19 +738,19 @@ type TaskMetadataFormGroup = FormGroup<{
         gap: 0.18rem;
         justify-items: start;
         text-align: left;
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        background: rgba(247, 250, 252, 0.96);
-        color: #11415b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
         cursor: pointer;
       }
 
       .entry__family-link small {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .entry__panel p,
       .entry__workspace-panel p {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.5;
       }
 
@@ -758,7 +760,7 @@ type TaskMetadataFormGroup = FormGroup<{
       }
 
       .entry__panel-note {
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted);
       }
 
       .entry__overlay {
@@ -775,8 +777,8 @@ type TaskMetadataFormGroup = FormGroup<{
         width: min(36rem, 100%);
         display: grid;
         gap: 1rem;
-        border-radius: 1.6rem;
-        background: #fffdf8;
+        border-radius: 1rem;
+        background: var(--pitwriter-bg-surface-elevated);
         box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
       }
 
@@ -789,18 +791,18 @@ type TaskMetadataFormGroup = FormGroup<{
 
       .entry__overlay-close {
         padding: 0 0.9rem;
-        border: 1px solid rgba(17, 65, 91, 0.14);
-        background: rgba(247, 250, 252, 0.96);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
         cursor: pointer;
       }
 
       .entry--loading {
         padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        color: #4b5563;
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
+        color: var(--pitwriter-text-muted);
       }
 
       @media (max-width: 860px) {

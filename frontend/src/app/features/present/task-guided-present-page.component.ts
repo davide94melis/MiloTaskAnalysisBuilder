@@ -224,7 +224,7 @@ interface PresentTaskRecord {
       .present-shell {
         display: grid;
         gap: 1rem;
-        color: #123446;
+        color: var(--pitwriter-text);
       }
 
       .present-shell__hero,
@@ -233,9 +233,9 @@ interface PresentTaskRecord {
       .present-shell__nav,
       .present-shell__status-card,
       .present-shell--status {
-        border-radius: 1.9rem;
-        border: 1px solid rgba(18, 52, 70, 0.12);
-        box-shadow: 0 22px 52px rgba(18, 52, 70, 0.08);
+        border-radius: 1rem;
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .present-shell__hero,
@@ -243,8 +243,9 @@ interface PresentTaskRecord {
       .present-shell__status-card,
       .present-shell--status {
         background:
-          radial-gradient(circle at top right, rgba(255, 232, 176, 0.45), transparent 32%),
-          linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 251, 0.98));
+          radial-gradient(circle at top right, rgba(236, 72, 153, 0.08), transparent 30%),
+          radial-gradient(circle at top left, rgba(79, 70, 229, 0.08), transparent 34%),
+          rgba(var(--pitwriter-bg-surface-rgb), 0.94);
       }
 
       .present-shell__hero,
@@ -283,7 +284,7 @@ interface PresentTaskRecord {
         flex-wrap: wrap;
         gap: 0.55rem;
         padding: 0.8rem;
-        background: rgba(255, 255, 255, 0.78);
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
       }
 
       .present-shell__progress-pill {
@@ -293,19 +294,19 @@ interface PresentTaskRecord {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: rgba(18, 52, 70, 0.08);
-        color: #466170;
+        background: var(--pitwriter-bg-hover);
+        color: var(--pitwriter-text-muted);
         font-weight: 700;
       }
 
       .present-shell__progress-pill--current {
-        background: #123446;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
       }
 
       .present-shell__progress-pill--complete {
-        background: #c8e8d1;
-        color: #194d2d;
+        background: var(--pitwriter-success-bg);
+        color: var(--pitwriter-success-text);
       }
 
       .present-stage {
@@ -325,9 +326,9 @@ interface PresentTaskRecord {
       .present-stage__support,
       .present-stage__adult-card {
         padding: 1rem;
-        border-radius: 1.35rem;
-        background: rgba(248, 251, 252, 0.96);
-        border: 1px solid rgba(18, 52, 70, 0.08);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .present-stage__support--image {
@@ -351,13 +352,13 @@ interface PresentTaskRecord {
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #8e6236;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .present-stage__support strong {
         font-size: clamp(1.7rem, 3vw, 2.6rem);
         line-height: 1.15;
-        color: #123446;
+        color: var(--pitwriter-text);
       }
 
       .present-stage__support small,
@@ -367,7 +368,7 @@ interface PresentTaskRecord {
       .present-stage__support-empty,
       .present-shell__status-copy p,
       .present-shell__hero-facts span {
-        color: #49606c;
+        color: var(--pitwriter-text-muted);
         line-height: 1.55;
       }
 
@@ -377,7 +378,7 @@ interface PresentTaskRecord {
         max-height: 28rem;
         object-fit: contain;
         border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(255, 243, 202, 0.72), rgba(228, 242, 247, 0.82));
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.08));
       }
 
       .present-stage__support figcaption {
@@ -400,8 +401,8 @@ interface PresentTaskRecord {
         min-height: 2.2rem;
         padding: 0 0.9rem;
         border-radius: 999px;
-        background: rgba(18, 52, 70, 0.08);
-        color: #123446;
+        background: var(--pitwriter-bg-hover);
+        color: var(--pitwriter-text);
       }
 
       .present-stage__description {
@@ -409,7 +410,7 @@ interface PresentTaskRecord {
       }
 
       .present-stage__adult-card strong {
-        color: #123446;
+        color: var(--pitwriter-text);
         line-height: 1.45;
       }
 
@@ -418,7 +419,7 @@ interface PresentTaskRecord {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.8rem;
         padding: 0.95rem;
-        background: rgba(255, 255, 255, 0.88);
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.9);
       }
 
       .present-shell__ghost-action,
@@ -426,11 +427,11 @@ interface PresentTaskRecord {
       .present-shell__hero-actions a,
       .present-shell__status-actions a {
         min-height: 3.25rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         padding: 0 1.2rem;
-        border: 1px solid rgba(18, 52, 70, 0.14);
-        background: rgba(247, 250, 252, 0.96);
-        color: #123446;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
         font: inherit;
         text-decoration: none;
         display: inline-flex;
@@ -441,7 +442,7 @@ interface PresentTaskRecord {
 
       .present-shell__primary-action {
         border: 0;
-        background: linear-gradient(180deg, #123446, #235772);
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
         font-weight: 700;
       }
@@ -462,12 +463,12 @@ interface PresentTaskRecord {
 
       .present-shell__status-card--complete {
         background:
-          radial-gradient(circle at top right, rgba(198, 232, 209, 0.8), transparent 30%),
-          linear-gradient(180deg, rgba(241, 250, 244, 0.98), rgba(255, 255, 255, 0.96));
+          radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 28%),
+          rgba(var(--pitwriter-bg-surface-rgb), 0.94);
       }
 
       .present-shell--error {
-        color: #b42318;
+        color: var(--pitwriter-danger-text);
       }
 
       .present-shell__eyebrow {
@@ -475,7 +476,7 @@ interface PresentTaskRecord {
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #8e6236;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h2,
