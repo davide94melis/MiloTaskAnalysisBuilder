@@ -181,6 +181,10 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
+      .card__meta div {
+        min-width: 0;
+      }
+
       .card__meta dt {
         color: var(--pitwriter-text-muted-2);
         font-size: 0.78rem;
@@ -189,6 +193,8 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       .card__meta dd {
         margin-top: 0.18rem;
         color: var(--pitwriter-text);
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       button {
@@ -197,7 +203,7 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
         padding: 0 0.95rem;
         font: inherit;
         cursor: pointer;
-        flex: 1 1 10rem;
+        width: 100%;
       }
 
       .card__primary {
@@ -219,7 +225,13 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       }
 
       .card__actions {
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+      }
+
+      .card__secondary--accent {
+        grid-column: 1 / -1;
       }
 
       @media (max-width: 720px) {
