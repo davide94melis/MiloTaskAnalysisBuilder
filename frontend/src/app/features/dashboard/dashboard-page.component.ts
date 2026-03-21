@@ -103,10 +103,10 @@ import { TaskCardComponent } from '../library/task-card.component';
       .stats,
       .section,
       .placeholder {
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .hero,
@@ -121,8 +121,9 @@ import { TaskCardComponent } from '../library/task-card.component';
         justify-content: space-between;
         gap: 1rem;
         background:
-          linear-gradient(135deg, rgba(255, 227, 153, 0.28), rgba(191, 219, 254, 0.24)),
-          rgba(255, 255, 255, 0.84);
+          radial-gradient(circle at top right, rgba(236, 72, 153, 0.08), transparent 28%),
+          radial-gradient(circle at top left, rgba(79, 70, 229, 0.1), transparent 32%),
+          rgba(var(--pitwriter-bg-surface-rgb), 0.92);
       }
 
       .hero__eyebrow,
@@ -131,7 +132,7 @@ import { TaskCardComponent } from '../library/task-card.component';
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h2,
@@ -143,7 +144,7 @@ import { TaskCardComponent } from '../library/task-card.component';
       .hero__copy {
         margin-top: 0.6rem;
         max-width: 42rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.55;
       }
 
@@ -157,7 +158,7 @@ import { TaskCardComponent } from '../library/task-card.component';
       .hero__actions button {
         min-height: 2.75rem;
         padding: 0 1rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         text-decoration: none;
         font: inherit;
       }
@@ -165,15 +166,16 @@ import { TaskCardComponent } from '../library/task-card.component';
       .hero__primary {
         border: 0;
         color: #ffffff;
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         cursor: pointer;
       }
 
       .hero__actions a {
         display: inline-flex;
         align-items: center;
-        color: #11415b;
-        background: rgba(255, 255, 255, 0.9);
+        color: var(--pitwriter-text);
+        background: var(--pitwriter-bg-surface-elevated);
+        border: 1px solid var(--pitwriter-border);
       }
 
       .stats {
@@ -185,19 +187,20 @@ import { TaskCardComponent } from '../library/task-card.component';
 
       .stats article {
         padding: 0.9rem 1rem;
-        border-radius: 1.1rem;
-        background: rgba(247, 250, 252, 0.94);
+        border-radius: 0.85rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .stats span {
         display: block;
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
         margin-bottom: 0.35rem;
       }
 
       .stats strong {
         font-size: 1.8rem;
-        color: #11415b;
+        color: var(--pitwriter-text);
       }
 
       .section__header {
@@ -210,11 +213,11 @@ import { TaskCardComponent } from '../library/task-card.component';
 
       .section__copy {
         margin-top: 0.35rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .section__header a {
-        color: #31566b;
+        color: var(--pitwriter-primary-from);
         text-decoration: none;
       }
 
@@ -225,7 +228,7 @@ import { TaskCardComponent } from '../library/task-card.component';
       }
 
       .placeholder {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
     `
   ],

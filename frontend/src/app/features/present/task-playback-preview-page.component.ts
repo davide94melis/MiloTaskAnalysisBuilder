@@ -149,10 +149,10 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .preview__nav,
       .preview--status {
         padding: 1.2rem;
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.88);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.9);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .preview__hero,
@@ -181,7 +181,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h2,
@@ -196,7 +196,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .preview__notes p,
       .preview__empty,
       .preview__hero-actions span {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.5;
       }
 
@@ -212,13 +212,13 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         align-items: center;
         justify-content: center;
         min-height: 2.85rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         padding: 0 1rem;
         font: inherit;
         text-decoration: none;
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(247, 250, 252, 0.96);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
       }
 
       .preview__nav button {
@@ -226,7 +226,7 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       }
 
       .preview__nav .preview__primary {
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
         border: 0;
       }
@@ -250,8 +250,9 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .preview__image-card,
       .preview__notes article {
         padding: 0.95rem;
-        border-radius: 1.1rem;
-        background: rgba(247, 250, 252, 0.96);
+        border-radius: 0.85rem;
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .preview__step {
@@ -267,11 +268,11 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
       .preview__text-card strong,
       .preview__symbol-card strong {
         font-size: clamp(1.35rem, 2vw, 1.8rem);
-        color: #11415b;
+        color: var(--pitwriter-text);
       }
 
       .preview__symbol-card small {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .preview__symbol-glyph {
@@ -288,14 +289,14 @@ import { resolveTaskSymbolGlyph } from '../library/task-symbol-catalog';
         width: 100%;
         max-height: 20rem;
         object-fit: contain;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(244, 240, 223, 0.55), rgba(231, 243, 248, 0.7));
+        border-radius: 0.85rem;
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.08));
       }
 
       .preview__image-card figcaption {
         display: grid;
         gap: 0.25rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .preview--error {

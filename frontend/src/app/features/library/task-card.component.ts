@@ -70,15 +70,16 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
         gap: 0.9rem;
         height: 100%;
         padding: 1rem;
-        border-radius: 1.3rem;
-        background: rgba(247, 250, 252, 0.96);
-        border: 1px solid rgba(17, 65, 91, 0.12);
+        border-radius: 1rem;
+        background: var(--pitwriter-bg-surface-elevated);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 6px 18px var(--pitwriter-shadow-subtle);
       }
 
       .card--family {
         background:
-          linear-gradient(180deg, rgba(255, 247, 214, 0.55), rgba(247, 250, 252, 0.96) 42%),
-          rgba(247, 250, 252, 0.96);
+          linear-gradient(180deg, rgba(79, 70, 229, 0.06), rgba(255, 255, 255, 0) 42%),
+          var(--pitwriter-bg-surface-elevated);
       }
 
       .card__header,
@@ -98,7 +99,7 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
         font-size: 0.72rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       .card__support strong {
@@ -107,8 +108,8 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
         min-height: 2.3rem;
         padding: 0.45rem 0.85rem;
         border-radius: 999px;
-        background: rgba(17, 65, 91, 0.12);
-        color: #11415b;
+        background: rgba(79, 70, 229, 0.08);
+        color: var(--pitwriter-primary-from);
         font-size: 1rem;
       }
 
@@ -127,28 +128,28 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       }
 
       .card__status--template {
-        background: rgba(245, 158, 11, 0.15);
-        color: #9a6400;
+        background: var(--pitwriter-warning-bg);
+        color: var(--pitwriter-warning-text);
       }
 
       .card__status:not(.card__status--template) {
-        background: rgba(17, 65, 91, 0.08);
-        color: #11415b;
+        background: rgba(79, 70, 229, 0.08);
+        color: var(--pitwriter-primary-from);
       }
 
       .card__family-badge {
-        background: rgba(124, 95, 59, 0.12);
-        color: #7c5f3b;
+        background: var(--pitwriter-bg-hover);
+        color: var(--pitwriter-text-muted);
       }
 
       .card__family-badge--root {
-        background: rgba(17, 65, 91, 0.1);
-        color: #11415b;
+        background: rgba(79, 70, 229, 0.08);
+        color: var(--pitwriter-primary-from);
       }
 
       .card__family-badge--variant {
-        background: rgba(8, 145, 178, 0.12);
-        color: #0f5e73;
+        background: rgba(236, 72, 153, 0.08);
+        color: #be185d;
       }
 
       h4,
@@ -165,12 +166,12 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       }
 
       .card__body p {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .card__family-context {
         min-height: 2.8rem;
-        color: #31566b;
+        color: var(--pitwriter-text);
         font-size: 0.92rem;
       }
 
@@ -181,18 +182,18 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
       }
 
       .card__meta dt {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
         font-size: 0.78rem;
       }
 
       .card__meta dd {
         margin-top: 0.18rem;
-        color: #1f2a37;
+        color: var(--pitwriter-text);
       }
 
       button {
         min-height: 2.5rem;
-        border-radius: 999px;
+        border-radius: 0.7rem;
         padding: 0 0.95rem;
         font: inherit;
         cursor: pointer;
@@ -201,20 +202,20 @@ import { TaskCardRecord, TaskVariantRole } from '../../core/tasks/task-library.m
 
       .card__primary {
         border: 0;
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         color: #ffffff;
       }
 
       .card__secondary {
-        border: 1px solid rgba(17, 65, 91, 0.16);
-        background: rgba(255, 255, 255, 0.92);
-        color: #31566b;
+        border: 1px solid var(--pitwriter-border);
+        background: var(--pitwriter-bg-surface);
+        color: var(--pitwriter-text);
       }
 
       .card__secondary--accent {
-        border-color: rgba(124, 95, 59, 0.22);
-        background: rgba(255, 247, 214, 0.9);
-        color: #7c5f3b;
+        border-color: rgba(79, 70, 229, 0.18);
+        background: rgba(79, 70, 229, 0.06);
+        color: var(--pitwriter-primary-from);
       }
 
       .card__actions {

@@ -74,17 +74,14 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
       :host {
         display: block;
         min-height: 100dvh;
-        color: #1f2a37;
-        background:
-          radial-gradient(circle at top left, rgba(191, 219, 254, 0.8), transparent 28%),
-          radial-gradient(circle at right top, rgba(254, 240, 138, 0.65), transparent 25%),
-          linear-gradient(180deg, #f4f0df 0%, #f8f6ef 24%, #f7fbfd 100%);
+        color: var(--pitwriter-text);
+        background: var(--pitwriter-bg-page);
       }
 
       .shell {
         width: min(78rem, 100%);
         margin: 0 auto;
-        padding: 1.5rem 1.1rem 2.5rem;
+        padding: 1.25rem 1.1rem 2rem;
       }
 
       .shell__header {
@@ -92,7 +89,12 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         justify-content: space-between;
         gap: 1.5rem;
         align-items: flex-start;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        padding: 1.1rem 1.25rem;
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.82);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .shell__brand {
@@ -115,15 +117,14 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         min-height: 2rem;
         padding: 0 0.8rem;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        color: #31566b;
-        box-shadow: 0 10px 18px rgba(17, 65, 91, 0.06);
+        background: var(--pitwriter-bg-surface);
+        border: 1px solid var(--pitwriter-border-subtle);
+        color: var(--pitwriter-text-muted);
       }
 
       .shell__eyebrow {
         margin: 0;
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
         font-size: 0.84rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -132,7 +133,7 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
       h1 {
         margin: 0;
         font-size: clamp(1.75rem, 3vw, 2.6rem);
-        color: #11415b;
+        color: var(--pitwriter-text);
       }
 
       .shell__subtitle,
@@ -144,7 +145,7 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         margin-top: 0.35rem;
         max-width: 38rem;
         line-height: 1.5;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
 
       .shell__account {
@@ -160,10 +161,9 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         align-items: center;
         gap: 0.8rem;
         padding: 0.7rem 0.9rem;
-        border-radius: 1.4rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 0.9rem;
+        background: var(--pitwriter-bg-surface-elevated);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .shell__avatar {
@@ -172,8 +172,8 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         width: 2.6rem;
         height: 2.6rem;
         border-radius: 999px;
-        background: linear-gradient(135deg, #ffd67b, #f4a261);
-        color: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
+        color: #ffffff;
         font-weight: 700;
       }
 
@@ -182,20 +182,23 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
       }
 
       .shell__user-label {
-        color: #6b7280;
+        color: var(--pitwriter-text-muted-2);
         font-size: 0.78rem;
       }
 
       .shell__logout {
-        border: 0;
-        border-radius: 999px;
+        border: 1px solid var(--pitwriter-border);
+        border-radius: 0.75rem;
         padding: 0.85rem 1.05rem;
         font: inherit;
         font-weight: 600;
-        color: #11415b;
-        background: rgba(255, 255, 255, 0.82);
-        box-shadow: 0 10px 18px rgba(17, 65, 91, 0.08);
+        color: var(--pitwriter-text);
+        background: var(--pitwriter-bg-surface);
         cursor: pointer;
+      }
+
+      .shell__logout:hover {
+        background: var(--pitwriter-bg-hover);
       }
 
       .shell__frame {
@@ -215,15 +218,15 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
         gap: 1rem;
         align-items: center;
         padding: 0.95rem 1.1rem;
-        border-radius: 1.35rem;
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(17, 65, 91, 0.1);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.82);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .shell__section-copy,
       .shell__section-meta small {
         margin: 0;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.45;
       }
 
@@ -235,29 +238,48 @@ import { MiloAuthService } from '../core/auth/milo-auth.service';
 
       .shell__section-eyebrow {
         margin: 0 0 0.18rem;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
         font-size: 0.78rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
       .shell__nav a {
+        position: relative;
         padding: 0.82rem 1.05rem;
-        border-radius: 999px;
+        border-radius: 0.7rem;
         text-decoration: none;
-        color: #31566b;
-        background: rgba(255, 255, 255, 0.74);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+        color: var(--pitwriter-text-muted);
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.78);
+        border: 1px solid var(--pitwriter-border-subtle);
       }
 
       .shell__nav a:hover,
-      .shell__nav a:focus-visible,
+      .shell__nav a:focus-visible {
+        background: var(--pitwriter-bg-hover);
+        color: var(--pitwriter-text);
+      }
+
       .shell__nav a.is-active {
-        transform: translateY(-1px);
-        background: #11415b;
-        color: #ffffff;
-        box-shadow: 0 12px 20px rgba(17, 65, 91, 0.18);
+        background: var(--pitwriter-bg-surface-elevated);
+        color: var(--pitwriter-primary-from);
+        border-color: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 1px 3px var(--pitwriter-shadow-subtle);
+      }
+
+      .shell__nav a.is-active {
+        transform: none;
+      }
+
+      .shell__nav a.is-active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.4rem;
+        bottom: 0.4rem;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        background: linear-gradient(180deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
       }
 
       .shell__content {

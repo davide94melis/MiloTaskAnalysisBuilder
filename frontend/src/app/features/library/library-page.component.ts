@@ -73,10 +73,10 @@ import { TaskCardComponent } from './task-card.component';
       .page-header,
       .results,
       .empty-state {
-        border-radius: 1.6rem;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(17, 65, 91, 0.12);
-        box-shadow: 0 16px 30px rgba(17, 65, 91, 0.08);
+        border-radius: 1rem;
+        background: rgba(var(--pitwriter-bg-surface-rgb), 0.88);
+        border: 1px solid var(--pitwriter-border-subtle);
+        box-shadow: 0 10px 24px var(--pitwriter-shadow-subtle);
       }
 
       .page-header,
@@ -97,7 +97,7 @@ import { TaskCardComponent } from './task-card.component';
         font-size: 0.8rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c5f3b;
+        color: var(--pitwriter-text-muted-2);
       }
 
       h2,
@@ -108,18 +108,18 @@ import { TaskCardComponent } from './task-card.component';
       .page-header__copy {
         margin-top: 0.45rem;
         max-width: 42rem;
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
         line-height: 1.5;
       }
 
       button {
         min-height: 2.75rem;
-        border-radius: 999px;
+        border-radius: 0.75rem;
         border: 0;
         padding: 0 1rem;
         font: inherit;
         color: #ffffff;
-        background: #11415b;
+        background: linear-gradient(135deg, var(--pitwriter-primary-from), var(--pitwriter-primary-to));
         cursor: pointer;
       }
 
@@ -128,7 +128,7 @@ import { TaskCardComponent } from './task-card.component';
         justify-content: space-between;
         gap: 1rem;
         margin-bottom: 1rem;
-        color: #6b7280;
+        color: var(--pitwriter-text-muted);
       }
 
       .results__grid {
@@ -138,7 +138,7 @@ import { TaskCardComponent } from './task-card.component';
       }
 
       .empty-state {
-        color: #4b5563;
+        color: var(--pitwriter-text-muted);
       }
     `
   ],
